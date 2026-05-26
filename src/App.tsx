@@ -1710,7 +1710,7 @@ export default function App() {
   const [instagram, setInstagram]         = useState("");
   const [sarpanchPhoto, setSarpanchPhoto] = useState("");
   const [sarpanchAddress, setSarpanchAddress] = useState("Gram Sabha Pahrajpur, Ballia, Uttar Pradesh");
-  const [theme, setTheme]                 = useState<"dark"|"light">("dark");
+  const [theme, setTheme]                 = useState<"dark"|"light">("light");
 
   
   // Load sarpanch settings from Firestore in realtime
