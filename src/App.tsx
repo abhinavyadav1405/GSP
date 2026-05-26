@@ -1705,6 +1705,17 @@ export default function App() {
   const [sarpanchAddress, setSarpanchAddress] = useState("Gram Sabha Pahrajpur, Ballia, Uttar Pradesh");
   const [theme, setTheme]                 = useState<"dark"|"light">("dark");
 
+  
+  // Load problems from Firestore in realtime
+  useEffect(() => {
+    const q = query(collection(db, "problems"), orderBy("submittedAt", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setProblems(list);
+    });
+    return () => unsub();
+  }, []);
+
   useEffect(() => {
     try {
       const raw   = localStorage.getItem("gram-seva:problems");
@@ -1739,7 +1750,7 @@ export default function App() {
 
   const saveProblems = (list: Problem[]) => {
     setProblems(list);
-    try { localStorage.setItem("gram-seva:problems", JSON.stringify(list)); } catch (_) {}
+    // Problems saved to Firestore
   };
 
   const addProblem = async (p: Problem) => {
