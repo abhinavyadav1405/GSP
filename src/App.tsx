@@ -1750,7 +1750,7 @@ export default function App() {
       showToast(`✅ Problem submitted! Your ID: #${p.id}`);
       setPage("board");
     } catch(e: any) {
-      alert("Firestore Error: " + e.message);
+      showToast("❌ Submit failed. Try again.");
     }
   };
 
