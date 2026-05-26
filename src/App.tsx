@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   auth, db, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged,
-  collection, addDoc, doc, updateDoc, onSnapshot, setDoc, getDoc, query, orderBy
+  collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy
 } from "./firebase";
 import type { User, ConfirmationResult } from "firebase/auth";
 
@@ -1718,17 +1718,6 @@ export default function App() {
 
   useEffect(() => {
     try {
-      const raw   = localStorage.getItem("gram-seva:problems");
-      const pw    = localStorage.getItem("gram-seva:adminPw");
-      const vill  = localStorage.getItem("gram-seva:villageName");
-      const sarp  = localStorage.getItem("gram-seva:sarpanchName");
-      const ach   = localStorage.getItem("gram-seva:achievements");
-      const med   = localStorage.getItem("gram-seva:media");
-      const not   = localStorage.getItem("gram-seva:notices");
-      const fb    = localStorage.getItem("gram-seva:feedback");
-      const wa    = localStorage.getItem("gram-seva:whatsapp");
-      const ig    = localStorage.getItem("gram-seva:instagram");
-      if (raw)  setProblems(JSON.parse(raw));
       if (pw)   setAdminPassword(pw);
       if (vill) setVillageName(vill);
       if (sarp) setSarpanchName(sarp);
@@ -1754,28 +1743,28 @@ export default function App() {
   };
 
   const addProblem = async (p: Problem) => {
-    saveProblems([p, ...problems]);
+    await setDoc(doc(db, "problems", p.id), p);
     showToast(`✅ Problem submitted! Your ID: #${p.id}`);
     setPage("board");
   };
 
-  const updateProblem = (id: string, changes: Partial<Problem>) => {
-    saveProblems(problems.map(p => p.id === id ? { ...p, ...changes } : p));
+  const updateProblem = async (id: string, changes: Partial<Problem>) => {
+    await updateDoc(doc(db, "problems", id), changes);
     showToast("✅ Problem updated successfully.");
   };
 
-  const deleteProblem = (id: string) => {
-    saveProblems(problems.filter(p => p.id !== id));
+  const deleteProblem = async (id: string) => {
+    await deleteDoc(doc(db, "problems", id));
     showToast("🗑 Issue deleted.");
   };
 
-  const clearResolved = () => {
-    saveProblems(problems.filter(p => p.status !== "Resolved"));
+  const clearResolved = async () => {
+    await Promise.all(problems.filter(p => p.status === "Resolved").map(p => deleteDoc(doc(db, "problems", p.id))));
     showToast("🗑 All resolved issues deleted.");
   };
 
-  const clearAll = () => {
-    saveProblems([]);
+  const clearAll = async () => {
+    await Promise.all(problems.map(p => deleteDoc(doc(db, "problems", p.id))));
     showToast("🗑 All issues cleared.");
   };
 

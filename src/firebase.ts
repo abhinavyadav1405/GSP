@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, addDoc, doc, updateDoc, onSnapshot, setDoc, getDoc, query, orderBy } from "firebase/firestore";
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy } from "firebase/firestore";
 import type { User, ConfirmationResult } from "firebase/auth";
 
 const firebaseConfig = {
@@ -17,5 +17,5 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 export { RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged };
-export { collection, addDoc, doc, updateDoc, onSnapshot, setDoc, getDoc, query, orderBy };
+export { collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy };
 export type { User, ConfirmationResult };
