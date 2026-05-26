@@ -1747,6 +1747,7 @@ export default function App() {
         if (d.instagram) setInstagram(d.instagram);
         if (d.adminPassword) setAdminPassword(d.adminPassword);
         if (d.theme) setTheme(d.theme);
+        if (d.sarpanchPhoto) setSarpanchPhoto(d.sarpanchPhoto);
       }
     });
     return () => unsub();
@@ -1860,7 +1861,7 @@ export default function App() {
   };
   const saveSarpanchPhoto = (p: string) => {
     setSarpanchPhoto(p);
-    try { localStorage.setItem("gram-seva:sarpanchPhoto", p); } catch (_) {}
+    try { setDoc(doc(db, "settings", "main"), { sarpanchPhoto: p }, { merge: true }); localStorage.setItem("gram-seva:sarpanchPhoto", p); } catch (_) {}
   };
 
   const saveSarpanchAddress = (addr: string) => {
