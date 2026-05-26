@@ -702,7 +702,7 @@ function SarpanchCard({ sarpanchName, photo, whatsapp, instagram, address }: { s
         <div style={{ width: 84, height: 84, borderRadius: 20, flexShrink: 0, overflow: "hidden", boxShadow: "0 4px 20px rgba(22,163,74,0.35)", border: "2px solid rgba(34,197,94,0.3)", background: "linear-gradient(135deg,#16a34a,#166534)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {photo
             ? <img src={photo} alt="Sarpanch" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ fontSize: 40 }}>👩</span>}
+            : <span style={{ fontSize: 40 }}></span>}
         </div>
         <div style={{ flex: 1, minWidth: 150 }}>
           <div style={{ fontSize: 10, color: "#22c55e", fontWeight: 700, letterSpacing: "0.12em", marginBottom: 5 }}>GRAM PRADHAN · SARPANCH</div>
