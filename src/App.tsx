@@ -1743,7 +1743,8 @@ export default function App() {
   };
 
   const addProblem = async (p: Problem) => {
-    await setDoc(doc(db, "problems", p.id), p);
+    const { photo, ...firestoreData } = p as any;
+      await setDoc(doc(db, "problems", p.id), firestoreData);
     showToast(`✅ Problem submitted! Your ID: #${p.id}`);
     setPage("board");
   };
