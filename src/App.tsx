@@ -1744,7 +1744,8 @@ export default function App() {
 
   const addProblem = async (p: Problem) => {
     const { photo, ...firestoreData } = p as any;
-      await setDoc(doc(db, "problems", p.id), firestoreData);
+      const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error("Timeout - Firestore unreachable")), 8000));
+      await Promise.race([setDoc(doc(db, "problems", p.id), firestoreData), timeout]);
     showToast(`✅ Problem submitted! Your ID: #${p.id}`);
     setPage("board");
   };
