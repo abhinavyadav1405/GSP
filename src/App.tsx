@@ -1752,6 +1752,24 @@ export default function App() {
     return () => unsub();
   }, []);
 
+  
+  // Load achievements, media, notices, feedbacks from Firestore
+  useEffect(() => {
+    const unsub1 = onSnapshot(doc(db, "settings", "achievements"), (snap) => {
+      if (snap.exists() && snap.data().list) setAchievements(snap.data().list);
+    });
+    const unsub2 = onSnapshot(doc(db, "settings", "media"), (snap) => {
+      if (snap.exists() && snap.data().list) setMedia(snap.data().list);
+    });
+    const unsub3 = onSnapshot(doc(db, "settings", "notices"), (snap) => {
+      if (snap.exists() && snap.data().list) setNotices(snap.data().list);
+    });
+    const unsub4 = onSnapshot(doc(db, "settings", "feedback"), (snap) => {
+      if (snap.exists() && snap.data().list) setFeedbacks(snap.data().list);
+    });
+    return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
+  }, []);
+
   useEffect(() => {
     try {
       if (pw)   setAdminPassword(pw);
@@ -1812,7 +1830,7 @@ export default function App() {
 
   const saveAchievements = (list: Achievement[]) => {
     setAchievements(list);
-    try { localStorage.setItem("gram-seva:achievements", JSON.stringify(list)); } catch (_) {}
+    try { setDoc(doc(db, "settings", "achievements"), { list: list }); } catch (_) {}
   };
 
   const addAchievement = (a: Achievement) => saveAchievements([a, ...achievements]);
@@ -1820,19 +1838,19 @@ export default function App() {
 
   const saveMedia = (list: MediaItem[]) => {
     setMedia(list);
-    try { localStorage.setItem("gram-seva:media", JSON.stringify(list)); } catch (_) {}
+    try { setDoc(doc(db, "settings", "media"), { list: list }); } catch (_) {}
   };
   const addMedia = (m: MediaItem) => saveMedia([m, ...media]);
   const deleteMedia = (id: string) => saveMedia(media.filter(m => m.id !== id));
 
   const saveNotices = (list: Notice[]) => {
     setNotices(list);
-    try { localStorage.setItem("gram-seva:notices", JSON.stringify(list)); } catch (_) {}
+    try { setDoc(doc(db, "settings", "notices"), { list: list }); } catch (_) {}
   };
   const addNotice    = (n: Notice) => saveNotices([n, ...notices]);
   const deleteNotice = (id: string) => saveNotices(notices.filter(n => n.id !== id));
 
-  const saveFeedbacks  = (list: Feedback[]) => { setFeedbacks(list); try { localStorage.setItem("gram-seva:feedback", JSON.stringify(list)); } catch (_) {} };
+  const saveFeedbacks  = (list: Feedback[]) => { setFeedbacks(list); try { setDoc(doc(db, "settings", "feedback"), { list: list }); } catch (_) {} };
   const addFeedback    = (f: Feedback) => saveFeedbacks([f, ...feedbacks]);
   const deleteFeedback = (id: string)  => saveFeedbacks(feedbacks.filter(f => f.id !== id));
 
