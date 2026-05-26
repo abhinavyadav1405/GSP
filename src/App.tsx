@@ -1679,6 +1679,13 @@ function PhoneLogin({ onClose }) {
   );
 }
 
+
+  const saveSettings = async (data) => {
+    try {
+      await setDoc(doc(db, "settings", "main"), data, { merge: true });
+    } catch(e) { console.log(e); }
+  };
+
 export default function App() {
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"board"|"submit"|"admin"|"settings"|"achievements"|"gallery"|"notices">("home");
@@ -1706,12 +1713,41 @@ export default function App() {
   const [theme, setTheme]                 = useState<"dark"|"light">("dark");
 
   
-  // Load problems from Firestore in realtime
+  // Load sarpanch settings from Firestore in realtime
+    const sq = doc(db, "settings", "sarpanch");
+    const unsubSarpanch = onSnapshot(sq, (snap) => {
+      if (snap.exists()) {
+        const d = snap.data();
+        if (d.sarpanchName) setSarpanchName(d.sarpanchName);
+        if (d.sarpanchAddress) setSarpanchAddress(d.sarpanchAddress);
+        if (d.villageName) setVillageName(d.villageName);
+      }
+    });
+
+    // Load problems from Firestore in realtime
   useEffect(() => {
     const q = query(collection(db, "problems"), orderBy("submittedAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setProblems(list);
+    });
+    return () => unsub();
+  }, []);
+
+  
+  // Load settings from Firestore
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "settings", "main"), (snap) => {
+      if (snap.exists()) {
+        const d = snap.data();
+        if (d.villageName) setVillageName(d.villageName);
+        if (d.sarpanchName) setSarpanchName(d.sarpanchName);
+        if (d.sarpanchAddress) setSarpanchAddress(d.sarpanchAddress);
+        if (d.whatsapp) setWhatsapp(d.whatsapp);
+        if (d.instagram) setInstagram(d.instagram);
+        if (d.adminPassword) setAdminPassword(d.adminPassword);
+        if (d.theme) setTheme(d.theme);
+      }
     });
     return () => unsub();
   }, []);
@@ -1802,7 +1838,7 @@ export default function App() {
 
   const saveSocial = (w: string, i: string) => {
     setWhatsapp(w); setInstagram(i);
-    try { localStorage.setItem("gram-seva:whatsapp", w); localStorage.setItem("gram-seva:instagram", i); } catch (_) {}
+    try { saveSettings({ whatsapp: w }); saveSettings({ instagram: i }); } catch (_) {}
   };
   const saveSarpanchPhoto = (p: string) => {
     setSarpanchPhoto(p);
@@ -1811,13 +1847,13 @@ export default function App() {
 
   const saveSarpanchAddress = (addr: string) => {
     setSarpanchAddress(addr);
-    try { localStorage.setItem("gram-seva:sarpanchAddress", addr); } catch (_) {}
+    try { saveSettings({ sarpanchAddress: addr }); } catch (_) {}
   };
 
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    try { localStorage.setItem("gram-seva:theme", next); } catch (_) {}
+    try { saveSettings({ theme: next }); } catch (_) {}
   };
 
   const savePassword = (pw: string) => {
@@ -1827,8 +1863,8 @@ export default function App() {
 
   const saveInfo = (v: string, s: string) => {
     setVillageName(v); setSarpanchName(s);
-    localStorage.setItem("gram-seva:villageName", v);
-    localStorage.setItem("gram-seva:sarpanchName", s);
+    saveSettings({ villageName: v });
+    saveSettings({ sarpanchName: s });
   };
 
   const showToast = (msg: string) => setToast(msg);
