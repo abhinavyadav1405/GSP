@@ -1745,7 +1745,8 @@ export default function App() {
   const addProblem = async (p: Problem) => {
     try {
       const { photo, ...firestoreData } = p as any;
-      await setDoc(doc(db, "problems", p.id), firestoreData);
+      const cleanData = Object.fromEntries(Object.entries(firestoreData).filter(([_, v]) => v !== undefined));
+      await setDoc(doc(db, "problems", p.id), cleanData);
       showToast(`✅ Problem submitted! Your ID: #${p.id}`);
       setPage("board");
     } catch(e: any) {
