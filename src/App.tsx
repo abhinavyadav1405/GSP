@@ -1876,6 +1876,7 @@ export default function App() {
   };
 
   const savePassword = (pw: string) => {
+    try { setDoc(doc(db, "settings", "main"), { adminPassword: pw }, { merge: true }); } catch (_) {}
     setAdminPassword(pw);
     localStorage.setItem("gram-seva:adminPw", pw);
   };
