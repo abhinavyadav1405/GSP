@@ -1743,11 +1743,14 @@ export default function App() {
   };
 
   const addProblem = async (p: Problem) => {
-    const { photo, ...firestoreData } = p as any;
-      const timeout = new Promise((_,rej) => setTimeout(() => rej(new Error("Timeout - Firestore unreachable")), 8000));
-      await Promise.race([setDoc(doc(db, "problems", p.id), firestoreData), timeout]);
-    showToast(`✅ Problem submitted! Your ID: #${p.id}`);
-    setPage("board");
+    try {
+      const { photo, ...firestoreData } = p as any;
+      await setDoc(doc(db, "problems", p.id), firestoreData);
+      showToast(`✅ Problem submitted! Your ID: #${p.id}`);
+      setPage("board");
+    } catch(e: any) {
+      alert("Firestore Error: " + e.message);
+    }
   };
 
   const updateProblem = async (id: string, changes: Partial<Problem>) => {
