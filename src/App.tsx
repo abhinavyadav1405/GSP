@@ -658,20 +658,27 @@ function FilterBar({ filterCat, setFilterCat, filterStatus, setFilterStatus, fil
 
 // ── Admin Login ───────────────────────────────────────────────────────────────
 function AdminLogin({ correctPassword, onLogin }: { correctPassword: string; onLogin: () => void }) {
+  const ADMIN_ID = "abhinavyadav1405";
+  const [id, setId] = useState("");
   const [pw, setPw] = useState("");
-  const [err, setErr] = useState(false);
-  const attempt = () => { if (pw === correctPassword) { setErr(false); onLogin(); } else setErr(true); };
+  const [err, setErr] = useState("");
+  const attempt = () => {
+    if (id !== ADMIN_ID) { setErr("Galat Admin ID!"); return; }
+    if (pw !== correctPassword) { setErr("Galat Password!"); return; }
+    setErr(""); onLogin();
+  };
   return (
     <div style={{ maxWidth: 380, margin: "60px auto" }}>
       <div className="glass" style={{ borderRadius: 22, padding: "32px 28px" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🔐</div>
           <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 22 }}>Admin Access</h2>
-          <p style={{ fontSize: 13, color: "var(--ct4)", marginTop: 8 }}>Enter your admin password to continue</p>
+          <p style={{ fontSize: 13, color: "var(--ct4)", marginTop: 8 }}>ID aur Password daalo</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <input type="password" placeholder="Password" value={pw} onChange={e => { setPw(e.target.value); setErr(false); }} onKeyDown={e => e.key === "Enter" && attempt()} />
-          {err && <div style={{ fontSize: 13, color: "#ef4444", textAlign: "center" }}>Incorrect password. Try again.</div>}
+          <input placeholder="Admin ID" value={id} onChange={e => { setId(e.target.value); setErr(""); }} />
+          <input type="password" placeholder="Password" value={pw} onChange={e => { setPw(e.target.value); setErr(""); }} onKeyDown={e => e.key === "Enter" && attempt()} />
+          {err && <div style={{ fontSize: 13, color: "#ef4444", textAlign: "center" }}>{err}</div>}
           <button className="btn-white" onClick={attempt} style={{ borderRadius: 12, padding: "12px 0", fontSize: 15, fontWeight: 600 }}>Login →</button>
         </div>
       </div>
