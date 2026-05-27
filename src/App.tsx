@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  auth, db, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithRedirect, getRedirectResult,
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
@@ -1604,114 +1604,87 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
   );
 }
 
-// ── Phone + Google Login Component ──────────────────────────────────────────
+// ── Email Login Component ────────────────────────────────────────────────────
 function PhoneLogin({ onClose }: { onClose: () => void }) {
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [step, setStep] = useState<"phone"|"otp"|"name">("phone");
+  const [step, setStep] = useState<"login"|"register">("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [confirmation, setConfirmation] = useState<any>(null);
 
-  const signInWithGoogle = async () => {
+  const handleLogin = async () => {
+    if (!email || !password) { setError("Please fill all fields"); return; }
     setLoading(true); setError("");
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      await signInWithRedirect(auth, provider);
-    } catch (e: any) {
-      setError("Google sign-in failed: " + (e.message || "Try again"));
-    }
-    setLoading(false);
-  };
-
-  const setupRecaptcha = () => {
-    if (!(window as any).recaptchaVerifier) {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible", callback: () => {} });
-    }
-  };
-
-  const sendOTP = async () => {
-    if (phone.length !== 10) { setError("Please enter a valid 10-digit number"); return; }
-    setLoading(true); setError("");
-    try {
-      setupRecaptcha();
-      const result = await signInWithPhoneNumber(auth, `+91${phone}`, (window as any).recaptchaVerifier);
-      setConfirmation(result); setStep("otp");
-    } catch (e: any) {
-      setError("OTP Error: " + (e.message || "Dobara try karo"));
-      (window as any).recaptchaVerifier = null;
-    }
-    setLoading(false);
-  };
-
-  const verifyOTP = async () => {
-    if (!confirmation || otp.length !== 6) { setError("Please enter the 6-digit OTP"); return; }
-    setLoading(true); setError("");
-    try {
-      const result = await confirmation.confirm(otp);
-      const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().name) { onClose(); }
-      else { setStep("name"); }
-    } catch { setError("Invalid OTP, please try again"); }
-    setLoading(false);
-  };
-
-  const saveName = async () => {
-    if (!name.trim()) { setError("Name is required"); return; }
-    setLoading(true);
-    try {
-      const user = auth.currentUser;
-      if (user) await setDoc(doc(db, "users", user.uid), { name: name.trim(), phone: user.phoneNumber, createdAt: new Date().toISOString() });
+      await signInWithEmailAndPassword(auth, email, password);
       onClose();
-    } catch { setError("Could not save name, try again"); }
+    } catch (e: any) {
+      if (e.code === "auth/user-not-found" || e.code === "auth/invalid-credential") {
+        setError("Account not found. Please register first.");
+      } else {
+        setError("Login failed: " + (e.message || "Try again"));
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleRegister = async () => {
+    if (!email || !password || !name) { setError("Please fill all fields"); return; }
+    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    setLoading(true); setError("");
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", result.user.uid), {
+        name: name.trim(),
+        email: email,
+        createdAt: new Date().toISOString(),
+      });
+      onClose();
+    } catch (e: any) {
+      if (e.code === "auth/email-already-in-use") {
+        setError("Email already registered. Please login.");
+      } else {
+        setError("Registration failed: " + (e.message || "Try again"));
+      }
+    }
     setLoading(false);
   };
 
   return (
     <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
-      <div id="recaptcha-container" />
       <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center" }}>
-        {step === "phone" && (<>
-          <div style={{ fontSize:40, marginBottom:12 }}>📱</div>
-          <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>Login Karein</h2>
-          <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20 }}>Phone OTP ya Google se login karein</p>
-          <button onClick={signInWithGoogle} disabled={loading} style={{ width:"100%", borderRadius:12, padding:"12px 0", fontSize:14, fontWeight:600, marginBottom:12, background:"#fff", color:"#333", border:"1px solid #ddd", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-            <span style={{ fontSize:18 }}>G</span> Google se Login
-          </button>
-          <div style={{ fontSize:12, color:"var(--ct4)", marginBottom:12 }}>— ya phone number se —</div>
-          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-            <div style={{ padding:"10px 14px", borderRadius:10, background:"var(--cbg5)", border:"1px solid var(--cb10)", fontSize:14, color:"var(--text-main)", whiteSpace:"nowrap" }}>+91</div>
-            <input value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g,"").slice(0,10))} placeholder="10 digit number" type="tel" maxLength={10} style={{ flex:1 }} />
-          </div>
-          {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
-          <button className="btn-white" onClick={sendOTP} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Sending…" : "Send OTP →"}
-          </button>
-          <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:14 }}>Baad mein</button>
-        </>)}
-        {step === "otp" && (<>
-          <div style={{ fontSize:40, marginBottom:12 }}>🔐</div>
-          <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>OTP Daalo</h2>
-          <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:24 }}>+91 {phone} pe OTP bheja gaya</p>
-          <input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="6 digit OTP" type="tel" maxLength={6} style={{ textAlign:"center", fontSize:20, letterSpacing:8, marginBottom:10 }} />
-          {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
-          <button className="btn-white" onClick={verifyOTP} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Verifying…" : "Verify OTP ✓"}
-          </button>
-          <button onClick={() => { setStep("phone"); setOtp(""); setError(""); }} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:14 }}>← Wapis</button>
-        </>)}
-        {step === "name" && (<>
-          <div style={{ fontSize:40, marginBottom:12 }}>👤</div>
-          <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>Aapka Naam</h2>
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" style={{ marginBottom:10 }} />
-          {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
-          <button className="btn-white" onClick={saveName} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Saving…" : "Get Started →"}
-          </button>
-        </>)}
+        <div style={{ fontSize:40, marginBottom:12 }}>🔐</div>
+        <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>
+          {step === "login" ? "Sign In" : "Create Account"}
+        </h2>
+        <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20 }}>
+          {step === "login" ? "Sign in to submit problems" : "Register to get started"}
+        </p>
+
+        <div style={{ display:"flex", flexDirection:"column", gap:10, textAlign:"left" }}>
+          {step === "register" && (
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" />
+          )}
+          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" type="email" />
+          <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min 6 chars)" type="password" />
+        </div>
+
+        {error && <div style={{ fontSize:12, color:"#f87171", margin:"10px 0" }}>{error}</div>}
+
+        <button className="btn-white" onClick={step === "login" ? handleLogin : handleRegister} disabled={loading}
+          style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, marginTop:14 }}>
+          {loading ? "Please wait…" : step === "login" ? "Sign In →" : "Create Account →"}
+        </button>
+
+        <button onClick={() => { setStep(step === "login" ? "register" : "login"); setError(""); }}
+          style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:13, cursor:"pointer", marginTop:12 }}>
+          {step === "login" ? "No account? Register here" : "Already registered? Sign in"}
+        </button>
+
+        <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:8, display:"block", width:"100%" }}>
+          Skip for now
+        </button>
       </div>
     </div>
   );
