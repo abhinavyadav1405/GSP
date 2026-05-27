@@ -1626,7 +1626,7 @@ export default function App() {
   const [loading, setLoading]       = useState(true);
 
   // Dynamic admin-configurable settings
-  const [adminPassword, setAdminPassword] = useState("");
+  const [adminPassword, setAdminPassword] = useState("admin123");
   const [villageName, setVillageName]     = useState("Gram Sabha Pahrajpur");
   const [sarpanchName, setSarpanchName]   = useState("Priyanka Yadav");
   const [achievements, setAchievements]   = useState<Achievement[]>([]);
