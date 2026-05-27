@@ -1687,8 +1687,8 @@ export default function App() {
     const unsub1 = onSnapshot(doc(db, "settings", "achievements"), (snap) => {
       if (snap.exists() && snap.data().list) setAchievements(snap.data().list);
     });
-        const unsub2 = onSnapshot(collection(db, "media"), (snap) => {
-          setMedia(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)));
+        const unsub2 = onSnapshot(doc(db, "settings", "media"), (snap) => {
+          if (snap.exists() && snap.data().list) setMedia(snap.data().list);
         });
     const unsub3 = onSnapshot(doc(db, "settings", "notices"), (snap) => {
       if (snap.exists() && snap.data().list) setNotices(snap.data().list);
@@ -1765,9 +1765,9 @@ export default function App() {
   const addAchievement = (a: Achievement) => saveAchievements([a, ...achievements]);
   const deleteAchievement = (id: string) => saveAchievements(achievements.filter(a => a.id !== id));
 
-    const saveMedia = (list: MediaItem[]) => { setMedia(list); };
-    const addMedia = async (m: MediaItem) => { setMedia([m, ...media]); try { await setDoc(doc(db, "media", m.id), m); } catch (_) {} };
-    const deleteMedia = async (id: string) => { setMedia(media.filter(m => m.id !== id)); try { await deleteDoc(doc(db, "media", id)); } catch (_) {} };
+    const saveMedia = (list: MediaItem[]) => { setMedia(list); try { setDoc(doc(db, "settings", "media"), { list: list }); } catch (_) {} };
+    const addMedia = (m: MediaItem) => saveMedia([m, ...media]);
+    const deleteMedia = (id: string) => saveMedia(media.filter(m => m.id !== id));
 
   const saveNotices = (list: Notice[]) => {
     setNotices(list);
