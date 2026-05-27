@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  auth, db, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup,
+  auth, db, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
@@ -1618,17 +1618,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
     setLoading(true); setError("");
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-          name: user.displayName || "User",
-          email: user.email,
-          createdAt: new Date().toISOString(),
-        });
-      }
-      onClose();
+      await signInWithRedirect(auth, provider);
     } catch (e: any) {
       setError("Google login failed: " + (e.message || "Try again"));
     }
@@ -1847,6 +1837,21 @@ export default function App() {
 
   // Firebase auth listener
   useEffect(() => {
+    // Handle Google redirect result
+    getRedirectResult(auth).then(async (result) => {
+      if (result?.user) {
+        const user = result.user;
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists()) {
+          await setDoc(doc(db, "users", user.uid), {
+            name: user.displayName || "User",
+            email: user.email,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      }
+    }).catch(() => {});
+
     const unsub = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
       if (user) {
