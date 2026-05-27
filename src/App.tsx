@@ -225,7 +225,7 @@ interface Problem {
   locationCoords?: LatLng;
 }
 
-const compressImage = (file: File, maxW = 600, quality = 0.5): Promise<string> =>
+const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
