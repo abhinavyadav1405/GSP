@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { t, Lang } from "./translations";
 import {
   auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithRedirect, getRedirectResult,
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
@@ -1757,6 +1758,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
   };
 
 export default function App() {
+  const [lang, setLang] = useState<Lang>("en");
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [showLogin, setShowLogin] = useState(false);
@@ -2286,6 +2288,9 @@ export default function App() {
       </div>
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
+      <button onClick={() => setLang(l => l === "en" ? "hi" : "en")} className="btn-ghost" style={{ position:"fixed", bottom:20, right:20, zIndex:1000, borderRadius:20, padding:"8px 16px", fontSize:13, fontWeight:600, backdropFilter:"blur(10px)" }}>
+        {lang === "en" ? "हि" : "EN"}
+      </button>
       {showLogin && <PhoneLogin onClose={() => setShowLogin(false)} />}
     </div>
   );
