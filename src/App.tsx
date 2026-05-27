@@ -1631,7 +1631,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
       }
       onClose();
     } catch (e: any) {
-      setError("Google login failed: " + (e.message || "Try again"));
+      setError("Google sign-in failed: " + (e.message || "Try again"));
     }
     setLoading(false);
   };
@@ -1643,21 +1643,21 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
   };
 
   const sendOTP = async () => {
-    if (phone.length !== 10) { setError("Sahi 10 digit ka number daalo"); return; }
+    if (phone.length !== 10) { setError("Please enter a valid 10-digit number"); return; }
     setLoading(true); setError("");
     try {
       setupRecaptcha();
       const result = await signInWithPhoneNumber(auth, `+91${phone}`, (window as any).recaptchaVerifier);
       setConfirmation(result); setStep("otp");
     } catch (e: any) {
-      setError("OTP error: " + (e.message || "Dobara try karo"));
+      setError("OTP Error: " + (e.message || "Dobara try karo"));
       (window as any).recaptchaVerifier = null;
     }
     setLoading(false);
   };
 
   const verifyOTP = async () => {
-    if (!confirmation || otp.length !== 6) { setError("6 digit OTP daalo"); return; }
+    if (!confirmation || otp.length !== 6) { setError("Please enter the 6-digit OTP"); return; }
     setLoading(true); setError("");
     try {
       const result = await confirmation.confirm(otp);
@@ -1665,18 +1665,18 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists() && userDoc.data().name) { onClose(); }
       else { setStep("name"); }
-    } catch { setError("Galat OTP, dobara try karo"); }
+    } catch { setError("Invalid OTP, please try again"); }
     setLoading(false);
   };
 
   const saveName = async () => {
-    if (!name.trim()) { setError("Naam daalna zaroori hai"); return; }
+    if (!name.trim()) { setError("Name is required"); return; }
     setLoading(true);
     try {
       const user = auth.currentUser;
       if (user) await setDoc(doc(db, "users", user.uid), { name: name.trim(), phone: user.phoneNumber, createdAt: new Date().toISOString() });
       onClose();
-    } catch { setError("Naam save nahi hua"); }
+    } catch { setError("Could not save name, try again"); }
     setLoading(false);
   };
 
@@ -1698,7 +1698,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
           </div>
           {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
           <button className="btn-white" onClick={sendOTP} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Bhej raha hai…" : "OTP Bhejo →"}
+            {loading ? "Sending…" : "Send OTP →"}
           </button>
           <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:14 }}>Baad mein</button>
         </>)}
@@ -1709,17 +1709,17 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
           <input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="6 digit OTP" type="tel" maxLength={6} style={{ textAlign:"center", fontSize:20, letterSpacing:8, marginBottom:10 }} />
           {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
           <button className="btn-white" onClick={verifyOTP} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Verify ho raha hai…" : "Verify Karein ✓"}
+            {loading ? "Verifying…" : "Verify OTP ✓"}
           </button>
           <button onClick={() => { setStep("phone"); setOtp(""); setError(""); }} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:14 }}>← Wapis</button>
         </>)}
         {step === "name" && (<>
           <div style={{ fontSize:40, marginBottom:12 }}>👤</div>
           <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>Aapka Naam</h2>
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Pura naam" style={{ marginBottom:10 }} />
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="Full name" style={{ marginBottom:10 }} />
           {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
           <button className="btn-white" onClick={saveName} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Save ho raha hai…" : "Shuru Karein →"}
+            {loading ? "Saving…" : "Get Started →"}
           </button>
         </>)}
       </div>
