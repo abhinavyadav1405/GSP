@@ -1765,7 +1765,7 @@ export default function App() {
   const addAchievement = (a: Achievement) => saveAchievements([a, ...achievements]);
   const deleteAchievement = (id: string) => saveAchievements(achievements.filter(a => a.id !== id));
 
-    const saveMedia = (list: MediaItem[]) => { setMedia(list); try { setDoc(doc(db, "settings", "media"), { list: list }); } catch (_) {} };
+    const saveMedia = (list: MediaItem[]) => { setMedia(list); try { const cleanList = list.map(({photo, ...rest}) => rest); setDoc(doc(db, "settings", "media"), { list: cleanList }); } catch (_) {} };
     const addMedia = (m: MediaItem) => saveMedia([m, ...media]);
     const deleteMedia = (id: string) => saveMedia(media.filter(m => m.id !== id));
 
