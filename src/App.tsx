@@ -1953,11 +1953,10 @@ export default function App() {
   };
 
   const navLinks = [
-    { id: "home"         as const, label: "Home" },
+    { id: "home"         as const, label: "⌂ Home" },
     { id: "notices"      as const, label: "📢 Notices" },
     { id: "achievements" as const, label: "🏆 Achievements" },
     { id: "gallery"      as const, label: "📷 Gallery" },
-    { id: "submit"       as const, label: "+ Submit Problem" },
     { id: "board"        as const, label: "View All Issues" },
   ];
 
