@@ -2096,7 +2096,7 @@ export default function App() {
 
             {/* Gallery preview on home */}
             {media.length > 0 && (
-              <FadeIn delay={2100}>
+              <FadeIn delay={2150}>
                 <div style={{ marginTop: 40 }}>
                   <GalleryPage media={media} isAdmin={isAdmin} onDelete={deleteMedia} compact onViewAll={() => setPage("gallery")} />
                 </div>
