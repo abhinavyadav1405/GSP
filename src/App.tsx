@@ -492,7 +492,6 @@ function LocationPicker({ coords, onCoords }: { coords: LatLng | null; onCoords:
   const [manualLat, setManualLat] = useState(coords ? String(coords.lat) : "");
   const [manualLng, setManualLng] = useState(coords ? String(coords.lng) : "");
 
-  useEffect(() => { if (open) useGPS(); }, [open]);
   const useGPS = () => {
 if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
     setGpsLoading(true); setGpsErr(null);
@@ -524,7 +523,7 @@ if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       <button type="button" onClick={() => setOpen(!open)} className="btn-ghost"
         style={{ borderRadius: 12, padding: "10px 0", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        🗺 {coords ? `📍 Location Set (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})` : "📍 Set Location"}
+        🗺 {coords ? `📍 Location Set (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})` : "Set Location (optional)"}
       </button>
 
       {open && (
@@ -1627,7 +1626,7 @@ export default function App() {
   const [loading, setLoading]       = useState(true);
 
   // Dynamic admin-configurable settings
-  const [adminPassword, setAdminPassword] = useState("");
+  const [adminPassword, setAdminPassword] = useState("admin123");
   const [villageName, setVillageName]     = useState("Gram Sabha Pahrajpur");
   const [sarpanchName, setSarpanchName]   = useState("Priyanka Yadav");
   const [achievements, setAchievements]   = useState<Achievement[]>([]);
