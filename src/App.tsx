@@ -2064,6 +2064,9 @@ export default function App() {
                 ⚙️
               </button>
             )}
+            <button onClick={() => setLang(l => l === "en" ? "hi" : "en")} className="btn-ghost" style={{ borderRadius:8, padding:"5px 11px", fontSize:12, fontWeight:700, flexShrink:0 }}>
+              {lang === "en" ? "हि" : "EN"}
+            </button>
             {firebaseUser
               ? <button className="btn-ghost" onClick={() => signOut(auth)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>👤 Logout</button>
               : <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0 }}>Login</button>}
@@ -2288,9 +2291,7 @@ export default function App() {
       </div>
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
-      <button onClick={() => setLang(l => l === "en" ? "hi" : "en")} className="btn-ghost" style={{ position:"fixed", bottom:20, right:20, zIndex:1000, borderRadius:20, padding:"8px 16px", fontSize:13, fontWeight:600, backdropFilter:"blur(10px)" }}>
-        {lang === "en" ? "हि" : "EN"}
-      </button>
+
       {showLogin && <PhoneLogin onClose={() => setShowLogin(false)} />}
     </div>
   );
