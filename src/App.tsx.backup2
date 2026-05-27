@@ -1604,128 +1604,6 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
   );
 }
 
-// ── Phone + Google Login Component ──────────────────────────────────────────
-function PhoneLogin({ onClose }: { onClose: () => void }) {
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [name, setName] = useState("");
-  const [step, setStep] = useState<"phone"|"otp"|"name">("phone");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [confirmation, setConfirmation] = useState<any>(null);
-
-  const signInWithGoogle = async () => {
-    setLoading(true); setError("");
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-          name: user.displayName || "User",
-          email: user.email,
-          createdAt: new Date().toISOString(),
-        });
-      }
-      onClose();
-    } catch (e: any) {
-      setError("Google login failed: " + (e.message || "Try again"));
-    }
-    setLoading(false);
-  };
-
-  const setupRecaptcha = () => {
-    if (!(window as any).recaptchaVerifier) {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible", callback: () => {} });
-    }
-  };
-
-  const sendOTP = async () => {
-    if (phone.length !== 10) { setError("Sahi 10 digit ka number daalo"); return; }
-    setLoading(true); setError("");
-    try {
-      setupRecaptcha();
-      const result = await signInWithPhoneNumber(auth, `+91${phone}`, (window as any).recaptchaVerifier);
-      setConfirmation(result); setStep("otp");
-    } catch (e: any) {
-      setError("OTP error: " + (e.message || "Dobara try karo"));
-      (window as any).recaptchaVerifier = null;
-    }
-    setLoading(false);
-  };
-
-  const verifyOTP = async () => {
-    if (!confirmation || otp.length !== 6) { setError("6 digit OTP daalo"); return; }
-    setLoading(true); setError("");
-    try {
-      const result = await confirmation.confirm(otp);
-      const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().name) { onClose(); }
-      else { setStep("name"); }
-    } catch { setError("Galat OTP, dobara try karo"); }
-    setLoading(false);
-  };
-
-  const saveName = async () => {
-    if (!name.trim()) { setError("Naam daalna zaroori hai"); return; }
-    setLoading(true);
-    try {
-      const user = auth.currentUser;
-      if (user) await setDoc(doc(db, "users", user.uid), { name: name.trim(), phone: user.phoneNumber, createdAt: new Date().toISOString() });
-      onClose();
-    } catch { setError("Naam save nahi hua"); }
-    setLoading(false);
-  };
-
-  return (
-    <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
-      <div id="recaptcha-container" />
-      <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center" }}>
-        {step === "phone" && (<>
-          <div style={{ fontSize:40, marginBottom:12 }}>📱</div>
-          <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>Login Karein</h2>
-          <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20 }}>Phone OTP ya Google se login karein</p>
-          <button onClick={signInWithGoogle} disabled={loading} style={{ width:"100%", borderRadius:12, padding:"12px 0", fontSize:14, fontWeight:600, marginBottom:12, background:"#fff", color:"#333", border:"1px solid #ddd", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-            <span style={{ fontSize:18 }}>G</span> Google se Login
-          </button>
-          <div style={{ fontSize:12, color:"var(--ct4)", marginBottom:12 }}>— ya phone number se —</div>
-          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-            <div style={{ padding:"10px 14px", borderRadius:10, background:"var(--cbg5)", border:"1px solid var(--cb10)", fontSize:14, color:"var(--text-main)", whiteSpace:"nowrap" }}>+91</div>
-            <input value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g,"").slice(0,10))} placeholder="10 digit number" type="tel" maxLength={10} style={{ flex:1 }} />
-          </div>
-          {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
-          <button className="btn-white" onClick={sendOTP} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Bhej raha hai…" : "OTP Bhejo →"}
-          </button>
-          <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:14 }}>Baad mein</button>
-        </>)}
-        {step === "otp" && (<>
-          <div style={{ fontSize:40, marginBottom:12 }}>🔐</div>
-          <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>OTP Daalo</h2>
-          <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:24 }}>+91 {phone} pe OTP bheja gaya</p>
-          <input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="6 digit OTP" type="tel" maxLength={6} style={{ textAlign:"center", fontSize:20, letterSpacing:8, marginBottom:10 }} />
-          {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
-          <button className="btn-white" onClick={verifyOTP} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Verify ho raha hai…" : "Verify Karein ✓"}
-          </button>
-          <button onClick={() => { setStep("phone"); setOtp(""); setError(""); }} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:14 }}>← Wapis</button>
-        </>)}
-        {step === "name" && (<>
-          <div style={{ fontSize:40, marginBottom:12 }}>👤</div>
-          <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>Aapka Naam</h2>
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Pura naam" style={{ marginBottom:10 }} />
-          {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:8 }}>{error}</div>}
-          <button className="btn-white" onClick={saveName} disabled={loading} style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600 }}>
-            {loading ? "Save ho raha hai…" : "Shuru Karein →"}
-          </button>
-        </>)}
-      </div>
-    </div>
-  );
-}
-
 // ── Main App ──────────────────────────────────────────────────────────────────
 
 
@@ -1737,9 +1615,6 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
   };
 
 export default function App() {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
-  const [userName, setUserName] = useState<string>("");
-  const [showLogin, setShowLogin] = useState(false);
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"board"|"submit"|"admin"|"settings"|"achievements"|"gallery"|"notices">("home");
   const [isAdmin, setIsAdmin]       = useState(false);
@@ -1843,18 +1718,6 @@ export default function App() {
       if (th)   setTheme(th as "dark"|"light");
     } catch (_) {}
     setLoading(false);
-  }, []);
-
-  // Firebase auth listener
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
-      if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) setUserName(userDoc.data().name || "");
-      } else { setUserName(""); }
-    });
-    return () => unsub();
   }, []);
 
   const saveProblems = (list: Problem[]) => {
@@ -2019,9 +1882,6 @@ export default function App() {
                 ⚙️
               </button>
             )}
-            {firebaseUser
-              ? <button className="btn-ghost" onClick={() => signOut(auth)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>👤 Logout</button>
-              : <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0 }}>Login</button>}
             {isAdmin
               ? <button className="btn-ghost" onClick={logout} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, color: "#f87171" }}>Logout</button>
               : <button className="btn-ghost" onClick={() => setPage("admin")} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Admin</button>}
@@ -2144,18 +2004,7 @@ export default function App() {
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
         {page === "submit" && (
           <div style={{ paddingTop: 40 }}>
-            {!firebaseUser ? (
-              <FadeIn>
-                <div className="glass" style={{ borderRadius:22, padding:"48px 24px", textAlign:"center", maxWidth:400, margin:"0 auto" }}>
-                  <div style={{ fontSize:48, marginBottom:16 }}>🔒</div>
-                  <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:8, color:"var(--text-main)" }}>Login Zaroori Hai</h2>
-                  <p style={{ fontSize:14, color:"var(--ct4)", marginBottom:24, lineHeight:1.6 }}>Samasya darj karne ke liye pehle login karein</p>
-                  <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:12, padding:"13px 32px", fontSize:15, fontWeight:600 }}>📱 Login Karein</button>
-                </div>
-              </FadeIn>
-            ) : (
-              <FadeIn><SubmitForm onSubmit={addProblem} /></FadeIn>
-            )}
+            <FadeIn><SubmitForm onSubmit={addProblem} /></FadeIn>
           </div>
         )}
 
@@ -2243,7 +2092,6 @@ export default function App() {
       </div>
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
-      {showLogin && <PhoneLogin onClose={() => setShowLogin(false)} />}
     </div>
   );
 }
