@@ -1619,17 +1619,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-          name: user.displayName || "User",
-          email: user.email,
-          createdAt: new Date().toISOString(),
-        });
-      }
-      onClose();
+      await signInWithRedirect(auth, provider);
     } catch (e: any) {
       setError("Google sign-in failed: " + (e.message || "Try again"));
     }
