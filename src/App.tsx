@@ -492,7 +492,6 @@ function LocationPicker({ coords, onCoords }: { coords: LatLng | null; onCoords:
   const [manualLat, setManualLat] = useState(coords ? String(coords.lat) : "");
   const [manualLng, setManualLng] = useState(coords ? String(coords.lng) : "");
 
-  useEffect(() => { if (open) useGPS(); }, [open]);
   const useGPS = () => {
 if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
     setGpsLoading(true); setGpsErr(null);
