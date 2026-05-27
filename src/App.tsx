@@ -1604,6 +1604,62 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
   );
 }
 
+
+// ── User Activity Logs ────────────────────────────────────────────────────────
+function UserLogsSection() {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(collection(db, "activityLogs"), orderBy("timestamp", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      setLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoading(false);
+    }, () => setLoading(false));
+    return () => unsub();
+  }, []);
+
+  return (
+    <div>
+      <SectionHead icon="📋" title="User Activity Logs" />
+      <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 16 }}>
+        Email se login karne wale users ki activity
+      </p>
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 24, color: "var(--ct3)", fontSize: 13 }}>Loading…</div>
+      ) : logs.length === 0 ? (
+        <div className="glass" style={{ borderRadius: 14, padding: "24px", textAlign: "center", color: "var(--ct4)", fontSize: 13 }}>
+          Abhi koi activity nahi hai
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {logs.map(log => (
+            <div key={log.id} className="glass" style={{ borderRadius: 12, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{log.name || "Unknown"}</div>
+                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 2 }}>{log.email}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: 11, padding: "2px 10px", borderRadius: 8, background: "rgba(34,197,94,0.12)", color: "#22c55e", fontWeight: 600, display: "inline-block" }}>
+                  {log.action || "login"}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--ct3)", marginTop: 4 }}>
+                  {log.timestamp ? new Date(log.timestamp).toLocaleString("en-IN") : ""}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    <FadeIn delay={900}>
+      <div className="glass" style={{ borderRadius: 18, padding: "24px 22px", marginBottom: 16 }}>
+        <UserLogsSection />
+      </div>
+    </FadeIn>
+    </div>
+  );
+}
+
 // ── Email Login Component ────────────────────────────────────────────────────
 function PhoneLogin({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState("");
@@ -1831,6 +1887,15 @@ export default function App() {
       if (user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) setUserName(userDoc.data().name || "");
+        try {
+          await addDoc(collection(db, "activityLogs"), {
+            uid: user.uid,
+            email: user.email || "",
+            name: userDoc.exists() ? (userDoc.data().name || "") : "",
+            action: "login",
+            timestamp: new Date().toISOString(),
+          });
+        } catch(_) {}
       } else { setUserName(""); }
     });
     return () => unsub();
