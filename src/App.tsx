@@ -225,8 +225,8 @@ interface Problem {
   locationCoords?: LatLng;
 }
 
-const compressImage = async (file: File, maxW = 1200, quality = 0.75): Promise<string> => {
-  const base64: string = await new Promise((resolve, reject) => {
+const compressImage = (file: File, maxW = 600, quality = 0.5): Promise<string> =>
+  new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -244,12 +244,6 @@ const compressImage = async (file: File, maxW = 1200, quality = 0.75): Promise<s
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-  const res = await fetch(base64);
-  const blob = await res.blob();
-  const storageRef = ref(storage, "problems/" + Date.now() + ".jpg");
-  await uploadBytes(storageRef, blob);
-  return await getDownloadURL(storageRef);
-};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function AnimatedHeading({ text }: { text: string }) {
