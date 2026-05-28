@@ -1730,18 +1730,19 @@ function PhotoCarousel({ media }: { media: any[] }) {
       }}>
         {[idx1, idx2].map((idx, pos) => (
           <div key={idx} style={{
-            flex: 1, borderRadius: 14, overflow: "hidden",
-            aspectRatio: "4/3",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+            flex: 1, borderRadius: 12, overflow: "hidden",
+            aspectRatio: "3/2",
+            maxHeight: 140,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
             transform: animating 
-              ? pos === 0 ? "rotateY(-90deg) scale(0.8)" : "rotateY(90deg) scale(0.8)"
+              ? pos === 0 ? "rotateY(-90deg) scale(0.85)" : "rotateY(90deg) scale(0.85)"
               : "rotateY(0deg) scale(1)",
             transition: `transform 0.4s ease ${pos * 0.05}s`,
           }}>
             <img
               src={media[idx]?.url}
               alt={media[idx]?.caption || ""}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", imageRendering: "auto" }}
             />
           </div>
         ))}
