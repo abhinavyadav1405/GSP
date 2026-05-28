@@ -2151,14 +2151,7 @@ export default function App() {
               <PhotoCarousel media={media} />
             </FadeIn>
 
-            {/* Gallery preview on home */}
-            {media.length > 0 && (
-              <FadeIn delay={2100}>
-                <div style={{ marginTop: 40 }}>
-                  <GalleryPage media={media} isAdmin={isAdmin} onDelete={deleteMedia} compact onViewAll={() => setPage("gallery")} />
-                </div>
-              </FadeIn>
-            )}
+            
 
             {/* Feedback Section */}
             <FadeIn delay={2200}>
