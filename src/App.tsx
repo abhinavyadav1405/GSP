@@ -1690,6 +1690,59 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
   );
 }
 
+
+// ── Photo Carousel ───────────────────────────────────────────────────────────
+function PhotoCarousel({ media }: { media: any[] }) {
+  const [current, setCurrent] = useState(0);
+  
+  useEffect(() => {
+    if (media.length === 0) return;
+    const timer = setInterval(() => {
+      setCurrent(c => (c + 1) % media.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [media.length]);
+
+  if (media.length === 0) return null;
+
+  return (
+    <div style={{ marginTop: 32, marginBottom: 8 }}>
+      <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
+      <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", aspectRatio: "16/9", background: "var(--cbg5)" }}>
+        {media.map((item, i) => (
+          <img
+            key={item.id || i}
+            src={item.url}
+            alt={item.caption || ""}
+            style={{
+              position: "absolute", inset: 0, width: "100%", height: "100%",
+              objectFit: "cover",
+              opacity: i === current ? 1 : 0,
+              transition: "opacity 0.8s ease",
+            }}
+          />
+        ))}
+        {/* Dots */}
+        <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6 }}>
+          {media.map((_, i) => (
+            <div key={i} onClick={() => setCurrent(i)} style={{
+              width: i === current ? 20 : 8, height: 8,
+              borderRadius: 4, background: i === current ? "#fff" : "rgba(255,255,255,0.5)",
+              cursor: "pointer", transition: "all 0.3s"
+            }} />
+          ))}
+        </div>
+        {/* Caption */}
+        {media[current]?.caption && (
+          <div style={{ position: "absolute", bottom: 28, left: 0, right: 0, textAlign: "center", color: "#fff", fontSize: 13, padding: "4px 16px", background: "rgba(0,0,0,0.4)" }}>
+            {media[current].caption}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 
 
@@ -2092,6 +2145,11 @@ export default function App() {
                 </div>
               </FadeIn>
             )}
+
+            {/* Photo Carousel */}
+            <FadeIn delay={1800}>
+              <PhotoCarousel media={media} />
+            </FadeIn>
 
             {/* Gallery preview on home */}
             {media.length > 0 && (
