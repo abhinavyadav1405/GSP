@@ -1703,7 +1703,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
     return () => clearInterval(timer);
   }, [media.length]);
 
-  if (!media || media.length === 0) return <div style={{ height: 200, borderRadius: 16, background: "var(--cbg5)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 32 }}><p style={{ color: "var(--ct4)", fontSize: 13 }}>📷 Loading gallery...</p></div>;
+  if (!media || media.length === 0) return null;
 
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
