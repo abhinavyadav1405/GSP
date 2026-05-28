@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { t, Lang } from "./translations";
 import {
   auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithRedirect, getRedirectResult,
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
@@ -1758,7 +1757,6 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
   };
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>("en");
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [showLogin, setShowLogin] = useState(false);
@@ -2064,9 +2062,6 @@ export default function App() {
                 ⚙️
               </button>
             )}
-            <button onClick={() => setLang(l => l === "en" ? "hi" : "en")} className="btn-ghost" style={{ borderRadius:8, padding:"5px 11px", fontSize:12, fontWeight:700, flexShrink:0 }}>
-              {lang === "en" ? "हि" : "EN"}
-            </button>
             {firebaseUser
               ? <button className="btn-ghost" onClick={() => signOut(auth)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>{t(lang).logout}</button>
               : <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0 }}>{t(lang).login}</button>}
