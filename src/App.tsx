@@ -2276,7 +2276,7 @@ export default function App() {
 
         {/* ── ADMIN LOGIN ───────────────────────────────────────────────────── */}
         {page === "admin" && !isAdmin && (
-          <AdminLogin correctPassword={adminPassword} onLogin={() => { setIsAdmin(true); localStorage.setItem("isAdmin", "true"); setPage("board"); }} />
+          <AdminLogin correctPassword={adminPassword} onLogin={() => { setIsAdmin(true); localStorage.setItem("isAdmin", "true"); localStorage.setItem("isAdmin-time", Date.now().toString()); setPage("board"); }} />
         )}
 
         {/* ── SETTINGS ─────────────────────────────────────────────────────── */}
