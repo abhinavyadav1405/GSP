@@ -1694,11 +1694,16 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
 // ── Photo Carousel ───────────────────────────────────────────────────────────
 function PhotoCarousel({ media }: { media: any[] }) {
   const [current, setCurrent] = useState(0);
-  
+  const [animating, setAnimating] = useState(false);
+
   useEffect(() => {
     if (media.length === 0) return;
     const timer = setInterval(() => {
-      setCurrent(c => (c + 1) % media.length);
+      setAnimating(true);
+      setTimeout(() => {
+        setCurrent(c => (c + 1) % media.length);
+        setAnimating(false);
+      }, 400);
     }, 3000);
     return () => clearInterval(timer);
   }, [media.length]);
@@ -1712,39 +1717,44 @@ function PhotoCarousel({ media }: { media: any[] }) {
     </div>
   );
 
+  const idx1 = current % media.length;
+  const idx2 = (current + 1) % media.length;
+
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
-      <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", aspectRatio: "16/9", background: "var(--cbg5)" }}>
-        {media.map((item, i) => (
-          <img
-            key={item.id || i}
-            src={item.url}
-            alt={item.caption || ""}
-            style={{
-              position: "absolute", inset: 0, width: "100%", height: "100%",
-              objectFit: "cover",
-              opacity: i === current ? 1 : 0,
-              transition: "opacity 0.8s ease",
-            }}
-          />
-        ))}
-        {/* Dots */}
-        <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6 }}>
-          {media.map((_, i) => (
-            <div key={i} onClick={() => setCurrent(i)} style={{
-              width: i === current ? 20 : 8, height: 8,
-              borderRadius: 4, background: i === current ? "#fff" : "rgba(255,255,255,0.5)",
-              cursor: "pointer", transition: "all 0.3s"
-            }} />
-          ))}
-        </div>
-        {/* Caption */}
-        {media[current]?.caption && (
-          <div style={{ position: "absolute", bottom: 28, left: 0, right: 0, textAlign: "center", color: "#fff", fontSize: 13, padding: "4px 16px", background: "rgba(0,0,0,0.4)" }}>
-            {media[current].caption}
+      <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}>📷 Village Gallery</h2>
+      <div style={{ 
+        display: "flex", gap: 10, perspective: "1000px",
+        transform: animating ? "rotateY(90deg)" : "rotateY(0deg)",
+        transition: "transform 0.4s ease",
+      }}>
+        {[idx1, idx2].map((idx, pos) => (
+          <div key={idx} style={{
+            flex: 1, borderRadius: 14, overflow: "hidden",
+            aspectRatio: "4/3",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+            transform: animating 
+              ? pos === 0 ? "rotateY(-90deg) scale(0.8)" : "rotateY(90deg) scale(0.8)"
+              : "rotateY(0deg) scale(1)",
+            transition: `transform 0.4s ease ${pos * 0.05}s`,
+          }}>
+            <img
+              src={media[idx]?.url}
+              alt={media[idx]?.caption || ""}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
           </div>
-        )}
+        ))}
+      </div>
+      {/* Dots */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
+        {media.map((_, i) => (
+          <div key={i} onClick={() => setCurrent(i)} style={{
+            width: i === current ? 20 : 7, height: 7,
+            borderRadius: 4, background: i === current ? "var(--text-main)" : "var(--cb20)",
+            cursor: "pointer", transition: "all 0.3s"
+          }} />
+        ))}
       </div>
     </div>
   );
