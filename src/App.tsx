@@ -1910,7 +1910,7 @@ export default function App() {
   // Cache media for instant load
   useEffect(() => {
     if (media.length > 0) {
-      localStorage.setItem('cached-media', JSON.stringify(media));
+      try { localStorage.setItem('cached-media', JSON.stringify(media)); } catch {}
     }
   }, [media]);
 
