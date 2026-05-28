@@ -1910,7 +1910,7 @@ export default function App() {
   // Cache media for instant load
   useEffect(() => {
     if (media.length > 0) {
-      sessionStorage.setItem('cached-media', JSON.stringify(media));
+      localStorage.setItem('cached-media', JSON.stringify(media));
     }
   }, [media]);
 
@@ -2008,7 +2008,7 @@ export default function App() {
 
   const showToast = (msg: string) => setToast(msg);
 
-  const logout = () => { setIsAdmin(false); sessionStorage.removeItem("isAdmin"); setPage("home"); };
+  const logout = () => { setIsAdmin(false); localStorage.removeItem("isAdmin"); setPage("home"); };
 
   const filtered = problems.filter(p => {
     if (filterCat    !== "All" && p.category !== filterCat)    return false;
@@ -2276,7 +2276,7 @@ export default function App() {
 
         {/* ── ADMIN LOGIN ───────────────────────────────────────────────────── */}
         {page === "admin" && !isAdmin && (
-          <AdminLogin correctPassword={adminPassword} onLogin={() => { setIsAdmin(true); sessionStorage.setItem("isAdmin", "true"); setPage("board"); }} />
+          <AdminLogin correctPassword={adminPassword} onLogin={() => { setIsAdmin(true); localStorage.setItem("isAdmin", "true"); setPage("board"); }} />
         )}
 
         {/* ── SETTINGS ─────────────────────────────────────────────────────── */}
