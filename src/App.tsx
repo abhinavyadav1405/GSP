@@ -1957,7 +1957,6 @@ export default function App() {
     { id: "notices"      as const, label: "📢 Notices" },
     { id: "achievements" as const, label: "🏆 Achievements" },
     { id: "gallery"      as const, label: "📷 Gallery" },
-    { id: "submit"       as const, label: "+ Submit Problem" },
     { id: "board"        as const, label: "View All Issues" },
   ];
 
