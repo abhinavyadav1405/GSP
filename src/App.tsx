@@ -166,7 +166,7 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day
 
 const STATUS_META: Record<string, { color: string; bg: string; label: string }> = {
   Pending:       { color: "#f59e0b", bg: "rgba(245,158,11,0.15)",  label: "⏳ Pending" },
-  t(lang).inProgress: { color: "#3b82f6", bg: "rgba(59,130,246,0.15)",  label: "🔄 In Progress" },
+    "In Progress": { color: "#3b82f6", bg: "rgba(59,130,246,0.15)", label: "🔄 In Progress" },
   Resolved:      { color: "#22c55e", bg: "rgba(34,197,94,0.15)",   label: "✅ Resolved" },
   Rejected:      { color: "#ef4444", bg: "rgba(239,68,68,0.15)",   label: "❌ Rejected" },
 };
