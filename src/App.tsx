@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  auth, db, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged,
-  collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy
+  auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithRedirect, getRedirectResult,
+  collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
+  storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
 import type { User, ConfirmationResult } from "firebase/auth";
 
@@ -224,7 +225,7 @@ interface Problem {
   locationCoords?: LatLng;
 }
 
-const compressImage = (file: File, maxW = 1200, quality = 0.75): Promise<string> =>
+const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -327,7 +328,7 @@ function PhotoUpload({ photo, onPhoto }: { photo: string | null; onPhoto: (b64: 
           style={{ border: `2px dashed ${dragging ? "var(--ct4)" : "rgba(255,255,255,0.14)"}`, borderRadius: 12, padding: "28px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: dragging ? "var(--cbg4)" : "transparent" }}>
           {compressing ? <div style={{ fontSize: 13, color: "var(--ct4)" }}>Compressing…</div> : (
             <><div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div><div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}><button type="button" onClick={() => { const el = document.createElement("input"); el.type = "file"; el.accept = "image/*"; el.capture = "environment"; el.onchange = (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) process(f); }; el.click(); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>📷 Camera</button><button type="button" onClick={() => inputRef.current?.click()} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>🖼️ Gallery</button></div>
             <div style={{ fontSize: 11, color: "var(--ct3)", marginTop: 4 }}>JPG, PNG, WebP · auto-compressed</div></>
           )}
         </div>
@@ -1603,6 +1604,92 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
   );
 }
 
+// ── Email Login Component ────────────────────────────────────────────────────
+function PhoneLogin({ onClose }: { onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [step, setStep] = useState<"login"|"register">("login");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async () => {
+    if (!email || !password) { setError("Please fill all fields"); return; }
+    setLoading(true); setError("");
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      onClose();
+    } catch (e: any) {
+      if (e.code === "auth/user-not-found" || e.code === "auth/invalid-credential") {
+        setError("Account not found. Please register first.");
+      } else {
+        setError("Login failed: " + (e.message || "Try again"));
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleRegister = async () => {
+    if (!email || !password || !name) { setError("Please fill all fields"); return; }
+    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    setLoading(true); setError("");
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", result.user.uid), {
+        name: name.trim(),
+        email: email,
+        createdAt: new Date().toISOString(),
+      });
+      onClose();
+    } catch (e: any) {
+      if (e.code === "auth/email-already-in-use") {
+        setError("Email already registered. Please login.");
+      } else {
+        setError("Registration failed: " + (e.message || "Try again"));
+      }
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
+      <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center" }}>
+        <div style={{ fontSize:40, marginBottom:12 }}>🔐</div>
+        <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>
+          {step === "login" ? "Sign In" : "Create Account"}
+        </h2>
+        <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20 }}>
+          {step === "login" ? "Sign in to submit problems" : "Register to get started"}
+        </p>
+
+        <div style={{ display:"flex", flexDirection:"column", gap:10, textAlign:"left" }}>
+          {step === "register" && (
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" />
+          )}
+          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" type="email" />
+          <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min 6 chars)" type="password" />
+        </div>
+
+        {error && <div style={{ fontSize:12, color:"#f87171", margin:"10px 0" }}>{error}</div>}
+
+        <button className="btn-white" onClick={step === "login" ? handleLogin : handleRegister} disabled={loading}
+          style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, marginTop:14 }}>
+          {loading ? "Please wait…" : step === "login" ? "Sign In →" : "Create Account →"}
+        </button>
+
+        <button onClick={() => { setStep(step === "login" ? "register" : "login"); setError(""); }}
+          style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:13, cursor:"pointer", marginTop:12 }}>
+          {step === "login" ? "No account? Register here" : "Already registered? Sign in"}
+        </button>
+
+        <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:8, display:"block", width:"100%" }}>
+          Skip for now
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 
 
@@ -1614,6 +1701,9 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
   };
 
 export default function App() {
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [userName, setUserName] = useState<string>("");
+  const [showLogin, setShowLogin] = useState(false);
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"board"|"submit"|"admin"|"settings"|"achievements"|"gallery"|"notices">("home");
   const [isAdmin, setIsAdmin]       = useState(false);
@@ -1686,9 +1776,9 @@ export default function App() {
     const unsub1 = onSnapshot(doc(db, "settings", "achievements"), (snap) => {
       if (snap.exists() && snap.data().list) setAchievements(snap.data().list);
     });
-    const unsub2 = onSnapshot(doc(db, "settings", "media"), (snap) => {
-      if (snap.exists() && snap.data().list) setMedia(snap.data().list);
-    });
+        const unsub2 = onSnapshot(doc(db, "settings", "media"), (snap) => {
+          if (snap.exists() && snap.data().list) setMedia(snap.data().list);
+        });
     const unsub3 = onSnapshot(doc(db, "settings", "notices"), (snap) => {
       if (snap.exists() && snap.data().list) setNotices(snap.data().list);
     });
@@ -1719,6 +1809,33 @@ export default function App() {
     setLoading(false);
   }, []);
 
+  // Firebase auth listener
+  useEffect(() => {
+    // Handle Google redirect result
+    getRedirectResult(auth).then(async (result) => {
+      if (result?.user) {
+        const user = result.user;
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists()) {
+          await setDoc(doc(db, "users", user.uid), {
+            name: user.displayName || "User",
+            email: user.email,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      }
+    }).catch(() => {});
+
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      setFirebaseUser(user);
+      if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) setUserName(userDoc.data().name || "");
+      } else { setUserName(""); }
+    });
+    return () => unsub();
+  }, []);
+
   const saveProblems = (list: Problem[]) => {
     setProblems(list);
     // Problems saved to Firestore
@@ -1726,7 +1843,7 @@ export default function App() {
 
   const addProblem = async (p: Problem) => {
     try {
-      const { photo, ...firestoreData } = p as any;
+      const firestoreData = p as any;
       const cleanData = Object.fromEntries(Object.entries(firestoreData).filter(([_, v]) => v !== undefined));
       await setDoc(doc(db, "problems", p.id), cleanData);
       showToast(`✅ Problem submitted! Your ID: #${p.id}`);
@@ -1764,12 +1881,9 @@ export default function App() {
   const addAchievement = (a: Achievement) => saveAchievements([a, ...achievements]);
   const deleteAchievement = (id: string) => saveAchievements(achievements.filter(a => a.id !== id));
 
-  const saveMedia = (list: MediaItem[]) => {
-    setMedia(list);
-    try { setDoc(doc(db, "settings", "media"), { list: list }); } catch (_) {}
-  };
-  const addMedia = (m: MediaItem) => saveMedia([m, ...media]);
-  const deleteMedia = (id: string) => saveMedia(media.filter(m => m.id !== id));
+    const saveMedia = (list: MediaItem[]) => { setMedia(list); try { const cleanList = list.map(({photo, ...rest}) => rest); setDoc(doc(db, "settings", "media"), { list: cleanList }); } catch (_) {} };
+    const addMedia = (m: MediaItem) => saveMedia([m, ...media]);
+    const deleteMedia = (id: string) => saveMedia(media.filter(m => m.id !== id));
 
   const saveNotices = (list: Notice[]) => {
     setNotices(list);
@@ -1884,6 +1998,9 @@ export default function App() {
                 ⚙️
               </button>
             )}
+            {firebaseUser
+              ? <button className="btn-ghost" onClick={() => signOut(auth)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>👤 Logout</button>
+              : <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0 }}>Login</button>}
             {isAdmin
               ? <button className="btn-ghost" onClick={logout} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, color: "#f87171" }}>Logout</button>
               : <button className="btn-ghost" onClick={() => setPage("admin")} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Admin</button>}
@@ -2006,7 +2123,18 @@ export default function App() {
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
         {page === "submit" && (
           <div style={{ paddingTop: 40 }}>
-            <FadeIn><SubmitForm onSubmit={addProblem} /></FadeIn>
+            {!firebaseUser ? (
+              <FadeIn>
+                <div className="glass" style={{ borderRadius:22, padding:"48px 24px", textAlign:"center", maxWidth:400, margin:"0 auto" }}>
+                  <div style={{ fontSize:48, marginBottom:16 }}>🔒</div>
+                  <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:8, color:"var(--text-main)" }}>Login Zaroori Hai</h2>
+                  <p style={{ fontSize:14, color:"var(--ct4)", marginBottom:24, lineHeight:1.6 }}>Samasya darj karne ke liye pehle login karein</p>
+                  <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:12, padding:"13px 32px", fontSize:15, fontWeight:600 }}>📱 Login Karein</button>
+                </div>
+              </FadeIn>
+            ) : (
+              <FadeIn><SubmitForm onSubmit={addProblem} /></FadeIn>
+            )}
           </div>
         )}
 
@@ -2094,6 +2222,7 @@ export default function App() {
       </div>
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
+      {showLogin && <PhoneLogin onClose={() => setShowLogin(false)} />}
     </div>
   );
 }
