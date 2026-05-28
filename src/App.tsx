@@ -1703,7 +1703,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
     return () => clearInterval(timer);
   }, [media.length]);
 
-  if (media.length === 0) return null;
+  if (!media || media.length === 0) return null;
 
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
