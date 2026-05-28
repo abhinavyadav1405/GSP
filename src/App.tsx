@@ -1889,6 +1889,13 @@ export default function App() {
     return () => unsub();
   }, []);
 
+  // Cache media for instant load
+  useEffect(() => {
+    if (media.length > 0) {
+      localStorage.setItem('cached-media', JSON.stringify(media));
+    }
+  }, [media]);
+
   const saveProblems = (list: Problem[]) => {
     setProblems(list);
     // Problems saved to Firestore
