@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithRedirect, getRedirectResult,
+  auth, db, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup,
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
@@ -165,7 +165,7 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day
 
 const STATUS_META: Record<string, { color: string; bg: string; label: string }> = {
   Pending:       { color: "#f59e0b", bg: "rgba(245,158,11,0.15)",  label: "⏳ Pending" },
-    "In Progress": { color: "#3b82f6", bg: "rgba(59,130,246,0.15)", label: "🔄 In Progress" },
+  "In Progress": { color: "#3b82f6", bg: "rgba(59,130,246,0.15)",  label: "🔄 In Progress" },
   Resolved:      { color: "#22c55e", bg: "rgba(34,197,94,0.15)",   label: "✅ Resolved" },
   Rejected:      { color: "#ef4444", bg: "rgba(239,68,68,0.15)",   label: "❌ Rejected" },
 };
@@ -175,12 +175,12 @@ const PRIORITY_META: Record<string, { color: string; label: string }> = {
   High:   { color: "#f97316", label: "High" },
   Urgent: { color: "#ef4444", label: "🚨 Urgent" },
 };
-const CATEGORIES = [t(lang).waterSupply,t(lang).road,t(lang).electricity,t(lang).drainage,t(lang).sanitation,t(lang).education,t(lang).health,t(lang).streetLight,t(lang).other];
-const WARDS = ["Chhatarsar", "Pahrajpur", "Chakjalal", "Chakmoti", "Chakjiya", t(lang).other];
+const CATEGORIES = ["Water Supply","Road / Path","Electricity","Drainage","Sanitation","Education","Health","Street Light","Other"];
+const WARDS = ["Chhatarsar", "Pahrajpur", "Chakjalal", "Chakmoti", "Chakjiya", "Other"];
 const CAT_COLORS: Record<string, string> = {
-  t(lang).waterSupply: "#3b82f6",t(lang).road: "#a855f7",t(lang).electricity: "#f59e0b",
-  t(lang).drainage: "#06b6d4",t(lang).sanitation: "#10b981",t(lang).education: "#ec4899",
-  t(lang).health: "#ef4444",t(lang).streetLight: "#fbbf24",t(lang).other: "#6b7280",
+  "Water Supply": "#3b82f6","Road / Path": "#a855f7","Electricity": "#f59e0b",
+  "Drainage": "#06b6d4","Sanitation": "#10b981","Education": "#ec4899",
+  "Health": "#ef4444","Street Light": "#fbbf24","Other": "#6b7280",
 };
 
 interface LatLng { lat: number; lng: number; }
@@ -564,7 +564,7 @@ function SubmitForm({ onSubmit }: { onSubmit: (p: Problem) => Promise<void> }) {
     if (!form.name || !form.mobile || !form.title || !form.description) { alert("Please fill all required fields."); return; }
     setLoading(true);
     const problem: Problem = {
-      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: t(lang).pending, adminNotes: "",
+      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: "Pending", adminNotes: "",
       photo: photo || undefined,
       locationText: locationText || undefined,
       locationCoords: locationCoords || undefined,
@@ -992,14 +992,14 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
 }
 
 // ── Achievements Page (Public) ────────────────────────────────────────────────
-const ACH_CATEGORIES = [t(lang).road,t(lang).waterSupply,t(lang).electricity,t(lang).sanitation,t(lang).education,t(lang).health,t(lang).drainage,"Infrastructure",t(lang).other];
+const ACH_CATEGORIES = ["Road / Path","Water Supply","Electricity","Sanitation","Education","Health","Drainage","Infrastructure","Other"];
 const ACH_CAT_ICONS: Record<string,string> = {
-  t(lang).road:"🛣",t(lang).waterSupply:"💧",t(lang).electricity:"⚡",t(lang).sanitation:"🧹",
-  t(lang).education:"📚",t(lang).health:"🏥",t(lang).drainage:"🌊","Infrastructure":"🏗",t(lang).other:"✅",
+  "Road / Path":"🛣","Water Supply":"💧","Electricity":"⚡","Sanitation":"🧹",
+  "Education":"📚","Health":"🏥","Drainage":"🌊","Infrastructure":"🏗","Other":"✅",
 };
 const ACH_CAT_COLORS: Record<string,string> = {
-  t(lang).road:"#a855f7",t(lang).waterSupply:"#3b82f6",t(lang).electricity:"#f59e0b",t(lang).sanitation:"#10b981",
-  t(lang).education:"#ec4899",t(lang).health:"#ef4444",t(lang).drainage:"#06b6d4","Infrastructure":"#f97316",t(lang).other:"#6b7280",
+  "Road / Path":"#a855f7","Water Supply":"#3b82f6","Electricity":"#f59e0b","Sanitation":"#10b981",
+  "Education":"#ec4899","Health":"#ef4444","Drainage":"#06b6d4","Infrastructure":"#f97316","Other":"#6b7280",
 };
 
 function AchievementsPage({ achievements, isAdmin, onDelete }: {
@@ -1050,7 +1050,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
           </select>
           <select value={filterVillage} onChange={e => setFilterVillage(e.target.value)} style={{ width: "auto", fontSize: 13, padding: "7px 12px" }}>
             <option value="All">All Villages</option>
-            {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya",t(lang).other].map(w => <option key={w}>{w}</option>)}
+            {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
           </select>
           <span style={{ fontSize: 12, color: "var(--ct35)", marginLeft: "auto" }}>{filtered.length} work{filtered.length !== 1 ? "s" : ""}</span>
         </div>
@@ -1366,7 +1366,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 {ACH_CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
               <select value={achForm.village} onChange={e => setAF("village", e.target.value)}>
-                {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya",t(lang).other].map(w => <option key={w}>{w}</option>)}
+                {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
               </select>
               <input type="date" value={achForm.date} onChange={e => setAF("date", e.target.value)} />
             </div>
@@ -1575,7 +1575,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 12, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>Delete Resolved Issues</div>
-                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 3 }}>{problems.filter(p => p.status === t(lang).resolved).length} resolved issues will be removed</div>
+                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 3 }}>{problems.filter(p => p.status === "Resolved").length} resolved issues will be removed</div>
               </div>
               {confirmClear === "resolved"
                 ? <div style={{ display: "flex", gap: 8 }}>
@@ -1604,148 +1604,6 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
   );
 }
 
-
-// ── User Activity Logs ────────────────────────────────────────────────────────
-function UserLogsSection() {
-  const [logs, setLogs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const q = query(collection(db, "activityLogs"), orderBy("timestamp", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
-      setLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setLoading(false);
-    }, () => setLoading(false));
-    return () => unsub();
-  }, []);
-
-  return (
-    <div>
-      <SectionHead icon="📋" title="User Activity Logs" />
-      <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 16 }}>
-        Email se login karne wale users ki activity
-      </p>
-      {loading ? (
-        <div style={{ textAlign: "center", padding: 24, color: "var(--ct3)", fontSize: 13 }}>Loading…</div>
-      ) : logs.length === 0 ? (
-        <div className="glass" style={{ borderRadius: 14, padding: "24px", textAlign: "center", color: "var(--ct4)", fontSize: 13 }}>
-          Abhi koi activity nahi hai
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {logs.map(log => (
-            <div key={log.id} className="glass" style={{ borderRadius: 12, padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{log.name || "Unknown"}</div>
-                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 2 }}>{log.email}</div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 11, padding: "2px 10px", borderRadius: 8, background: "rgba(34,197,94,0.12)", color: "#22c55e", fontWeight: 600, display: "inline-block" }}>
-                  {log.action || "login"}
-                </div>
-                <div style={{ fontSize: 11, color: "var(--ct3)", marginTop: 4 }}>
-                  {log.timestamp ? new Date(log.timestamp).toLocaleString("en-IN") : ""}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    <FadeIn delay={900}>
-      <div className="glass" style={{ borderRadius: 18, padding: "24px 22px", marginBottom: 16 }}>
-        <UserLogsSection />
-      </div>
-    </FadeIn>
-    </div>
-  );
-}
-
-// ── Email Login Component ────────────────────────────────────────────────────
-function PhoneLogin({ onClose }: { onClose: () => void }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [step, setStep] = useState<"login"|"register">("login");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleLogin = async () => {
-    if (!email || !password) { setError("Please fill all fields"); return; }
-    setLoading(true); setError("");
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      onClose();
-    } catch (e: any) {
-      if (e.code === "auth/user-not-found" || e.code === "auth/invalid-credential") {
-        setError("Account not found. Please register first.");
-      } else {
-        setError("Login failed: " + (e.message || "Try again"));
-      }
-    }
-    setLoading(false);
-  };
-
-  const handleRegister = async () => {
-    if (!email || !password || !name) { setError("Please fill all fields"); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
-    setLoading(true); setError("");
-    try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, "users", result.user.uid), {
-        name: name.trim(),
-        email: email,
-        createdAt: new Date().toISOString(),
-      });
-      onClose();
-    } catch (e: any) {
-      if (e.code === "auth/email-already-in-use") {
-        setError("Email already registered. Please login.");
-      } else {
-        setError("Registration failed: " + (e.message || "Try again"));
-      }
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
-      <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center" }}>
-        <div style={{ fontSize:40, marginBottom:12 }}>🔐</div>
-        <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>
-          {step === "login" ? t(lang).signIn : "Create Account"}
-        </h2>
-        <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20 }}>
-          {step === "login" ? "Sign in to submit problems" : "Register to get started"}
-        </p>
-
-        <div style={{ display:"flex", flexDirection:"column", gap:10, textAlign:"left" }}>
-          {step === "register" && (
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" />
-          )}
-          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" type="email" />
-          <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min 6 chars)" type="password" />
-        </div>
-
-        {error && <div style={{ fontSize:12, color:"#f87171", margin:"10px 0" }}>{error}</div>}
-
-        <button className="btn-white" onClick={step === "login" ? handleLogin : handleRegister} disabled={loading}
-          style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, marginTop:14 }}>
-          {loading ? "Please wait…" : step === "login" ? "Sign In →" : "Create Account →"}
-        </button>
-
-        <button onClick={() => { setStep(step === "login" ? "register" : "login"); setError(""); }}
-          style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:13, cursor:"pointer", marginTop:12 }}>
-          {step === "login" ? "No account? Register here" : "Already registered? Sign in"}
-        </button>
-
-        <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:8, display:"block", width:"100%" }}>
-          Skip for now
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── Main App ──────────────────────────────────────────────────────────────────
 
 
@@ -1757,9 +1615,6 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
   };
 
 export default function App() {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
-  const [userName, setUserName] = useState<string>("");
-  const [showLogin, setShowLogin] = useState(false);
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"board"|"submit"|"admin"|"settings"|"achievements"|"gallery"|"notices">("home");
   const [isAdmin, setIsAdmin]       = useState(false);
@@ -1865,42 +1720,6 @@ export default function App() {
     setLoading(false);
   }, []);
 
-  // Firebase auth listener
-  useEffect(() => {
-    // Handle Google redirect result
-    getRedirectResult(auth).then(async (result) => {
-      if (result?.user) {
-        const user = result.user;
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (!userDoc.exists()) {
-          await setDoc(doc(db, "users", user.uid), {
-            name: user.displayName || "User",
-            email: user.email,
-            createdAt: new Date().toISOString(),
-          });
-        }
-      }
-    }).catch(() => {});
-
-    const unsub = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
-      if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) setUserName(userDoc.data().name || "");
-        try {
-          await addDoc(collection(db, "activityLogs"), {
-            uid: user.uid,
-            email: user.email || "",
-            name: userDoc.exists() ? (userDoc.data().name || "") : "",
-            action: "login",
-            timestamp: new Date().toISOString(),
-          });
-        } catch(_) {}
-      } else { setUserName(""); }
-    });
-    return () => unsub();
-  }, []);
-
   const saveProblems = (list: Problem[]) => {
     setProblems(list);
     // Problems saved to Firestore
@@ -1929,7 +1748,7 @@ export default function App() {
   };
 
   const clearResolved = async () => {
-    await Promise.all(problems.filter(p => p.status === t(lang).resolved).map(p => deleteDoc(doc(db, "problems", p.id))));
+    await Promise.all(problems.filter(p => p.status === "Resolved").map(p => deleteDoc(doc(db, "problems", p.id))));
     showToast("🗑 All resolved issues deleted.");
   };
 
@@ -2012,17 +1831,18 @@ export default function App() {
 
   const stats = {
     total:      problems.length,
-    pending:    problems.filter(p => p.status === t(lang).pending).length,
-    inprogress: problems.filter(p => p.status === t(lang).inProgress).length,
-    resolved:   problems.filter(p => p.status === t(lang).resolved).length,
+    pending:    problems.filter(p => p.status === "Pending").length,
+    inprogress: problems.filter(p => p.status === "In Progress").length,
+    resolved:   problems.filter(p => p.status === "Resolved").length,
   };
 
   const navLinks = [
-    { id: "home"         as const, label: t(lang).home },
-    { id: "notices"      as const, label: t(lang).notices },
+    { id: "home"         as const, label: "Home" },
+    { id: "notices"      as const, label: "📢 Notices" },
+    { id: "achievements" as const, label: "🏆 Achievements" },
     { id: "gallery"      as const, label: "📷 Gallery" },
-    { id: "achievements" as const, label: t(lang).achievements },
-    { id: "board"        as const, label: t(lang).viewAllIssues },
+    { id: "submit"       as const, label: "+ Submit Problem" },
+    { id: "board"        as const, label: "View All Issues" },
   ];
 
   return (
@@ -2062,9 +1882,6 @@ export default function App() {
                 ⚙️
               </button>
             )}
-            {firebaseUser
-              ? <button className="btn-ghost" onClick={() => signOut(auth)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>{t(lang).logout}</button>
-              : <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0 }}>{t(lang).login}</button>}
             {isAdmin
               ? <button className="btn-ghost" onClick={logout} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, color: "#f87171" }}>Logout</button>
               : <button className="btn-ghost" onClick={() => setPage("admin")} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Admin</button>}
@@ -2097,23 +1914,23 @@ export default function App() {
               </FadeIn>
               <FadeIn delay={1300}>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 36, flexWrap: "wrap" }}>
-                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "13px 28px", fontSize: 15, fontWeight: 600 }}>t(lang).reportProblem</button>
-                  <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius: 12, padding: "13px 28px", fontSize: 15 }}>t(lang).viewAllIssues</button>
+                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "13px 28px", fontSize: 15, fontWeight: 600 }}>Report a Problem →</button>
+                  <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius: 12, padding: "13px 28px", fontSize: 15 }}>View All Issues</button>
                 </div>
               </FadeIn>
             </div>
 
             <FadeIn delay={1500}>
               <div style={{ display: "flex", gap: 12, marginBottom: 36, flexWrap: "wrap" }}>
-                <StatCard label=t(lang).totalProblems value={stats.total} color="#fff" />
-                <StatCard label=t(lang).pending value={stats.pending} color="#f59e0b" />
-                <StatCard label=t(lang).inProgress value={stats.inprogress} color="#3b82f6" />
-                <StatCard label=t(lang).resolved value={stats.resolved} color="#22c55e" />
+                <StatCard label="Total Problems" value={stats.total} color="#fff" />
+                <StatCard label="Pending" value={stats.pending} color="#f59e0b" />
+                <StatCard label="In Progress" value={stats.inprogress} color="#3b82f6" />
+                <StatCard label="Resolved" value={stats.resolved} color="#22c55e" />
               </div>
             </FadeIn>
 
             <FadeIn delay={1700}>
-              <h3 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16, color: "var(--text-main)" }}>t(lang).issuesByCategory</h3>
+              <h3 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16, color: "var(--text-main)" }}>Issues by Category</h3>
               <CategoryGrid problems={problems} onNavigate={() => setPage("board")} />
             </FadeIn>
 
@@ -2135,9 +1952,9 @@ export default function App() {
               <FadeIn delay={1600}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", marginTop: 20 }}>
                   <div style={{ fontSize: 48, marginBottom: 16 }}>🌱</div>
-                  <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>t(lang).noIssuesYet</div>
-                  <div style={{ color: "var(--ct4)", fontSize: 14, marginBottom: 24 }}>t(lang).beFirst</div>
-                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 600 }}>t(lang).submitFirst</button>
+                  <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No issues reported yet</div>
+                  <div style={{ color: "var(--ct4)", fontSize: 14, marginBottom: 24 }}>Be the first to report a problem in your village.</div>
+                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 600 }}>Submit First Problem →</button>
                 </div>
               </FadeIn>
             )}
@@ -2145,7 +1962,7 @@ export default function App() {
             {/* Sarpanch Profile + Social */}
             <FadeIn delay={1800}>
               <div style={{ marginTop: 40 }}>
-                <h3 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:18, marginBottom:14, color:"var(--text-main)" }}>t(lang).yourSarpanch</h3>
+                <h3 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:18, marginBottom:14, color:"var(--text-main)" }}>Your Sarpanch</h3>
                 <SarpanchCard sarpanchName={sarpanchName} photo={sarpanchPhoto} whatsapp={whatsapp} instagram={instagram} address={sarpanchAddress} />
               </div>
             </FadeIn>
@@ -2161,7 +1978,7 @@ export default function App() {
 
             {/* Gallery preview on home */}
             {media.length > 0 && (
-              <FadeIn delay={2150}>
+              <FadeIn delay={2100}>
                 <div style={{ marginTop: 40 }}>
                   <GalleryPage media={media} isAdmin={isAdmin} onDelete={deleteMedia} compact onViewAll={() => setPage("gallery")} />
                 </div>
@@ -2187,18 +2004,7 @@ export default function App() {
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
         {page === "submit" && (
           <div style={{ paddingTop: 40 }}>
-            {!firebaseUser ? (
-              <FadeIn>
-                <div className="glass" style={{ borderRadius:22, padding:"48px 24px", textAlign:"center", maxWidth:400, margin:"0 auto" }}>
-                  <div style={{ fontSize:48, marginBottom:16 }}>🔒</div>
-                  <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:8, color:"var(--text-main)" }}>Login Zaroori Hai</h2>
-                  <p style={{ fontSize:14, color:"var(--ct4)", marginBottom:24, lineHeight:1.6 }}>Samasya darj karne ke liye pehle login karein</p>
-                  <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:12, padding:"13px 32px", fontSize:15, fontWeight:600 }}>📱 Login Karein</button>
-                </div>
-              </FadeIn>
-            ) : (
-              <FadeIn><SubmitForm onSubmit={addProblem} /></FadeIn>
-            )}
+            <FadeIn><SubmitForm onSubmit={addProblem} /></FadeIn>
           </div>
         )}
 
@@ -2286,8 +2092,6 @@ export default function App() {
       </div>
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
-
-      {showLogin && <PhoneLogin onClose={() => setShowLogin(false)} />}
     </div>
   );
 }
