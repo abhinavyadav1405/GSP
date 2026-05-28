@@ -1900,9 +1900,13 @@ export default function App() {
     const unsub = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
       if (user) {
+        if (user.email === "admin@gsp.com") setIsAdmin(true);
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) setUserName(userDoc.data().name || "");
-      } else { setUserName(""); }
+      } else { 
+        setUserName("");
+        setIsAdmin(false);
+      }
     });
     return () => unsub();
   }, []);
@@ -2075,7 +2079,7 @@ export default function App() {
               </button>
             )}
             {firebaseUser
-              ? <button className="btn-ghost" onClick={() => signOut(auth)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>👤 Logout</button>
+              ? <button className="btn-ghost" onClick={() => { signOut(auth); setIsAdmin(false); }} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>👤 Logout</button>
               : <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0 }}>Login</button>}
             {isAdmin
               ? <button className="btn-ghost" onClick={logout} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, color: "#f87171" }}>Logout</button>
@@ -2276,7 +2280,7 @@ export default function App() {
 
         {/* ── ADMIN LOGIN ───────────────────────────────────────────────────── */}
         {page === "admin" && !isAdmin && (
-          <AdminLogin correctPassword={adminPassword} onLogin={() => { setIsAdmin(true); localStorage.setItem("isAdmin", "true"); localStorage.setItem("isAdmin-time", Date.now().toString()); setPage("board"); }} />
+          <AdminLogin correctPassword={adminPassword} onLogin={async (password) => { try { await signInWithEmailAndPassword(auth, "admin@gsp.com", password); setIsAdmin(true); setPage("board"); } catch { alert("Wrong password!"); } }} />
         )}
 
         {/* ── SETTINGS ─────────────────────────────────────────────────────── */}
