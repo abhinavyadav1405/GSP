@@ -1703,7 +1703,14 @@ function PhotoCarousel({ media }: { media: any[] }) {
     return () => clearInterval(timer);
   }, [media.length]);
 
-  if (!media || media.length === 0) return null;
+  if (!media || media.length === 0) return (
+    <div style={{ marginTop: 32, marginBottom: 8 }}>
+      <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
+      <div style={{ borderRadius: 16, background: "var(--cbg5)", height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "var(--ct4)", fontSize: 13 }}>No photos uploaded yet</p>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
