@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  auth, db, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup,
-  collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
-  storage, ref, uploadBytes, getDownloadURL,
+  auth, db, RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged,
+  collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy
 } from "./firebase";
 import type { User, ConfirmationResult } from "firebase/auth";
 
@@ -225,7 +224,7 @@ interface Problem {
   locationCoords?: LatLng;
 }
 
-const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =>
+const compressImage = (file: File, maxW = 1200, quality = 0.75): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -328,7 +327,7 @@ function PhotoUpload({ photo, onPhoto }: { photo: string | null; onPhoto: (b64: 
           style={{ border: `2px dashed ${dragging ? "var(--ct4)" : "rgba(255,255,255,0.14)"}`, borderRadius: 12, padding: "28px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: dragging ? "var(--cbg4)" : "transparent" }}>
           {compressing ? <div style={{ fontSize: 13, color: "var(--ct4)" }}>Compressing…</div> : (
             <><div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div><div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}><button type="button" onClick={() => { const el = document.createElement("input"); el.type = "file"; el.accept = "image/*"; el.capture = "environment"; el.onchange = (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) process(f); }; el.click(); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>📷 Camera</button><button type="button" onClick={() => inputRef.current?.click()} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>🖼️ Gallery</button></div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div>
             <div style={{ fontSize: 11, color: "var(--ct3)", marginTop: 4 }}>JPG, PNG, WebP · auto-compressed</div></>
           )}
         </div>
@@ -1687,9 +1686,9 @@ export default function App() {
     const unsub1 = onSnapshot(doc(db, "settings", "achievements"), (snap) => {
       if (snap.exists() && snap.data().list) setAchievements(snap.data().list);
     });
-        const unsub2 = onSnapshot(doc(db, "settings", "media"), (snap) => {
-          if (snap.exists() && snap.data().list) setMedia(snap.data().list);
-        });
+    const unsub2 = onSnapshot(doc(db, "settings", "media"), (snap) => {
+      if (snap.exists() && snap.data().list) setMedia(snap.data().list);
+    });
     const unsub3 = onSnapshot(doc(db, "settings", "notices"), (snap) => {
       if (snap.exists() && snap.data().list) setNotices(snap.data().list);
     });
@@ -1727,7 +1726,7 @@ export default function App() {
 
   const addProblem = async (p: Problem) => {
     try {
-      const firestoreData = p as any;
+      const { photo, ...firestoreData } = p as any;
       const cleanData = Object.fromEntries(Object.entries(firestoreData).filter(([_, v]) => v !== undefined));
       await setDoc(doc(db, "problems", p.id), cleanData);
       showToast(`✅ Problem submitted! Your ID: #${p.id}`);
@@ -1765,9 +1764,12 @@ export default function App() {
   const addAchievement = (a: Achievement) => saveAchievements([a, ...achievements]);
   const deleteAchievement = (id: string) => saveAchievements(achievements.filter(a => a.id !== id));
 
-    const saveMedia = (list: MediaItem[]) => { setMedia(list); try { const cleanList = list.map(({photo, ...rest}) => rest); setDoc(doc(db, "settings", "media"), { list: cleanList }); } catch (_) {} };
-    const addMedia = (m: MediaItem) => saveMedia([m, ...media]);
-    const deleteMedia = (id: string) => saveMedia(media.filter(m => m.id !== id));
+  const saveMedia = (list: MediaItem[]) => {
+    setMedia(list);
+    try { setDoc(doc(db, "settings", "media"), { list: list }); } catch (_) {}
+  };
+  const addMedia = (m: MediaItem) => saveMedia([m, ...media]);
+  const deleteMedia = (id: string) => saveMedia(media.filter(m => m.id !== id));
 
   const saveNotices = (list: Notice[]) => {
     setNotices(list);
