@@ -166,7 +166,7 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day
 
 const STATUS_META: Record<string, { color: string; bg: string; label: string }> = {
   Pending:       { color: "#f59e0b", bg: "rgba(245,158,11,0.15)",  label: "⏳ Pending" },
-  "In Progress": { color: "#3b82f6", bg: "rgba(59,130,246,0.15)",  label: "🔄 In Progress" },
+  t(lang).inProgress: { color: "#3b82f6", bg: "rgba(59,130,246,0.15)",  label: "🔄 In Progress" },
   Resolved:      { color: "#22c55e", bg: "rgba(34,197,94,0.15)",   label: "✅ Resolved" },
   Rejected:      { color: "#ef4444", bg: "rgba(239,68,68,0.15)",   label: "❌ Rejected" },
 };
@@ -176,12 +176,12 @@ const PRIORITY_META: Record<string, { color: string; label: string }> = {
   High:   { color: "#f97316", label: "High" },
   Urgent: { color: "#ef4444", label: "🚨 Urgent" },
 };
-const CATEGORIES = ["Water Supply","Road / Path","Electricity","Drainage","Sanitation","Education","Health","Street Light","Other"];
-const WARDS = ["Chhatarsar", "Pahrajpur", "Chakjalal", "Chakmoti", "Chakjiya", "Other"];
+const CATEGORIES = [t(lang).waterSupply,t(lang).road,t(lang).electricity,t(lang).drainage,t(lang).sanitation,t(lang).education,t(lang).health,t(lang).streetLight,t(lang).other];
+const WARDS = ["Chhatarsar", "Pahrajpur", "Chakjalal", "Chakmoti", "Chakjiya", t(lang).other];
 const CAT_COLORS: Record<string, string> = {
-  "Water Supply": "#3b82f6","Road / Path": "#a855f7","Electricity": "#f59e0b",
-  "Drainage": "#06b6d4","Sanitation": "#10b981","Education": "#ec4899",
-  "Health": "#ef4444","Street Light": "#fbbf24","Other": "#6b7280",
+  t(lang).waterSupply: "#3b82f6",t(lang).road: "#a855f7",t(lang).electricity: "#f59e0b",
+  t(lang).drainage: "#06b6d4",t(lang).sanitation: "#10b981",t(lang).education: "#ec4899",
+  t(lang).health: "#ef4444",t(lang).streetLight: "#fbbf24",t(lang).other: "#6b7280",
 };
 
 interface LatLng { lat: number; lng: number; }
@@ -565,7 +565,7 @@ function SubmitForm({ onSubmit }: { onSubmit: (p: Problem) => Promise<void> }) {
     if (!form.name || !form.mobile || !form.title || !form.description) { alert("Please fill all required fields."); return; }
     setLoading(true);
     const problem: Problem = {
-      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: "Pending", adminNotes: "",
+      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: t(lang).pending, adminNotes: "",
       photo: photo || undefined,
       locationText: locationText || undefined,
       locationCoords: locationCoords || undefined,
@@ -993,14 +993,14 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
 }
 
 // ── Achievements Page (Public) ────────────────────────────────────────────────
-const ACH_CATEGORIES = ["Road / Path","Water Supply","Electricity","Sanitation","Education","Health","Drainage","Infrastructure","Other"];
+const ACH_CATEGORIES = [t(lang).road,t(lang).waterSupply,t(lang).electricity,t(lang).sanitation,t(lang).education,t(lang).health,t(lang).drainage,"Infrastructure",t(lang).other];
 const ACH_CAT_ICONS: Record<string,string> = {
-  "Road / Path":"🛣","Water Supply":"💧","Electricity":"⚡","Sanitation":"🧹",
-  "Education":"📚","Health":"🏥","Drainage":"🌊","Infrastructure":"🏗","Other":"✅",
+  t(lang).road:"🛣",t(lang).waterSupply:"💧",t(lang).electricity:"⚡",t(lang).sanitation:"🧹",
+  t(lang).education:"📚",t(lang).health:"🏥",t(lang).drainage:"🌊","Infrastructure":"🏗",t(lang).other:"✅",
 };
 const ACH_CAT_COLORS: Record<string,string> = {
-  "Road / Path":"#a855f7","Water Supply":"#3b82f6","Electricity":"#f59e0b","Sanitation":"#10b981",
-  "Education":"#ec4899","Health":"#ef4444","Drainage":"#06b6d4","Infrastructure":"#f97316","Other":"#6b7280",
+  t(lang).road:"#a855f7",t(lang).waterSupply:"#3b82f6",t(lang).electricity:"#f59e0b",t(lang).sanitation:"#10b981",
+  t(lang).education:"#ec4899",t(lang).health:"#ef4444",t(lang).drainage:"#06b6d4","Infrastructure":"#f97316",t(lang).other:"#6b7280",
 };
 
 function AchievementsPage({ achievements, isAdmin, onDelete }: {
@@ -1051,7 +1051,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
           </select>
           <select value={filterVillage} onChange={e => setFilterVillage(e.target.value)} style={{ width: "auto", fontSize: 13, padding: "7px 12px" }}>
             <option value="All">All Villages</option>
-            {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
+            {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya",t(lang).other].map(w => <option key={w}>{w}</option>)}
           </select>
           <span style={{ fontSize: 12, color: "var(--ct35)", marginLeft: "auto" }}>{filtered.length} work{filtered.length !== 1 ? "s" : ""}</span>
         </div>
@@ -1367,7 +1367,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 {ACH_CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
               <select value={achForm.village} onChange={e => setAF("village", e.target.value)}>
-                {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
+                {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya",t(lang).other].map(w => <option key={w}>{w}</option>)}
               </select>
               <input type="date" value={achForm.date} onChange={e => setAF("date", e.target.value)} />
             </div>
@@ -1576,7 +1576,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 12, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>Delete Resolved Issues</div>
-                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 3 }}>{problems.filter(p => p.status === "Resolved").length} resolved issues will be removed</div>
+                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 3 }}>{problems.filter(p => p.status === t(lang).resolved).length} resolved issues will be removed</div>
               </div>
               {confirmClear === "resolved"
                 ? <div style={{ display: "flex", gap: 8 }}>
@@ -1713,7 +1713,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
       <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center" }}>
         <div style={{ fontSize:40, marginBottom:12 }}>🔐</div>
         <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>
-          {step === "login" ? "Sign In" : "Create Account"}
+          {step === "login" ? t(lang).signIn : "Create Account"}
         </h2>
         <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20 }}>
           {step === "login" ? "Sign in to submit problems" : "Register to get started"}
@@ -1931,7 +1931,7 @@ export default function App() {
   };
 
   const clearResolved = async () => {
-    await Promise.all(problems.filter(p => p.status === "Resolved").map(p => deleteDoc(doc(db, "problems", p.id))));
+    await Promise.all(problems.filter(p => p.status === t(lang).resolved).map(p => deleteDoc(doc(db, "problems", p.id))));
     showToast("🗑 All resolved issues deleted.");
   };
 
@@ -2014,17 +2014,17 @@ export default function App() {
 
   const stats = {
     total:      problems.length,
-    pending:    problems.filter(p => p.status === "Pending").length,
-    inprogress: problems.filter(p => p.status === "In Progress").length,
-    resolved:   problems.filter(p => p.status === "Resolved").length,
+    pending:    problems.filter(p => p.status === t(lang).pending).length,
+    inprogress: problems.filter(p => p.status === t(lang).inProgress).length,
+    resolved:   problems.filter(p => p.status === t(lang).resolved).length,
   };
 
   const navLinks = [
-    { id: "home"         as const, label: "⌂ Home" },
-    { id: "notices"      as const, label: "📢 Notices" },
+    { id: "home"         as const, label: t(lang).home },
+    { id: "notices"      as const, label: t(lang).notices },
     { id: "gallery"      as const, label: "📷 Gallery" },
-    { id: "achievements" as const, label: "🏆 Achievements" },
-    { id: "board"        as const, label: "View All Issues" },
+    { id: "achievements" as const, label: t(lang).achievements },
+    { id: "board"        as const, label: t(lang).viewAllIssues },
   ];
 
   return (
@@ -2068,8 +2068,8 @@ export default function App() {
               {lang === "en" ? "हि" : "EN"}
             </button>
             {firebaseUser
-              ? <button className="btn-ghost" onClick={() => signOut(auth)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>👤 Logout</button>
-              : <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0 }}>Login</button>}
+              ? <button className="btn-ghost" onClick={() => signOut(auth)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0, color:"#f87171" }}>{t(lang).logout}</button>
+              : <button className="btn-white" onClick={() => setShowLogin(true)} style={{ borderRadius:8, padding:"5px 11px", fontSize:12, whiteSpace:"nowrap", flexShrink:0 }}>{t(lang).login}</button>}
             {isAdmin
               ? <button className="btn-ghost" onClick={logout} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, color: "#f87171" }}>Logout</button>
               : <button className="btn-ghost" onClick={() => setPage("admin")} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Admin</button>}
@@ -2102,23 +2102,23 @@ export default function App() {
               </FadeIn>
               <FadeIn delay={1300}>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 36, flexWrap: "wrap" }}>
-                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "13px 28px", fontSize: 15, fontWeight: 600 }}>Report a Problem →</button>
-                  <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius: 12, padding: "13px 28px", fontSize: 15 }}>View All Issues</button>
+                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "13px 28px", fontSize: 15, fontWeight: 600 }}>t(lang).reportProblem</button>
+                  <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius: 12, padding: "13px 28px", fontSize: 15 }}>t(lang).viewAllIssues</button>
                 </div>
               </FadeIn>
             </div>
 
             <FadeIn delay={1500}>
               <div style={{ display: "flex", gap: 12, marginBottom: 36, flexWrap: "wrap" }}>
-                <StatCard label="Total Problems" value={stats.total} color="#fff" />
-                <StatCard label="Pending" value={stats.pending} color="#f59e0b" />
-                <StatCard label="In Progress" value={stats.inprogress} color="#3b82f6" />
-                <StatCard label="Resolved" value={stats.resolved} color="#22c55e" />
+                <StatCard label=t(lang).totalProblems value={stats.total} color="#fff" />
+                <StatCard label=t(lang).pending value={stats.pending} color="#f59e0b" />
+                <StatCard label=t(lang).inProgress value={stats.inprogress} color="#3b82f6" />
+                <StatCard label=t(lang).resolved value={stats.resolved} color="#22c55e" />
               </div>
             </FadeIn>
 
             <FadeIn delay={1700}>
-              <h3 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16, color: "var(--text-main)" }}>Issues by Category</h3>
+              <h3 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16, color: "var(--text-main)" }}>t(lang).issuesByCategory</h3>
               <CategoryGrid problems={problems} onNavigate={() => setPage("board")} />
             </FadeIn>
 
@@ -2140,9 +2140,9 @@ export default function App() {
               <FadeIn delay={1600}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", marginTop: 20 }}>
                   <div style={{ fontSize: 48, marginBottom: 16 }}>🌱</div>
-                  <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No issues reported yet</div>
-                  <div style={{ color: "var(--ct4)", fontSize: 14, marginBottom: 24 }}>Be the first to report a problem in your village.</div>
-                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 600 }}>Submit First Problem →</button>
+                  <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>t(lang).noIssuesYet</div>
+                  <div style={{ color: "var(--ct4)", fontSize: 14, marginBottom: 24 }}>t(lang).beFirst</div>
+                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 600 }}>t(lang).submitFirst</button>
                 </div>
               </FadeIn>
             )}
@@ -2150,7 +2150,7 @@ export default function App() {
             {/* Sarpanch Profile + Social */}
             <FadeIn delay={1800}>
               <div style={{ marginTop: 40 }}>
-                <h3 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:18, marginBottom:14, color:"var(--text-main)" }}>Your Sarpanch</h3>
+                <h3 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:18, marginBottom:14, color:"var(--text-main)" }}>t(lang).yourSarpanch</h3>
                 <SarpanchCard sarpanchName={sarpanchName} photo={sarpanchPhoto} whatsapp={whatsapp} instagram={instagram} address={sarpanchAddress} />
               </div>
             </FadeIn>
