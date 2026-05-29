@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithRedirect, getRedirectResult,
+  auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, signInWithRedirect, getRedirectResult,
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
@@ -1617,7 +1617,12 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
     if (!email || !password) { setError("Please fill all fields"); return; }
     setLoading(true); setError("");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      if (!cred.user.emailVerified) {
+        await signOut(auth);
+        setError("Please verify your email first. Check your inbox.");
+        return;
+      }
       onClose();
     } catch (e: any) {
       if (e.code === "auth/user-not-found" || e.code === "auth/invalid-credential") {
@@ -1635,12 +1640,14 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
     setLoading(true); setError("");
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
+      await sendEmailVerification(result.user);
       await setDoc(doc(db, "users", result.user.uid), {
         name: name.trim(),
         email: email,
         createdAt: new Date().toISOString(),
       });
-      onClose();
+      setError("✅ Verification email sent! Please verify before logging in.");
+      setStep("login");
     } catch (e: any) {
       if (e.code === "auth/email-already-in-use") {
         setError("Email already registered. Please login.");
