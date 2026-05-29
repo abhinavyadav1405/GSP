@@ -1789,13 +1789,13 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
   const [exiting, setExiting] = useState(false);
   useEffect(() => {
     const t = [
-      setTimeout(() => setPhase(1), 200),
-      setTimeout(() => setPhase(2), 700),
-      setTimeout(() => setPhase(3), 1300),
-      setTimeout(() => setPhase(4), 1900),
-      setTimeout(() => setPhase(5), 2600),
-      setTimeout(() => setExiting(true), 4000),
-      setTimeout(() => onDone(), 4700),
+      setTimeout(() => setPhase(1), 300),
+      setTimeout(() => setPhase(2), 1000),
+      setTimeout(() => setPhase(3), 1800),
+      setTimeout(() => setPhase(4), 2600),
+      setTimeout(() => setPhase(5), 3400),
+      setTimeout(() => setExiting(true), 4800),
+      setTimeout(() => onDone(), 5500),
     ];
     return () => t.forEach(clearTimeout);
   }, [onDone]);
