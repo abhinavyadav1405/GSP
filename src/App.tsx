@@ -1642,7 +1642,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
         name: name.trim(), email, createdAt: new Date().toISOString(),
       });
       await signOut(auth);
-      setSuccess("Verification email sent! Check inbox then login.");
+      setSuccess("Verification email sent! Check inbox & spam folder, then login.");
       setStep("login");
     } catch (e: any) {
       if (e.code === "auth/email-already-in-use") setError("Email already registered.");
