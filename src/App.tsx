@@ -2039,6 +2039,8 @@ export default function App() {
 
   return (
     <div data-theme={theme} style={{ minHeight: "100vh", background: "var(--bg-page)", color: "var(--text-main)" }} className="grid-bg">
+      <style>{GLOBAL_STYLE}</style>
+
       {/* NAVBAR */}
       <nav style={{ padding: "10px 12px" }}>
         <div className="glass-dark" style={{ borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 10 }}>
