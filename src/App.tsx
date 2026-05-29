@@ -1606,47 +1606,77 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
 
 // ── Email Login Component ────────────────────────────────────────────────────
 function PhoneLogin({ onClose }: { onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [step, setStep] = useState<"login"|"register">("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const signInWithGoogle = async () => {
+  const handleLogin = async () => {
+    if (!email || !password) { setError("Please fill all fields"); return; }
     setLoading(true); setError("");
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        await setDoc(doc(db, "users", user.uid), {
-          name: user.displayName || "User",
-          email: user.email,
-          createdAt: new Date().toISOString(),
-        });
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      if (!cred.user.emailVerified) {
+        await signOut(auth);
+        setError("Please verify your email first. Check your inbox.");
+        return;
       }
       onClose();
-    } catch (e: any) {
-      setError("Google sign-in failed. Try again.");
-      setLoading(false);
+    } catch {
+      setError("Wrong email or password.");
     }
+    setLoading(false);
+  };
+
+  const handleRegister = async () => {
+    if (!email || !password || !name) { setError("Please fill all fields"); return; }
+    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
+    setLoading(true); setError(""); setSuccess("");
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await sendEmailVerification(result.user);
+      await setDoc(doc(db, "users", result.user.uid), {
+        name: name.trim(), email, createdAt: new Date().toISOString(),
+      });
+      await signOut(auth);
+      setSuccess("Verification email sent! Check inbox then login.");
+      setStep("login");
+    } catch (e: any) {
+      if (e.code === "auth/email-already-in-use") setError("Email already registered.");
+      else setError("Registration failed. Try again.");
+    }
+    setLoading(false);
   };
 
   return (
     <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
       <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center" }}>
-        <div style={{ fontSize:48, marginBottom:12 }}>🏛️</div>
+        <div style={{ fontSize:40, marginBottom:12 }}>🔐</div>
         <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>
-          Sign In
+          {step === "login" ? "Sign In" : "Create Account"}
         </h2>
-        <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:24 }}>
-          Sign in with your Google account to submit problems
+        <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20 }}>
+          {step === "login" ? "Sign in to submit problems" : "Register to get started"}
         </p>
-        {error && <div style={{ fontSize:12, color:"#f87171", marginBottom:12 }}>{error}</div>}
-        <button onClick={signInWithGoogle} disabled={loading} style={{ width:"100%", borderRadius:12, padding:"14px 0", fontSize:15, fontWeight:600, background:"#fff", color:"#333", border:"none", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
-          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 32.6 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.2 2.8l5.7-5.7C33.5 7.1 29 5 24 5 13.5 5 5 13.5 5 24s8.5 19 19 19c10.5 0 18-7.3 18-18 0-1-.1-2-.4-3z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c2.8 0 5.3 1 7.2 2.8l5.7-5.7C33.5 7.1 29 5 24 5c-7.7 0-14.3 4.5-17.7 9.7z"/><path fill="#4CAF50" d="M24 43c5.2 0 9.9-1.8 13.5-4.8l-6.2-5.2C29.5 34.6 26.9 35.5 24 35.5c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.7 39 16.4 43 24 43z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.5l6.2 5.2C41 35.2 44 30 44 24c0-1-.1-2-.4-4z"/></svg>
-          {loading ? "Redirecting..." : "Continue with Google"}
+        <div style={{ display:"flex", flexDirection:"column", gap:10, textAlign:"left" }}>
+          {step === "register" && <input value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" />}
+          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" type="email" />
+          <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min 6 chars)" type="password" />
+        </div>
+        {error && <div style={{ fontSize:12, color:"#f87171", margin:"10px 0" }}>{error}</div>}
+        {success && <div style={{ fontSize:12, color:"#4ade80", margin:"10px 0" }}>{success}</div>}
+        <button className="btn-white" onClick={step === "login" ? handleLogin : handleRegister} disabled={loading}
+          style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, marginTop:14 }}>
+          {loading ? "Please wait…" : step === "login" ? "Sign In →" : "Create Account →"}
         </button>
-        <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:16, display:"block", width:"100%" }}>
+        <button onClick={() => { setStep(step === "login" ? "register" : "login"); setError(""); setSuccess(""); }}
+          style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:13, cursor:"pointer", marginTop:12 }}>
+          {step === "login" ? "No account? Register here" : "Already registered? Sign in"}
+        </button>
+        <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:8, display:"block", width:"100%" }}>
           Skip for now
         </button>
       </div>
