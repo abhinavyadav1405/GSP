@@ -1667,7 +1667,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
           <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min 6 chars)" type="password" />
         </div>
         {error && <div style={{ fontSize:12, color:"#f87171", margin:"10px 0" }}>{error}</div>}
-        {success && <div style={{ fontSize:12, color:"#4ade80", margin:"10px 0" }}>{success}</div>}
+        {success && <div style={{ fontSize:13, color:"#4ade80", margin:"10px 0", fontWeight:600, padding:"10px", borderRadius:8, background:"rgba(74,222,128,0.1)", border:"1px solid rgba(74,222,128,0.3)" }}>{success}</div>}
         <button className="btn-white" onClick={step === "login" ? handleLogin : handleRegister} disabled={loading}
           style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, marginTop:14 }}>
           {loading ? "Please wait…" : step === "login" ? "Sign In →" : "Create Account →"}
