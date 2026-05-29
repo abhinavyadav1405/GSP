@@ -1942,8 +1942,9 @@ export default function App() {
             createdAt: new Date().toISOString(),
           });
         }
+        setShowLogin(false);
       }
-    }).catch(() => {});
+    }).catch((e) => { console.error("Redirect error:", e); });
 
     const unsub = onAuthStateChanged(auth, async (user) => {
       setFirebaseUser(user);
