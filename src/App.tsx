@@ -1771,7 +1771,101 @@ function PhotoCarousel({ media }: { media: any[] }) {
     } catch(e) { console.log(e); }
   };
 
+
+// ── Welcome Splash ──────────────────────────────────────────────────────────
+const SPLASH_STYLE = `
+  @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+  @keyframes glowPulse { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:0.9;transform:scale(1.08)} }
+  @keyframes particleDrift { 0%,100%{transform:translateY(0) scale(1);opacity:0.5} 50%{transform:translateY(-28px) scale(1.3);opacity:1} }
+  @keyframes borderRotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes splashExit { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(1.04)} }
+  .splash-shimmer { background:linear-gradient(90deg,#fff 0%,#a3f0c0 20%,#fff 40%,#d4af37 60%,#fff 80%,#a3f0c0 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite; }
+  .splash-exit { animation:splashExit 0.7s ease forwards; }
+`;
+
+function WelcomeSplash({ onDone }: { onDone: () => void }) {
+  const isReturning = !!localStorage.getItem("gsp-visited");
+  const [phase, setPhase] = useState(0);
+  const [exiting, setExiting] = useState(false);
+  useEffect(() => {
+    const t = [
+      setTimeout(() => setPhase(1), 200),
+      setTimeout(() => setPhase(2), 700),
+      setTimeout(() => setPhase(3), 1300),
+      setTimeout(() => setPhase(4), 1900),
+      setTimeout(() => setPhase(5), 2600),
+      setTimeout(() => setExiting(true), 4000),
+      setTimeout(() => onDone(), 4700),
+    ];
+    return () => t.forEach(clearTimeout);
+  }, [onDone]);
+  const vis = (p: number): React.CSSProperties => ({
+    opacity: phase >= p ? 1 : 0,
+    transform: phase >= p ? "translateY(0)" : "translateY(22px)",
+    transition: "opacity 0.6s ease, transform 0.6s ease",
+  });
+  const particles = [
+    {top:"10%",left:"7%",size:5,delay:"0s",dur:"4.2s"},
+    {top:"18%",left:"90%",size:4,delay:"0.5s",dur:"5s"},
+    {top:"68%",left:"4%",size:6,delay:"1s",dur:"4.6s"},
+    {top:"80%",left:"93%",size:3,delay:"0.3s",dur:"6s"},
+    {top:"45%",left:"2%",size:4,delay:"0.8s",dur:"5.4s"},
+    {top:"55%",left:"96%",size:5,delay:"1.3s",dur:"4s"},
+  ];
+  return (
+    <div className={exiting ? "splash-exit" : ""} style={{position:"fixed",inset:0,zIndex:99999,display:"flex",alignItems:"center",justifyContent:"center",background:"#000",overflow:"hidden"}}>
+      <style>{SPLASH_STYLE}</style>
+      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 50%, #0a1a0d 0%, #000 70%)",pointerEvents:"none"}} />
+      <div style={{position:"absolute",width:"min(500px,90vw)",height:"min(500px,90vw)",borderRadius:"50%",border:"1px solid transparent",background:"linear-gradient(#000,#000) padding-box, conic-gradient(from 0deg, transparent 0%, rgba(34,197,94,0.55) 25%, transparent 50%, rgba(212,175,55,0.45) 75%, transparent 100%) border-box",animation:"borderRotate 8s linear infinite",pointerEvents:"none"}} />
+      <div style={{position:"absolute",width:"min(360px,70vw)",height:"min(360px,70vw)",borderRadius:"50%",background:"radial-gradient(circle, rgba(22,163,74,0.16) 0%, transparent 70%)",animation:"glowPulse 3s ease-in-out infinite",pointerEvents:"none"}} />
+      {particles.map((p,i) => (
+        <div key={i} style={{position:"absolute",top:p.top,left:p.left,width:p.size,height:p.size,borderRadius:"50%",background:"rgba(34,197,94,0.75)",boxShadow:`0 0 ${p.size*3}px rgba(34,197,94,0.6)`,animation:`particleDrift ${p.dur} ${p.delay} ease-in-out infinite`,pointerEvents:"none"}} />
+      ))}
+      <div style={{position:"relative",zIndex:2,textAlign:"center",padding:"0 24px",maxWidth:600,width:"100%"}}>
+        <div style={{...vis(1),marginBottom:26,display:"flex",justifyContent:"center"}}>
+          <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:72,height:72,borderRadius:20,background:"linear-gradient(135deg,#16a34a 0%,#166534 100%)",boxShadow:"0 0 0 1px rgba(255,255,255,0.15),0 0 40px rgba(22,163,74,0.55)",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,rgba(255,255,255,0.25) 0%,transparent 60%)"}} />
+            <span style={{fontFamily:"Sora,sans-serif",fontWeight:800,fontSize:22,color:"#fff",letterSpacing:"0.06em",position:"relative",zIndex:1}}>GSP</span>
+          </div>
+        </div>
+        <div style={{...vis(2),marginBottom:10}}>
+          <div style={{fontFamily:"DM Sans,sans-serif",fontSize:11,fontWeight:700,letterSpacing:"0.38em",color:"rgba(212,175,55,0.88)",textTransform:"uppercase"}}>
+            {isReturning ? "✦  Welcome Back to the  ✦" : "✦  Welcome to the  ✦"}
+          </div>
+        </div>
+        <div style={{...vis(2),marginBottom:4}}>
+          <div className="splash-shimmer" style={{fontFamily:"Sora,sans-serif",fontWeight:800,fontSize:"clamp(32px,7vw,64px)",lineHeight:1.05,letterSpacing:"-0.03em"}}>Digital Portal</div>
+        </div>
+        <div style={{...vis(3),marginBottom:4}}>
+          <div style={{fontFamily:"DM Sans,sans-serif",fontSize:12,color:"rgba(255,255,255,0.4)",letterSpacing:"0.2em",textTransform:"uppercase"}}>of</div>
+        </div>
+        <div style={{...vis(3),marginBottom:2}}>
+          <div style={{fontFamily:"Sora,sans-serif",fontWeight:700,fontSize:"clamp(18px,4.5vw,36px)",color:"#fff"}}>Gram Sabha</div>
+        </div>
+        <div style={{...vis(3),marginBottom:20}}>
+          <div style={{fontFamily:"Sora,sans-serif",fontWeight:300,fontSize:"clamp(22px,5.5vw,46px)",color:"rgba(255,255,255,0.88)",letterSpacing:"0.05em",textTransform:"uppercase"}}>Pahrajpur</div>
+        </div>
+        <div style={{...vis(3),display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:20}}>
+          <div style={{height:1,width:70,background:"linear-gradient(90deg,transparent,rgba(212,175,55,0.7),transparent)"}} />
+          <div style={{width:5,height:5,borderRadius:"50%",background:"rgba(212,175,55,0.85)",boxShadow:"0 0 10px rgba(212,175,55,0.6)",flexShrink:0}} />
+          <div style={{height:1,width:70,background:"linear-gradient(90deg,transparent,rgba(212,175,55,0.7),transparent)"}} />
+        </div>
+        <div style={{...vis(4),marginBottom:28}}>
+          <p style={{fontFamily:"DM Sans,sans-serif",fontSize:"clamp(11px,2.5vw,14px)",color:"rgba(255,255,255,0.36)",letterSpacing:"0.14em",textTransform:"uppercase",lineHeight:1.9}}>ग्राम सेवा · पारदर्शिता · विकास</p>
+        </div>
+        <div style={{...vis(5)}}>
+          <button onClick={() => { setExiting(true); setTimeout(onDone, 700); }} style={{fontFamily:"Sora,sans-serif",fontWeight:600,fontSize:13,padding:"12px 34px",borderRadius:50,background:"rgba(22,163,74,0.12)",border:"1px solid rgba(34,197,94,0.4)",color:"#4ade80",cursor:"pointer",letterSpacing:"0.1em",textTransform:"uppercase",transition:"all 0.25s ease",backdropFilter:"blur(8px)"}}>
+            Enter Portal →
+          </button>
+          <p style={{marginTop:14,fontFamily:"DM Sans,sans-serif",fontSize:11,color:"rgba(255,255,255,0.25)"}}>Auto-entering in a moment…</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [showLogin, setShowLogin] = useState(false);
@@ -2038,7 +2132,9 @@ export default function App() {
   ];
 
   return (
-    <div data-theme={theme} style={{ minHeight: "100vh", background: "var(--bg-page)", color: "var(--text-main)" }} className="grid-bg">
+    <>
+      {showSplash && <WelcomeSplash onDone={() => { localStorage.setItem("gsp-visited","1"); setShowSplash(false); }} />}
+      <div data-theme={theme} style={{ minHeight: "100vh", background: "var(--bg-page)", color: "var(--text-main)" }} className="grid-bg">
       <style>{GLOBAL_STYLE}</style>
 
       {/* NAVBAR */}
@@ -2298,5 +2394,6 @@ export default function App() {
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
       {showLogin && <PhoneLogin onClose={() => setShowLogin(false)} />}
     </div>
+    </>
   );
 }
