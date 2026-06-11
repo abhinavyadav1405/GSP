@@ -10,7 +10,7 @@ import type { User, ConfirmationResult } from "firebase/auth";
 const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; background: #f0eeff; color: #1a1040; }
   :root {
     --bg-page:#0a0814;--bg2:#0f0c1e;--text-main:#f0eeff;
     --ct65:rgba(240,238,255,0.65);--ct6:rgba(240,238,255,0.60);--ct5:rgba(240,238,255,0.50);
@@ -1687,15 +1687,21 @@ function AIPanel({ villageName, sarpanchName }: { villageName: string; sarpanchN
     setMsgs(prev => [...prev, { role:"user", text, id }]);
     setQuery(""); setLoading(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000,
-          system:`You are a helpful AI assistant for "${villageName}" — a Gram Panchayat Portal in India. Sarpanch: ${sarpanchName}. Villagers report infrastructure problems, track resolution, see notices, give feedback. Answer concisely in English under 3 sentences.`,
-          messages:[...msgs.map(m=>({role:m.role==="user"?"user":"assistant",content:m.text})),{role:"user",content:text}],
-        }),
-      });
+      const history = msgs.map(m => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.text }]
+      }));
+      const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAQ.Ab8RN6LNkN8-fBUo-b_C1gknqp9ccviflp_iEQ_I7FrdUZnN4A",
+        { method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: `You are a helpful AI assistant for "${villageName}" — a Gram Panchayat Portal in India. Sarpanch: ${sarpanchName}. Villagers report infrastructure problems, track resolution, see notices, give feedback. Answer concisely in English under 3 sentences.` }] },
+            contents: [...history, { role:"user", parts:[{ text }] }]
+          })
+        }
+      );
       const data = await res.json();
-      const reply = data.content?.map((b: any) => b.text || "").join("") || "Could not get a response.";
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Could not get a response.";
       setMsgs(prev => [...prev, { role:"ai", text:reply, id:id+1 }]);
     } catch { setMsgs(prev => [...prev, { role:"ai", text:"Connection error. Try again.", id:Date.now() }]); }
     setLoading(false);
@@ -1854,7 +1860,7 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
 }
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [showLogin, setShowLogin] = useState(false);
@@ -2181,8 +2187,8 @@ export default function App() {
             {/* ── HERO ──────────────────────────────────────────────── */}
             <div style={{ padding:"52px 0 40px", position:"relative", overflow:"hidden" }}>
               {/* bg glow */}
-              <div style={{ position:"absolute",width:600,height:600,borderRadius:"50%",top:-240,left:-180,background:"radial-gradient(circle,rgba(124,92,252,0.16) 0%,transparent 70%)",pointerEvents:"none" }}/>
-              <div style={{ position:"absolute",width:400,height:400,borderRadius:"50%",bottom:-120,right:-60,background:"radial-gradient(circle,rgba(56,217,245,0.08) 0%,transparent 70%)",pointerEvents:"none" }}/>
+              <div style={{ position:"absolute",width:600,height:600,borderRadius:"50%",top:-240,left:-180,background:"radial-gradient(circle,rgba(124,92,252,0.10) 0%,transparent 70%)",pointerEvents:"none" }}/>
+              <div style={{ position:"absolute",width:400,height:400,borderRadius:"50%",bottom:-120,right:-60,background:"radial-gradient(circle,rgba(56,217,245,0.06) 0%,transparent 70%)",pointerEvents:"none" }}/>
 
               <div className="hero-split" style={{ display:"flex",alignItems:"center",gap:52,position:"relative" }}>
                 {/* LEFT */}
@@ -2220,19 +2226,6 @@ export default function App() {
                   </FadeIn>
 
                   <FadeIn delay={820}>
-                    <div className="feat-grid" style={{ display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:28,width:"100%" }}>
-                      {[{icon:"📋",label:"Report Issues",desc:"Submit easily"},{icon:"📍",label:"Live Tracking",desc:"Real-time updates"},{icon:"📢",label:"Notices",desc:"Stay informed"},{icon:"🏆",label:"Achievements",desc:"Village milestones"},{icon:"🗂️",label:"Filter Issues",desc:"By category"},{icon:"🔒",label:"Secure Auth",desc:"Firebase login"}].map(f => (
-                        <div key={f.label} style={{ display:"flex",alignItems:"center",gap:9,padding:"11px 14px",borderRadius:14,background:"var(--cbg5)",border:"1px solid var(--glass-border)",transition:"all 0.2s",cursor:"default" }}
-                          onMouseEnter={e => { e.currentTarget.style.background="rgba(124,92,252,0.10)"; e.currentTarget.style.borderColor="rgba(124,92,252,0.28)"; e.currentTarget.style.transform="translateY(-2px)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background="var(--cbg5)"; e.currentTarget.style.borderColor="var(--glass-border)"; e.currentTarget.style.transform=""; }}>
-                          <span style={{ fontSize:18 }}>{f.icon}</span>
-                          <div><div style={{ fontSize:11,fontWeight:700,color:"var(--text-main)" }}>{f.label}</div><div style={{ fontSize:10,color:"var(--ct3)",marginTop:1 }}>{f.desc}</div></div>
-                        </div>
-                      ))}
-                    </div>
-                  </FadeIn>
-
-                  <FadeIn delay={1000}>
                     <div style={{ marginTop:22,width:"100%" }}><AIPanel villageName={villageName} sarpanchName={sarpanchName} /></div>
                   </FadeIn>
                 </div>
