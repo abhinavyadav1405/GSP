@@ -8,91 +8,179 @@ import type { User, ConfirmationResult } from "firebase/auth";
 
 
 const GLOBAL_STYLE = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; background: #f0eeff; color: #1a1040; }
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+
+  /* ── Dark theme variables (default) ── */
   :root {
-    --bg-page:#0a0814;--bg2:#0f0c1e;--text-main:#f0eeff;
-    --ct65:rgba(240,238,255,0.65);--ct6:rgba(240,238,255,0.60);--ct5:rgba(240,238,255,0.50);
-    --ct45:rgba(240,238,255,0.45);--ct4:rgba(240,238,255,0.40);--ct35:rgba(240,238,255,0.35);--ct3:rgba(240,238,255,0.28);
-    --cbg12:rgba(124,92,252,0.12);--cbg8:rgba(124,92,252,0.08);--cbg7:rgba(255,255,255,0.07);
-    --cbg6:rgba(255,255,255,0.06);--cbg5:rgba(255,255,255,0.05);--cbg4:rgba(255,255,255,0.04);
-    --cb25:rgba(124,92,252,0.40);--cb20:rgba(124,92,252,0.25);--cb15:rgba(124,92,252,0.18);--cb10:rgba(124,92,252,0.12);
-    --glass-bg:rgba(255,255,255,0.045);--glass-border:rgba(255,255,255,0.10);
-    --navbar-bg:rgba(10,8,20,0.78);--input-bg:rgba(255,255,255,0.055);
-    --input-border:rgba(255,255,255,0.11);--input-color:#f0eeff;
-    --input-placeholder:rgba(240,238,255,0.30);--select-option-bg:#13102a;
-    --btn-ghost-bg:rgba(255,255,255,0.07);--btn-ghost-color:#f0eeff;
-    --btn-ghost-border:rgba(255,255,255,0.13);--scrollbar:rgba(124,92,252,0.35);--grid-line:rgba(124,92,252,0.04);
+    --bg-page:   #050508;
+    --text-main: #ffffff;
+    --ct65: rgba(255,255,255,0.65);
+    --ct6:  rgba(255,255,255,0.60);
+    --ct5:  rgba(255,255,255,0.50);
+    --ct45: rgba(255,255,255,0.45);
+    --ct4:  rgba(255,255,255,0.40);
+    --ct35: rgba(255,255,255,0.35);
+    --ct3:  rgba(255,255,255,0.30);
+    --cbg12: rgba(255,255,255,0.12);
+    --cbg8:  rgba(255,255,255,0.08);
+    --cbg7:  rgba(255,255,255,0.07);
+    --cbg6:  rgba(255,255,255,0.06);
+    --cbg5:  rgba(255,255,255,0.05);
+    --cbg4:  rgba(255,255,255,0.04);
+    --cb25:  rgba(255,255,255,0.25);
+    --cb20:  rgba(255,255,255,0.20);
+    --cb15:  rgba(255,255,255,0.15);
+    --cb10:  rgba(255,255,255,0.10);
+    --glass-bg:   rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.10);
+    --navbar-bg:  rgba(0,0,0,0.45);
+    --input-bg:   rgba(255,255,255,0.05);
+    --input-border: rgba(255,255,255,0.12);
+    --input-color: #fff;
+    --input-placeholder: rgba(255,255,255,0.3);
+    --select-option-bg: #111;
+    --btn-ghost-bg: rgba(255,255,255,0.07);
+    --btn-ghost-color: #fff;
+    --btn-ghost-border: rgba(255,255,255,0.15);
+    --scrollbar: rgba(255,255,255,0.15);
+    --grid-line: rgba(255,255,255,0.02);
   }
+
+  /* ── Light theme variables ── */
   [data-theme="light"] {
-    --bg-page:#f0eeff;--bg2:#e4ddff;--text-main:#1a1040;
-    --ct65:#2a2060;--ct6:#3a2f70;--ct5:#4a3f80;--ct45:#5a4f90;--ct4:#6a5fa0;--ct35:#7a6fb0;--ct3:#8a7fc0;
-    --cbg12:rgba(124,92,252,0.12);--cbg8:rgba(124,92,252,0.08);--cbg7:rgba(124,92,252,0.07);
-    --cbg6:rgba(124,92,252,0.06);--cbg5:rgba(124,92,252,0.05);--cbg4:rgba(124,92,252,0.04);
-    --cb25:rgba(124,92,252,0.35);--cb20:rgba(124,92,252,0.22);--cb15:rgba(124,92,252,0.16);--cb10:rgba(124,92,252,0.10);
-    --glass-bg:rgba(255,255,255,0.72);--glass-border:rgba(124,92,252,0.18);
-    --navbar-bg:rgba(240,238,255,0.88);--input-bg:rgba(255,255,255,0.80);
-    --input-border:rgba(124,92,252,0.22);--input-color:#1a1040;
-    --input-placeholder:rgba(26,16,64,0.38);--select-option-bg:#fff;
-    --btn-ghost-bg:rgba(124,92,252,0.08);--btn-ghost-color:#1a1040;
-    --btn-ghost-border:rgba(124,92,252,0.22);--scrollbar:rgba(124,92,252,0.30);--grid-line:rgba(124,92,252,0.06);
+    --bg-page:   #eef1f6;
+    --text-main: #0f0f0f;
+    --ct65: #222;
+    --ct6:  #333;
+    --ct5:  #444;
+    --ct45: #555;
+    --ct4:  #666;
+    --ct35: #777;
+    --ct3:  #888;
+    --cbg12: rgba(0,0,0,0.08);
+    --cbg8:  rgba(0,0,0,0.05);
+    --cbg7:  rgba(0,0,0,0.05);
+    --cbg6:  rgba(0,0,0,0.04);
+    --cbg5:  rgba(0,0,0,0.04);
+    --cbg4:  rgba(0,0,0,0.03);
+    --cb25:  rgba(0,0,0,0.20);
+    --cb20:  rgba(0,0,0,0.15);
+    --cb15:  rgba(0,0,0,0.12);
+    --cb10:  rgba(0,0,0,0.10);
+    --glass-bg:   rgba(255,255,255,0.80);
+    --glass-border: rgba(0,0,0,0.10);
+    --navbar-bg:  rgba(255,255,255,0.92);
+    --input-bg:   rgba(0,0,0,0.04);
+    --input-border: rgba(0,0,0,0.15);
+    --input-color: #0f0f0f;
+    --input-placeholder: rgba(0,0,0,0.35);
+    --select-option-bg: #fff;
+    --btn-ghost-bg: rgba(0,0,0,0.06);
+    --btn-ghost-color: #0f0f0f;
+    --btn-ghost-border: rgba(0,0,0,0.15);
+    --scrollbar: rgba(0,0,0,0.15);
+    --grid-line: rgba(0,0,0,0.04);
   }
-  .glass{background:var(--glass-bg);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--glass-border);position:relative;overflow:hidden;}
-  .glass::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(145deg,rgba(124,92,252,0.20) 0%,rgba(255,255,255,0.04) 40%,rgba(56,217,245,0.08) 100%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
-  [data-theme="light"] .glass::before{background:linear-gradient(145deg,rgba(124,92,252,0.12) 0%,rgba(255,255,255,0.5) 50%,rgba(56,217,245,0.08) 100%);}
-  .glass-dark{background:var(--navbar-bg);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--glass-border);position:relative;overflow:hidden;}
-  .btn-white{background:linear-gradient(135deg,#7c5cfc 0%,#5b3fd4 100%);color:#fff;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;transition:all 0.2s;box-shadow:0 4px 16px rgba(124,92,252,0.35);}
-  .btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,92,252,0.5);}
-  .btn-white:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
-  .btn-ghost{background:var(--btn-ghost-bg);color:var(--btn-ghost-color);border:1px solid var(--btn-ghost-border);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;transition:all 0.2s;}
-  .btn-ghost:hover{background:rgba(124,92,252,0.12);border-color:rgba(124,92,252,0.28);}
-  .btn-danger{background:rgba(248,113,113,0.10);color:#f87171;border:1px solid rgba(248,113,113,0.25);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;transition:all 0.2s;}
-  [data-theme="light"] .btn-danger{color:#c00;} .btn-danger:hover{background:rgba(248,113,113,0.20);}
-  input,textarea,select{background:var(--input-bg);border:1px solid var(--input-border);color:var(--input-color);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;border-radius:12px;padding:10px 14px;width:100%;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
-  input:focus,textarea:focus,select:focus{border-color:rgba(124,92,252,0.50);box-shadow:0 0 0 3px rgba(124,92,252,0.12);}
-  input::placeholder,textarea::placeholder{color:var(--input-placeholder);}
-  select option{background:var(--select-option-bg);color:var(--input-color);}
-  ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:4px;}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-  @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:0.3;}}
-  @keyframes floatOrb{0%,100%{transform:translateY(0);}50%{transform:translateY(-22px);}}
-  @keyframes floatChip{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
-  @keyframes pulseGlow{0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:1;transform:scale(1.07);}}
-  @keyframes shimmerTxt{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
-  @keyframes orbit1{from{transform:rotate(0deg) translateX(108px) rotate(0deg);}to{transform:rotate(360deg) translateX(108px) rotate(-360deg);}}
-  @keyframes orbit2{from{transform:rotate(180deg) translateX(76px) rotate(-180deg);}to{transform:rotate(540deg) translateX(76px) rotate(-540deg);}}
-  @keyframes rotBorder{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
-  @keyframes splashShimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-  @keyframes splashExit{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.04)}}
-  @keyframes particleDrift{0%,100%{transform:translateY(0) scale(1);opacity:0.5}50%{transform:translateY(-28px) scale(1.3);opacity:1}}
-  @keyframes typingDot{0%,100%{opacity:0.3;transform:scale(0.8);}50%{opacity:1;transform:scale(1);}}
-  .shimmer-text{background:linear-gradient(90deg,#f0eeff 0%,#b57bee 28%,#38d9f5 50%,#b57bee 72%,#f0eeff 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmerTxt 4s linear infinite;}
-  .grid-bg{background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:44px 44px;}
-  @media(max-width:768px){.hero-split{flex-direction:column!important;}.hero-orb-col{display:none!important;}.hero-ctas{justify-content:center!important;}.hero-left{text-align:center;align-items:center!important;}.feat-grid{grid-template-columns:1fr 1fr!important;}}
+
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    position: relative;
+    overflow: hidden;
+  }
+  .glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(160deg,rgba(255,255,255,0.18) 0%,rgba(255,255,255,0.04) 40%,rgba(255,255,255,0.0) 60%,rgba(255,255,255,0.10) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  [data-theme="light"] .glass::before { display: none; }
+
+  .glass-dark {
+    background: var(--navbar-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    position: relative; overflow: hidden;
+  }
+
+  .btn-white { background:#0f0f0f; color:#fff; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500; transition:all 0.2s; }
+  [data-theme="light"] .btn-white { background:#0f0f0f; color:#fff; }
+  .btn-white:hover { background:#333; transform:translateY(-1px); }
+  .btn-white:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+  .btn-ghost { background:var(--btn-ghost-bg); color:var(--btn-ghost-color); border:1px solid var(--btn-ghost-border); cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500; transition:all 0.2s; }
+  .btn-ghost:hover { filter: brightness(1.1); }
+
+  .btn-danger { background:rgba(239,68,68,0.12); color:#f87171; border:1px solid rgba(239,68,68,0.25); cursor:pointer; font-family:'DM Sans',sans-serif; font-weight:500; transition:all 0.2s; }
+  [data-theme="light"] .btn-danger { color:#c00; }
+  .btn-danger:hover { background:rgba(239,68,68,0.22); }
+
+  input, textarea, select {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-color);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    border-radius: 10px;
+    padding: 10px 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--cb25);
+    box-shadow: 0 0 0 3px var(--cbg6);
+  }
+  input::placeholder, textarea::placeholder { color: var(--input-placeholder); }
+  select option { background: var(--select-option-bg); color: var(--input-color); }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 4px; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  .grid-bg {
+    background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
 `;
 
 const uuid = () => Math.random().toString(36).slice(2, 10).toUpperCase();
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 
 const STATUS_META: Record<string, { color: string; bg: string; label: string }> = {
-  Pending:       { color: "#f4c95d", bg: "rgba(244,201,93,0.15)",  label: "⏳ Pending" },
-  "In Progress": { color: "#7c5cfc", bg: "rgba(124,92,252,0.15)",  label: "🔄 In Progress" },
-  Resolved:      { color: "#4ade80", bg: "rgba(74,222,128,0.15)",  label: "✅ Resolved" },
-  Rejected:      { color: "#f87171", bg: "rgba(248,113,113,0.15)", label: "❌ Rejected" },
+  Pending:       { color: "#f59e0b", bg: "rgba(245,158,11,0.15)",  label: "⏳ Pending" },
+  "In Progress": { color: "#3b82f6", bg: "rgba(59,130,246,0.15)",  label: "🔄 In Progress" },
+  Resolved:      { color: "#22c55e", bg: "rgba(34,197,94,0.15)",   label: "✅ Resolved" },
+  Rejected:      { color: "#ef4444", bg: "rgba(239,68,68,0.15)",   label: "❌ Rejected" },
 };
 const PRIORITY_META: Record<string, { color: string; label: string }> = {
-  Low:    { color: "#a89ec9", label: "Low" },
-  Medium: { color: "#f4c95d", label: "Medium" },
-  High:   { color: "#fb923c", label: "High" },
-  Urgent: { color: "#f87171", label: "🚨 Urgent" },
+  Low:    { color: "#94a3b8", label: "Low" },
+  Medium: { color: "#f59e0b", label: "Medium" },
+  High:   { color: "#f97316", label: "High" },
+  Urgent: { color: "#ef4444", label: "🚨 Urgent" },
 };
 const CATEGORIES = ["Water Supply","Road / Path","Electricity","Drainage","Sanitation","Education","Health","Street Light","Other"];
 const WARDS = ["Chhatarsar", "Pahrajpur", "Chakjalal", "Chakmoti", "Chakjiya", "Other"];
 const CAT_COLORS: Record<string, string> = {
-  "Water Supply":"#38d9f5","Road / Path":"#b57bee","Electricity":"#f4c95d",
-  "Drainage":"#7c5cfc","Sanitation":"#4ade80","Education":"#f87171",
-  "Health":"#fb923c","Street Light":"#fbbf24","Other":"#6b7280",
+  "Water Supply": "#3b82f6","Road / Path": "#a855f7","Electricity": "#f59e0b",
+  "Drainage": "#06b6d4","Sanitation": "#10b981","Education": "#ec4899",
+  "Health": "#ef4444","Street Light": "#fbbf24","Other": "#6b7280",
 };
 
 interface LatLng { lat: number; lng: number; }
@@ -163,7 +251,7 @@ function AnimatedHeading({ text }: { text: string }) {
   useEffect(() => { const t = setTimeout(() => setVisible(true), 200); return () => clearTimeout(t); }, []);
   const lines = text.split("\n"); let charIdx = 0;
   return (
-    <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.04em" }}>
+    <h1 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.04em" }}>
       {lines.map((line, li) => (
         <div key={li} style={{ display: "block" }}>
           {line.split("").map((ch) => {
@@ -198,7 +286,7 @@ function Toast({ msg, onClose }: { msg: string; onClose: () => void }) {
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="glass" style={{ borderRadius: 16, padding: "20px 24px", flex: 1, minWidth: 120 }}>
-      <div style={{ fontSize: 32, fontWeight: 700, color, fontFamily: "'Space Grotesk',sans-serif" }}>{value}</div>
+      <div style={{ fontSize: 32, fontWeight: 700, color, fontFamily: "'Sora',sans-serif" }}>{value}</div>
       <div style={{ fontSize: 13, color: "var(--ct5)", marginTop: 4 }}>{label}</div>
     </div>
   );
@@ -209,7 +297,7 @@ function SectionHead({ icon, title }: { icon: string; title: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
       <span style={{ fontSize: 20 }}>{icon}</span>
-      <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 17 }}>{title}</h3>
+      <h3 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 17 }}>{title}</h3>
     </div>
   );
 }
@@ -352,7 +440,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
 
           {/* WhatsApp Share */}
           <button onClick={shareOnWhatsApp}
-            style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center", padding: "10px 0", borderRadius: 10, border: "none", background: "rgba(37,211,102,0.12)", color: "#25d366", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", transition: "background 0.2s" }}
+            style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center", padding: "10px 0", borderRadius: 10, border: "none", background: "rgba(37,211,102,0.12)", color: "#25d366", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'DM Sans',sans-serif", transition: "background 0.2s" }}
             onMouseEnter={e => (e.currentTarget.style.background = "rgba(37,211,102,0.22)")}
             onMouseLeave={e => (e.currentTarget.style.background = "rgba(37,211,102,0.12)")}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -498,7 +586,7 @@ function SubmitForm({ onSubmit }: { onSubmit: (p: Problem) => Promise<void> }) {
 
   return (
     <div className="glass" style={{ borderRadius: 22, padding: "28px 24px", maxWidth: 560, margin: "0 auto" }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22, marginBottom: 24 }}>Submit a Problem</h2>
+      <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 22, marginBottom: 24 }}>Submit a Problem</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {field("Your Name *", <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Full name" />)}
@@ -585,7 +673,7 @@ function AdminLogin({ correctPassword, onLogin }: { correctPassword: string; onL
       <div className="glass" style={{ borderRadius: 22, padding: "32px 28px" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🔐</div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22 }}>Admin Access</h2>
+          <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 22 }}>Admin Access</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)", marginTop: 8 }}>ID aur Password daalo</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -610,7 +698,7 @@ function CategoryGrid({ problems, onNavigate }: { problems: Problem[]; onNavigat
           onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}>
           <div style={{ width: 8, height: 8, borderRadius: 4, background: CAT_COLORS[cat] || "#6b7280", marginBottom: 10 }} />
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{cat}</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[cat] || "#6b7280", fontFamily: "'Space Grotesk',sans-serif" }}>{counts[cat]}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[cat] || "#6b7280", fontFamily: "'Sora',sans-serif" }}>{counts[cat]}</div>
           <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 2 }}>issues</div>
         </div>
       ))}
@@ -632,7 +720,7 @@ function SarpanchCard({ sarpanchName, photo, whatsapp, instagram, address }: { s
         </div>
         <div style={{ flex: 1, minWidth: 150 }}>
           <div style={{ fontSize: 10, color: "#22c55e", fontWeight: 700, letterSpacing: "0.12em", marginBottom: 5 }}>GRAM PRADHAN · SARPANCH</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>{sarpanchName}</div>
+          <div style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>{sarpanchName}</div>
           <div style={{ fontSize: 12, color: "var(--ct4)", lineHeight: 1.5 }}>{address}</div>
         </div>
         {/* Contact Buttons */}
@@ -743,7 +831,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
     <div>
       {compact ? (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📢 Notices & Announcements</h3>
+          <h3 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📢 Notices & Announcements</h3>
           {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
         </div>
       ) : (
@@ -751,7 +839,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", fontSize: 12, color: "#f59e0b", marginBottom: 16, fontWeight: 600 }}>
             📢 Official Notices
           </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Notices & Announcements</h2>
+          <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Notices & Announcements</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Official announcements from Sarpanch Priyanka Yadav — Gram Sabha Pahrajpur</p>
         </div>
       )}
@@ -759,7 +847,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
       {notices.length === 0 ? (
         <div className="glass" style={{ borderRadius: 20, padding: compact ? "28px 24px" : "48px 32px", textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: compact ? 15 : 19, fontWeight: 600, marginBottom: 8 }}>No notices yet</div>
+          <div style={{ fontFamily: "'Sora',sans-serif", fontSize: compact ? 15 : 19, fontWeight: 600, marginBottom: 8 }}>No notices yet</div>
           <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Notices to post your first announcement." : "Official notices from the Sarpanch will appear here."}</div>
         </div>
       ) : (
@@ -774,7 +862,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>{m.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 14 }}>{n.title}</span>
+                      <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 14 }}>{n.title}</span>
                       <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}>{m.icon} {m.label}</span>
                     </div>
                     <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}>📅 {n.date} · Posted {fmtDate(n.createdAt)}</div>
@@ -837,14 +925,14 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.25)", fontSize: 12, color: "#a855f7", marginBottom: 16, fontWeight: 600 }}>
             📷 Village Gallery
           </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Photos & Videos</h2>
+          <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Photos & Videos</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Precious moments, places, and milestones of Gram Sabha Pahrajpur</p>
         </div>
       )}
 
       {compact && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📷 Village Gallery</h3>
+          <h3 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📷 Village Gallery</h3>
           {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
         </div>
       )}
@@ -852,7 +940,7 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
       {media.length === 0 ? (
         <div className="glass" style={{ borderRadius: 20, padding: compact ? "32px 24px" : "48px 32px", textAlign: "center" }}>
           <div style={{ fontSize: 42, marginBottom: 12 }}>🖼</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: compact ? 16 : 20, fontWeight: 600, marginBottom: 8 }}>No photos or videos yet</div>
+          <div style={{ fontFamily: "'Sora',sans-serif", fontSize: compact ? 16 : 20, fontWeight: 600, marginBottom: 8 }}>No photos or videos yet</div>
           <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Gallery to add your first photo or video." : "Village photos and videos will appear here soon."}</div>
         </div>
       ) : (
@@ -932,7 +1020,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 600 }}>
             🏆 Development Works
           </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Completed Achievements</h2>
+          <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Completed Achievements</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Works and developments completed under the leadership of Sarpanch Priyanka Yadav</p>
         </div>
       </FadeIn>
@@ -946,7 +1034,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
             { label: "Categories", value: [...new Set(achievements.map(a => a.category))].length, color: "#f59e0b" },
           ].map(s => (
             <div key={s.label} className="glass" style={{ borderRadius: 14, padding: "14px 20px", flex: 1, minWidth: 120 }}>
-              <div style={{ fontSize: 22, fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, color: s.color }}>{s.value}</div>
+              <div style={{ fontSize: 22, fontFamily: "'Sora',sans-serif", fontWeight: 700, color: s.color }}>{s.value}</div>
               <div style={{ fontSize: 11, color: "var(--ct4)", marginTop: 3 }}>{s.label}</div>
             </div>
           ))}
@@ -972,7 +1060,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
         <FadeIn delay={200}>
           <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
             <div style={{ fontSize: 44, marginBottom: 14 }}>🏆</div>
-            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No achievements yet</div>
+            <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No achievements yet</div>
             <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Achievements to add your first completed work." : "Completed works will be listed here soon."}</div>
           </div>
         </FadeIn>
@@ -999,7 +1087,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
                     <div style={{ width: 42, height: 42, borderRadius: 12, background: color + "22", border: `1px solid ${color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{icon}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-                        <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 15 }}>{a.title}</span>
+                        <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 15 }}>{a.title}</span>
                         <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: color + "22", color, fontWeight: 600 }}>{a.category}</span>
                         <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: "rgba(34,197,94,0.12)", color: "#22c55e", fontWeight: 600 }}>✅ Done</span>
                       </div>
@@ -1157,7 +1245,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
     <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 32 }}>
       <FadeIn>
         <div style={{ marginBottom: 28 }}>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>⚙️ Admin Settings</h2>
+          <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>⚙️ Admin Settings</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Full control over the portal — only visible to you.</p>
         </div>
       </FadeIn>
@@ -1616,7 +1704,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   if (!media || media.length === 0) return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
+      <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
       <div style={{ borderRadius: 16, background: "var(--cbg5)", height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "var(--ct4)", fontSize: 13 }}>No photos uploaded yet</p>
       </div>
@@ -1628,7 +1716,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}>📷 Village Gallery</h2>
+      <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}>📷 Village Gallery</h2>
       <div style={{ 
         display: "flex", gap: 10, perspective: "1000px",
         transform: animating ? "rotateY(90deg)" : "rotateY(0deg)",
@@ -1671,90 +1759,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
 
 
-  
-// ── AI PANEL ─────────────────────────────────────────────────────────────────
-function AIPanel({ villageName, sarpanchName }: { villageName: string; sarpanchName: string }) {
-  const [query, setQuery] = useState("");
-  const [msgs, setMsgs] = useState<{ role: string; text: string; id: number }[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
-  const chatRef = useRef<HTMLDivElement>(null);
-  const QUICK = ["What is this portal?","How to report a problem?","Who is the Sarpanch?","What categories exist?"];
-
-  const ask = async (text: string) => {
-    if (!text.trim() || loading) return;
-    const id = Date.now();
-    setMsgs(prev => [...prev, { role:"user", text, id }]);
-    setQuery(""); setLoading(true);
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000,
-          system:`You are a helpful AI assistant for "${villageName}" — a Gram Panchayat Portal in India. Sarpanch: ${sarpanchName}. Villagers report infrastructure problems, track resolution, see notices, give feedback. Answer concisely in English under 3 sentences.`,
-          messages:[...msgs.map(m=>({role:m.role==="user"?"user":"assistant",content:m.text})),{role:"user",content:text}],
-        }),
-      });
-      const data = await res.json();
-      const reply = data.content?.map((b: any) => b.text || "").join("") || "Could not get a response.";
-      setMsgs(prev => [...prev, { role:"ai", text:reply, id:id+1 }]);
-    } catch { setMsgs(prev => [...prev, { role:"ai", text:"Connection error. Try again.", id:Date.now() }]); }
-    setLoading(false);
-    setTimeout(() => chatRef.current?.scrollTo({ top:99999, behavior:"smooth" }), 100);
-  };
-
-  return (
-    <div style={{ width:"100%" }}>
-      <button onClick={() => setOpen(o => !o)}
-        style={{ width:"100%",display:"flex",alignItems:"center",gap:12,padding:"12px 18px",borderRadius:16,border:"1px solid rgba(124,92,252,0.35)",background:"rgba(124,92,252,0.08)",cursor:"pointer",color:"var(--text-main)",fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:600,fontSize:14,backdropFilter:"blur(16px)",transition:"background 0.2s" }}
-        onMouseEnter={e => e.currentTarget.style.background="rgba(124,92,252,0.16)"}
-        onMouseLeave={e => e.currentTarget.style.background="rgba(124,92,252,0.08)"}>
-        <span style={{ width:30,height:30,borderRadius:9,background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0,boxShadow:"0 4px 12px rgba(124,92,252,0.4)" }}>✨</span>
-        <span style={{ flex:1,textAlign:"left" }}>Ask AI about this portal</span>
-        <span style={{ fontSize:18,color:"#b57bee",display:"inline-block",transform:open?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s" }}>⌄</span>
-      </button>
-      {open && (
-        <div className="glass" style={{ marginTop:10,padding:0,overflow:"hidden",borderRadius:20 }}>
-          <div style={{ padding:"12px 18px",borderBottom:"1px solid rgba(124,92,252,0.10)",display:"flex",alignItems:"center",gap:10 }}>
-            <div style={{ width:26,height:26,borderRadius:8,background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13 }}>✨</div>
-            <div><div style={{ fontSize:13,fontWeight:700,color:"var(--text-main)" }}>AI Assistant</div><div style={{ fontSize:11,color:"var(--ct4)" }}>Ask anything about {villageName}</div></div>
-            <div style={{ marginLeft:"auto",display:"flex",alignItems:"center",gap:5 }}><div style={{ width:7,height:7,borderRadius:"50%",background:"#4ade80",animation:"pulse-dot 2s infinite" }}/><span style={{ fontSize:11,color:"var(--ct4)" }}>Online</span></div>
-          </div>
-          <div ref={chatRef} style={{ height:220,overflowY:"auto",padding:"12px 14px 8px",display:"flex",flexDirection:"column",gap:10 }}>
-            {msgs.length === 0 && (
-              <div style={{ textAlign:"center",padding:"12px 0" }}>
-                <div style={{ fontSize:24,marginBottom:8 }}>🌟</div>
-                <div style={{ fontSize:13,color:"var(--ct4)",marginBottom:12 }}>Ask me anything about this portal</div>
-                <div style={{ display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center" }}>
-                  {QUICK.map(q => (<button key={q} onClick={() => ask(q)} style={{ padding:"5px 11px",borderRadius:20,border:"1px solid rgba(124,92,252,0.30)",background:"rgba(124,92,252,0.08)",color:"#b57bee",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif",transition:"background 0.2s" }} onMouseEnter={e=>e.currentTarget.style.background="rgba(124,92,252,0.18)"} onMouseLeave={e=>e.currentTarget.style.background="rgba(124,92,252,0.08)"}>{q}</button>))}
-                </div>
-              </div>
-            )}
-            {msgs.map(m => (
-              <div key={m.id} style={{ display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start" }}>
-                {m.role === "ai" && <div style={{ width:20,height:20,borderRadius:6,flexShrink:0,marginRight:6,marginTop:2,background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10 }}>✨</div>}
-                <div style={{ maxWidth:"80%",padding:"8px 12px",borderRadius:m.role==="user"?"12px 12px 4px 12px":"12px 12px 12px 4px",background:m.role==="user"?"linear-gradient(135deg,rgba(124,92,252,0.5),rgba(91,63,212,0.5))":"var(--glass-bg)",border:m.role==="user"?"none":"1px solid rgba(124,92,252,0.12)",fontSize:13,color:"var(--text-main)",lineHeight:1.6 }}>
-                  {m.text}
-                </div>
-              </div>
-            ))}
-            {loading && (
-              <div style={{ display:"flex",alignItems:"center",gap:8,paddingLeft:28 }}>
-                <div style={{ display:"flex",gap:4 }}>{[0,1,2].map(i => (<div key={i} style={{ width:6,height:6,borderRadius:"50%",background:"#b57bee",animation:`typingDot 1.2s ease-in-out ${i*0.2}s infinite` }}/>))}</div>
-                <span style={{ fontSize:11,color:"var(--ct4)" }}>Thinking…</span>
-              </div>
-            )}
-          </div>
-          <div style={{ padding:"10px 12px",borderTop:"1px solid rgba(124,92,252,0.08)",display:"flex",gap:8,alignItems:"center" }}>
-            <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key==="Enter" && ask(query)} placeholder="Type your question…" style={{ flex:1,padding:"8px 12px",borderRadius:11,fontSize:13 }}/>
-            <button onClick={() => ask(query)} disabled={!query.trim() || loading} style={{ width:34,height:34,borderRadius:10,flexShrink:0,background:query.trim()&&!loading?"linear-gradient(135deg,#7c5cfc,#38d9f5)":"var(--cbg7)",border:"none",cursor:query.trim()&&!loading?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#fff",transition:"background 0.2s" }}>→</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const saveSettings = async (data) => {
+  const saveSettings = async (data) => {
     try {
       await setDoc(doc(db, "settings", "main"), data, { merge: true });
     } catch(e) { console.log(e); }
@@ -1854,7 +1859,7 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
 }
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
+  const [showSplash, setShowSplash] = useState(true);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [userName, setUserName] = useState<string>("");
   const [showLogin, setShowLogin] = useState(false);
@@ -2124,7 +2129,7 @@ export default function App() {
   return (
     <>
       {showSplash && <WelcomeSplash onDone={() => { localStorage.setItem("gsp-visited","1"); setShowSplash(false); }} />}
-      <div data-theme={theme} style={{ minHeight:"100vh", background:"var(--bg-page)", color:"var(--text-main)" }} className="grid-bg">
+      <div data-theme={theme} style={{ minHeight: "100vh", background: "var(--bg-page)", color: "var(--text-main)" }} className="grid-bg">
       <style>{GLOBAL_STYLE}</style>
 
       {/* NAVBAR */}
@@ -2140,9 +2145,9 @@ export default function App() {
               position: "relative", overflow: "hidden",
             }}>
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg,rgba(255,255,255,0.2) 0%,transparent 60%)", borderRadius: 9 }} />
-              <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 12, color: "#fff", letterSpacing: "0.04em", position: "relative", zIndex: 1 }}>GSP</span>
+              <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 12, color: "#fff", letterSpacing: "0.04em", position: "relative", zIndex: 1 }}>GSP</span>
             </div>
-            <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
+            <span style={{ fontFamily: "'Sora',sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
               {villageName}
             </span>
           </div>
@@ -2176,172 +2181,6 @@ export default function App() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 16px 60px" }}>
 
         {/* ── HOME ─────────────────────────────────────────────────────────── */}
-        {page === "home" && (
-          <div>
-            {/* ── HERO ──────────────────────────────────────────────── */}
-            <div style={{ padding:"52px 0 40px", position:"relative", overflow:"hidden" }}>
-              {/* bg glow */}
-              <div style={{ position:"absolute",width:600,height:600,borderRadius:"50%",top:-240,left:-180,background:"radial-gradient(circle,rgba(124,92,252,0.10) 0%,transparent 70%)",pointerEvents:"none" }}/>
-              <div style={{ position:"absolute",width:400,height:400,borderRadius:"50%",bottom:-120,right:-60,background:"radial-gradient(circle,rgba(56,217,245,0.06) 0%,transparent 70%)",pointerEvents:"none" }}/>
-
-              <div className="hero-split" style={{ display:"flex",alignItems:"center",gap:52,position:"relative" }}>
-                {/* LEFT */}
-                <div className="hero-left" style={{ flex:1,minWidth:0,display:"flex",flexDirection:"column",alignItems:"flex-start" }}>
-                  <FadeIn>
-                    <span style={{ display:"inline-flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:100,fontSize:12,fontWeight:600,letterSpacing:"0.04em",background:"rgba(124,92,252,0.12)",border:"1px solid rgba(124,92,252,0.32)",color:"#b57bee",marginBottom:22 }}>
-                      <span style={{ width:7,height:7,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 6px #4ade80",display:"inline-block",animation:"pulse-dot 2s infinite" }}/>
-                      Digital Gram Panchayat Portal
-                    </span>
-                  </FadeIn>
-
-                  <FadeIn delay={180}>
-                    <h1 style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:"clamp(28px,4.5vw,56px)",lineHeight:1.06,letterSpacing:"-0.03em",marginBottom:18 }}>
-                      <span style={{ display:"block",color:"var(--text-main)" }}>Gram Sabha</span>
-                      <span className="shimmer-text" style={{ display:"block" }}>{villageName.split(" ").slice(-1)[0]}</span>
-                      <span style={{ display:"block",color:"var(--ct4)",fontWeight:400,fontSize:"0.52em",marginTop:10,letterSpacing:"-0.01em",fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Village Governance, Reimagined</span>
-                    </h1>
-                  </FadeIn>
-
-                  <FadeIn delay={400}>
-                    <p style={{ fontSize:15,color:"var(--ct45)",lineHeight:1.8,maxWidth:440,fontWeight:400,marginBottom:28 }}>
-                      Report infrastructure problems. Track every resolution. Receive official notices from your Sarpanch — transparent and accountable governance.
-                    </p>
-                  </FadeIn>
-
-                  <FadeIn delay={600}>
-                    <div className="hero-ctas" style={{ display:"flex",gap:12,flexWrap:"wrap" }}>
-                      <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius:14,padding:"13px 28px",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:8 }}>
-                        📋 Report a Problem <span style={{ opacity:0.7 }}>→</span>
-                      </button>
-                      <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius:14,padding:"13px 28px",fontSize:15,fontWeight:600 }}>
-                        📊 View All Issues
-                      </button>
-                    </div>
-                  </FadeIn>
-
-                  <FadeIn delay={820}>
-                    <div style={{ marginTop:22,width:"100%" }}><AIPanel villageName={villageName} sarpanchName={sarpanchName} /></div>
-                  </FadeIn>
-                </div>
-
-                {/* RIGHT — 3D Orb */}
-                <div className="hero-orb-col" style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:16,flexShrink:0 }}>
-                  <FadeIn delay={350}>
-                    <div style={{ position:"relative",width:270,height:270 }}>
-                      <div style={{ position:"absolute",inset:-40,borderRadius:"50%",background:"radial-gradient(ellipse,rgba(124,92,252,0.22) 0%,transparent 70%)",animation:"pulseGlow 3s ease-in-out infinite",pointerEvents:"none" }}/>
-                      <div style={{ position:"absolute",inset:16,borderRadius:"50%",background:"radial-gradient(ellipse at 35% 30%,rgba(181,123,238,0.95) 0%,rgba(124,92,252,0.75) 45%,rgba(56,217,245,0.45) 100%)",boxShadow:"0 0 60px rgba(124,92,252,0.55),0 0 120px rgba(124,92,252,0.22),inset 0 0 36px rgba(255,255,255,0.10)",animation:"floatOrb 5s ease-in-out infinite" }}>
-                        <div style={{ position:"absolute",top:"14%",left:"20%",width:"38%",height:"22%",borderRadius:"50%",background:"rgba(255,255,255,0.26)",filter:"blur(7px)" }}/>
-                        <div style={{ position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"rgba(255,255,255,0.92)",letterSpacing:"0.06em",textShadow:"0 2px 12px rgba(0,0,0,0.4)" }}>GSP</div>
-                      </div>
-                      <div style={{ position:"absolute",top:"50%",left:"50%",width:11,height:11,marginTop:-5.5,marginLeft:-5.5,animation:"orbit1 5s linear infinite" }}><div style={{ width:11,height:11,borderRadius:"50%",background:"#38d9f5",boxShadow:"0 0 12px #38d9f5" }}/></div>
-                      <div style={{ position:"absolute",top:"50%",left:"50%",width:8,height:8,marginTop:-4,marginLeft:-4,animation:"orbit2 7s linear infinite" }}><div style={{ width:8,height:8,borderRadius:"50%",background:"#f4c95d",boxShadow:"0 0 10px #f4c95d" }}/></div>
-                      <div className="glass" style={{ position:"absolute",top:-6,right:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4s ease-in-out infinite" }}>
-                        <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>Resolved</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"#4ade80" }}>{stats.resolved}</div>
-                      </div>
-                      <div className="glass" style={{ position:"absolute",bottom:6,left:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4.5s ease-in-out infinite 0.8s" }}>
-                        <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>Total</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"#b57bee" }}>{stats.total}</div>
-                      </div>
-                      <div className="glass" style={{ position:"absolute",bottom:52,right:-20,padding:"6px 12px",borderRadius:11,animation:"floatChip 6s ease-in-out infinite 1.2s" }}>
-                        <div style={{ display:"flex",alignItems:"center",gap:5 }}><div style={{ width:7,height:7,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 7px #4ade80",animation:"pulse-dot 2s infinite" }}/><span style={{ fontSize:11,color:"var(--text-main)",fontWeight:600 }}>Live</span></div>
-                      </div>
-                    </div>
-                    {/* mini stats strip */}
-                    <div className="glass" style={{ padding:0,borderRadius:16,overflow:"hidden",width:270,marginTop:14 }}>
-                      <div style={{ display:"flex" }}>
-                        {([{num:stats.total,label:"Total",color:"#b57bee"},{num:stats.resolved,label:"Done",color:"#4ade80"},{num:stats.pending,label:"Pending",color:"#f4c95d"},{num:stats.inprogress,label:"Active",color:"#38d9f5"}] as const).map((s,i)=>(
-                          <div key={s.label} style={{ flex:1,textAlign:"center",padding:"11px 4px",borderRight:i<3?"1px solid rgba(124,92,252,0.10)":"none" }}>
-                            <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:16,color:s.color }}>{s.num}</div>
-                            <div style={{ fontSize:10,color:"var(--ct4)",marginTop:2,fontWeight:500 }}>{s.label}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </FadeIn>
-                </div>
-              </div>
-            </div>
-
-            <FadeIn delay={1200}>
-              <div style={{ display: "flex", gap: 12, marginBottom: 36, flexWrap: "wrap" }}>
-                <StatCard label="Total Problems" value={stats.total} color="#b57bee" />
-                <StatCard label="Pending" value={stats.pending} color="#f4c95d" />
-                <StatCard label="In Progress" value={stats.inprogress} color="#7c5cfc" />
-                <StatCard label="Resolved" value={stats.resolved} color="#4ade80" />
-              </div>
-            </FadeIn>
-
-            <FadeIn delay={1700}>
-              <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16, color: "var(--text-main)" }}>Issues by Category</h3>
-              <CategoryGrid problems={problems} onNavigate={() => setPage("board")} />
-            </FadeIn>
-
-            {problems.length > 0 && (
-              <FadeIn delay={1900}>
-                <div style={{ marginTop: 40 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>Recent Issues</h3>
-                    <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {problems.slice(0, 3).map(p => <ProblemCard key={p.id} problem={p} isAdmin={false} onUpdate={updateProblem} onDelete={deleteProblem} />)}
-                  </div>
-                </div>
-              </FadeIn>
-            )}
-
-            {problems.length === 0 && !loading && (
-              <FadeIn delay={1600}>
-                <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", marginTop: 20 }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>🌱</div>
-                  <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No issues reported yet</div>
-                  <div style={{ color: "var(--ct4)", fontSize: 14, marginBottom: 24 }}>Be the first to report a problem in your village.</div>
-                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 600 }}>Submit First Problem →</button>
-                </div>
-              </FadeIn>
-            )}
-
-            {/* Sarpanch Profile + Social */}
-            <FadeIn delay={1800}>
-              <div style={{ marginTop: 40 }}>
-                <h3 style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:600, fontSize:18, marginBottom:14, color:"var(--text-main)" }}>Your Sarpanch</h3>
-                <SarpanchCard sarpanchName={sarpanchName} photo={sarpanchPhoto} whatsapp={whatsapp} instagram={instagram} address={sarpanchAddress} />
-              </div>
-            </FadeIn>
-
-            {/* Notices preview on home */}
-            {notices.length > 0 && (
-              <FadeIn delay={2000}>
-                <div style={{ marginTop: 40 }}>
-                  <NoticesPage notices={notices} isAdmin={isAdmin} onDelete={deleteNotice} compact onViewAll={() => setPage("notices")} />
-                </div>
-              </FadeIn>
-            )}
-
-            {/* Photo Carousel */}
-            <FadeIn delay={1800}>
-              <PhotoCarousel media={media} />
-            </FadeIn>
-
-            
-
-            {/* Feedback Section */}
-            <FadeIn delay={2200}>
-              <div style={{ marginTop: 40 }}>
-                <FeedbackSection feedbacks={feedbacks} onAdd={addFeedback} />
-              </div>
-            </FadeIn>
-
-            {/* Made By tag */}
-            <div style={{ marginTop: 60, textAlign: "center" }}>
-              <span style={{ fontSize: 12, color: "var(--ct4)", letterSpacing: "0.08em", fontWeight: 500 }}>
-                Made with ❤️ by <span style={{ color: "var(--text-main)", fontWeight: 700 }}>Abhinav Yadav</span>
-              </span>
-            </div>
-          </div>
-        )}
-
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
         {page === "submit" && (
           <div style={{ paddingTop: 40 }}>
@@ -2365,7 +2204,7 @@ export default function App() {
           <div style={{ paddingTop: 32 }}>
             <FadeIn>
               <div style={{ marginBottom: 24 }}>
-                <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>
+                <h2 style={{ fontFamily: "'Sora',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>
                   {isAdmin ? "🛡 Admin Dashboard" : "All Reported Issues"}
                 </h2>
                 <p style={{ fontSize: 13, color: "var(--ct4)" }}>{filtered.length} of {problems.length} issues shown</p>
@@ -2381,7 +2220,7 @@ export default function App() {
               <FadeIn delay={200}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
                   <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-                  <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 600, marginBottom: 8 }}>No issues found</div>
+                  <div style={{ fontFamily: "'Sora',sans-serif", fontSize: 18, fontWeight: 600, marginBottom: 8 }}>No issues found</div>
                   <div style={{ color: "var(--ct4)", fontSize: 13 }}>{problems.length === 0 ? "No problems have been submitted yet." : "Try adjusting your filters."}</div>
                 </div>
               </FadeIn>
