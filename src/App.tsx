@@ -1701,7 +1701,7 @@ function AIPanel({ villageName, sarpanchName }: { villageName: string; sarpanchN
         parts: [{ text: m.text }]
       }));
       const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAQ.Ab8RN6LNkN8-fBUo-b_C1gknqp9ccviflp_iEQ_I7FrdUZnN4A",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAQ.Ab8RN6LNkN8-fBUo-b_C1gknqp9ccviflp_iEQ_I7FrdUZnN4A",
         { method:"POST", headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
             system_instruction: { parts: [{ text: `You are a helpful AI assistant for "${villageName}" — a Gram Panchayat Portal in India. Sarpanch: ${sarpanchName}. Villagers report infrastructure problems, track resolution, see notices, give feedback. Answer concisely in English under 3 sentences.` }] },
