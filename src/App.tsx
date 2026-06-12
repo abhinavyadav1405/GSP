@@ -10,6 +10,15 @@ import type { User, ConfirmationResult } from "firebase/auth";
 const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  @keyframes blob1 { 0%,100% { transform: translate(0px,0px) scale(1); } 33% { transform: translate(60px,-40px) scale(1.12); } 66% { transform: translate(-40px,30px) scale(0.94); } }
+  @keyframes blob2 { 0%,100% { transform: translate(0px,0px) scale(1); } 33% { transform: translate(-50px,55px) scale(1.08); } 66% { transform: translate(65px,-20px) scale(0.95); } }
+  @keyframes blob3 { 0%,100% { transform: translate(0px,0px) scale(1); } 33% { transform: translate(40px,50px) scale(1.06); } 66% { transform: translate(-55px,-35px) scale(1.04); } }
+  .aurora-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .ab { position: absolute; border-radius: 50%; filter: blur(75px); opacity: 0.40; mix-blend-mode: multiply; }
+  .ab1 { width: 55vw; height: 55vw; max-width: 680px; background: radial-gradient(circle, rgba(181,123,238,0.85) 0%, transparent 100%); top: -15%; left: -10%; animation: blob1 12s ease-in-out infinite; }
+  .ab2 { width: 50vw; height: 50vw; max-width: 580px; background: radial-gradient(circle, rgba(56,217,245,0.75) 0%, transparent 100%); top: 30%; right: -12%; animation: blob2 15s ease-in-out infinite; }
+  .ab3 { width: 42vw; height: 42vw; max-width: 520px; background: radial-gradient(circle, rgba(244,201,93,0.55) 0%, transparent 100%); bottom: -10%; left: 30%; animation: blob3 18s ease-in-out infinite; }
+  .ab4 { width: 32vw; height: 32vw; max-width: 400px; background: radial-gradient(circle, rgba(74,222,128,0.45) 0%, transparent 100%); top: 10%; right: 25%; animation: blob1 20s ease-in-out infinite reverse; }
   body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; background: #f0eeff; color: #1a1040; }
   :root {
     --bg-page:#0a0814;--bg2:#0f0c1e;--text-main:#f0eeff;
@@ -2130,7 +2139,7 @@ export default function App() {
   return (
     <>
       {showSplash && <WelcomeSplash onDone={() => { localStorage.setItem("gsp-visited","1"); setShowSplash(false); }} />}
-      <div data-theme={theme} style={{ minHeight:"100vh", background:"var(--bg-page)", color:"var(--text-main)" }} className="grid-bg">
+      <div className="aurora-bg"><div className="ab ab1"/><div className="ab ab2"/><div className="ab ab3"/><div className="ab ab4"/></div><div data-theme={theme} style={{ minHeight:"100vh", background:"var(--bg-page)", color:"var(--text-main)" }} className="grid-bg">
       <style>{GLOBAL_STYLE}</style>
 
       {/* NAVBAR */}
