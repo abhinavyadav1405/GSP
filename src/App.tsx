@@ -1777,6 +1777,50 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
     setLoading(false);
   };
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Save or update user data in Firestore
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          name: user.displayName || "Google User",
+          email: user.email,
+          photoURL: user.photoURL || "",
+          createdAt: new Date().toISOString(),
+          loginProvider: "google",
+          emailVerified: user.emailVerified,
+        }, { merge: true });
+      } catch (firestoreError) {
+        console.log("Firestore save error (non-critical):", firestoreError);
+      }
+      
+      setSuccess("✅ Google login successful!");
+      setTimeout(() => onClose(), 500);
+    } catch (e: any) {
+      if (e.code === "auth/popup-closed-by-user") {
+        setError("❌ Login cancelled.");
+      } else if (e.code === "auth/popup-blocked") {
+        setError("❌ Pop-up blocked. Allow pop-ups for this site.");
+      } else if (e.code === "auth/operation-not-allowed") {
+        setError("❌ Google sign-in is not enabled. Contact admin.");
+      } else if (e.code === "auth/network-request-failed") {
+        setError("❌ Network error. Check your internet connection.");
+      } else {
+        setError("❌ Google login failed. Try again.");
+      }
+    }
+    setLoading(false);
+  };
+
   return (
     <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16, backdropFilter:"blur(4px)" }}>
       <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center", maxHeight:"90vh", overflowY:"auto" }}>
@@ -1874,6 +1918,49 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
           style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, marginTop:16, opacity: loading ? 0.7 : 1 }}>
           {loading ? "⏳ Please wait…" : step === "login" ? "Sign In →" : step === "register" ? "Create Account →" : "Send Reset Link →"}
         </button>
+
+        {/* Google Login - Only on Login/Register Steps */}
+        {(step === "login" || step === "register") && (
+          <>
+            {/* Divider */}
+            <div style={{ display:"flex", alignItems:"center", gap:10, margin:"16px 0", color:"var(--ct4)", fontSize:12 }}>
+              <div style={{ flex:1, height:"1px", background:"var(--cbg6)" }}/>
+              <span>or</span>
+              <div style={{ flex:1, height:"1px", background:"var(--cbg6)" }}/>
+            </div>
+
+            {/* Google Sign-In Button */}
+            <button 
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              style={{
+                borderRadius:12,
+                padding:"12px 0",
+                width:"100%",
+                fontSize:14,
+                fontWeight:600,
+                background:"rgba(255,255,255,0.08)",
+                border:"1px solid rgba(255,255,255,0.15)",
+                color:"var(--text-main)",
+                cursor:loading ? "not-allowed" : "pointer",
+                display:"flex",
+                alignItems:"center",
+                justifyContent:"center",
+                gap:8,
+                transition:"all 0.2s",
+                opacity: loading ? 0.6 : 1,
+              }}
+              onMouseEnter={e => !loading && (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
+              onMouseLeave={e => !loading && (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
+              title="Sign in with your Google account">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4m0-4v0"/>
+              </svg>
+              {loading ? "Signing in…" : `${step === "login" ? "Sign in" : "Sign up"} with Google`}
+            </button>
+          </>
+        )}
 
         {/* Navigation Buttons */}
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:16 }}>
