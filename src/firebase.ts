@@ -22,3 +22,4 @@ export { RecaptchaVerifier, signInWithPhoneNumber, signOut, onAuthStateChanged, 
 export { collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy };
 export { ref, uploadBytes, getDownloadURL };
 export type { User, ConfirmationResult };
+export { sendPasswordResetEmail } from "firebase/auth";

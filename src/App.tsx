@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, signInWithRedirect, getRedirectResult,
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
-  storage, ref, uploadBytes, getDownloadURL,
+  storage, ref, uploadBytes, getDownloadURL, sendPasswordResetEmail,
 } from "./firebase";
 import type { User, ConfirmationResult } from "firebase/auth";
 
@@ -1525,15 +1525,79 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
   );
 }
 
+
+// ── User Activity Logs ───────────────────────────────────────────────────────
+function UserLogsSection() {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const q = query(collection(db, "activityLogs"), orderBy("timestamp", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      setLogs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      setLoading(false);
+    }, () => setLoading(false));
+    return () => unsub();
+  }, []);
+
+  return (
+    <div>
+      <h3 style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:600, fontSize:16, marginBottom:12 }}>📋 User Activity Logs</h3>
+      <p style={{ fontSize:13, color:"var(--ct45)", marginBottom:16 }}>Email se login karne wale users</p>
+      {loading ? (
+        <div style={{ textAlign:"center", padding:24, color:"var(--ct3)", fontSize:13 }}>Loading…</div>
+      ) : logs.length === 0 ? (
+        <div className="glass" style={{ borderRadius:14, padding:"24px", textAlign:"center", color:"var(--ct4)", fontSize:13 }}>
+          Abhi koi activity nahi hai
+        </div>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {logs.map(log => (
+            <div key={log.id} className="glass" style={{ borderRadius:12, padding:"12px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:8 }}>
+              <div>
+                <div style={{ fontSize:13, fontWeight:600 }}>{log.name || "Unknown"}</div>
+                <div style={{ fontSize:12, color:"var(--ct4)", marginTop:2 }}>{log.email}</div>
+              </div>
+              <div style={{ textAlign:"right" }}>
+                <div style={{ fontSize:11, padding:"2px 10px", borderRadius:8, background:"rgba(34,197,94,0.12)", color:"#22c55e", fontWeight:600, display:"inline-block" }}>
+                  {log.action || "login"}
+                </div>
+                <div style={{ fontSize:11, color:"var(--ct3)", marginTop:4 }}>
+                  {log.timestamp ? new Date(log.timestamp).toLocaleString("en-IN") : ""}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    <div className="glass" style={{ borderRadius:18, padding:"24px 22px", marginBottom:16, marginTop:16 }}>
+        <UserLogsSection />
+      </div>
+    </div>
+  );
+}
+
 // ── Email Login Component ────────────────────────────────────────────────────
 function PhoneLogin({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [step, setStep] = useState<"login"|"register">("login");
+  const [step, setStep] = useState<"login"|"register"|"reset">("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const handleReset = async () => {
+    if (!email) { setError("Please enter your email"); return; }
+    setLoading(true); setError(""); setSuccess("");
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setSuccess("Password reset link sent! Check your inbox & spam folder.");
+    } catch (e: any) {
+      setError("Could not send reset email. Check the address and try again.");
+    }
+    setLoading(false);
+  };
 
   const handleLogin = async () => {
     if (!email || !password) { setError("Please fill all fields"); return; }
@@ -1585,7 +1649,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
         <div style={{ display:"flex", flexDirection:"column", gap:10, textAlign:"left" }}>
           {step === "register" && <input value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" />}
           <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" type="email" />
-          <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min 6 chars)" type="password" />
+          {step !== "reset" && <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min 6 chars)" type="password" />}
         </div>
         {error && <div style={{ fontSize:12, color:"#f87171", margin:"10px 0" }}>{error}</div>}
         {success && <div style={{ fontSize:13, color:"#000", margin:"10px 0", fontWeight:600, padding:"10px 12px", borderRadius:8, background:"#fff" }}>{success}</div>}
@@ -1900,6 +1964,7 @@ export default function App() {
 
   
   // Load sarpanch settings from Firestore in realtime
+  useEffect(() => {
     const sq = doc(db, "settings", "sarpanch");
     const unsubSarpanch = onSnapshot(sq, (snap) => {
       if (snap.exists()) {
@@ -1909,6 +1974,8 @@ export default function App() {
         if (d.villageName) setVillageName(d.villageName);
       }
     });
+    return () => unsubSarpanch();
+  }, []);
 
     // Load problems from Firestore in realtime
   useEffect(() => {
@@ -2001,6 +2068,15 @@ export default function App() {
       if (user) {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) setUserName(userDoc.data().name || "");
+        try {
+          await addDoc(collection(db, "activityLogs"), {
+            uid: user.uid,
+            email: user.email || "",
+            name: userDoc.exists() ? (userDoc.data().name || "") : "",
+            action: "login",
+            timestamp: new Date().toISOString(),
+          });
+        } catch(_) {}
       } else { setUserName(""); }
     });
     return () => unsub();
