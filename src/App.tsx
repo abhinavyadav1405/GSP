@@ -2207,23 +2207,44 @@ function AIPanel({ villageName, sarpanchName }: { villageName: string; sarpanchN
     setMsgs(prev => [...prev, { role:"user", text, id }]);
     setQuery(""); setLoading(true);
     try {
-      const history = msgs.map(m => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.text }]
-      }));
+      const systemPrompt = `You are Paras, a helpful AI assistant for "${villageName}" Gram Panchayat Portal in India. Sarpanch: ${sarpanchName}. The portal is for villagers to report infrastructure problems (water, roads, electricity, drainage, sanitation, education, health, street lights), track their resolution status, receive official notices, and provide feedback. Be helpful, concise, and answer in English in 1-2 sentences max. Focus on portal features and governance matters.`;
+      
+      // Build conversation history
+      const contents: any[] = [];
+      for (const m of msgs) {
+        contents.push({
+          role: m.role === "user" ? "user" : "model",
+          parts: [{ text: m.text }]
+        });
+      }
+      contents.push({ role: "user", parts: [{ text }] });
+      
       const res = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAQ.Ab8RN6KwxYzs4QsJQMbWpA5U5gW8idv0jLPTaTuCVHTH9AS5tw",
-        { method:"POST", headers:{"Content-Type":"application/json"},
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            system_instruction: { parts: [{ text: `You are a helpful AI assistant for "${villageName}" — a Gram Panchayat Portal in India. Sarpanch: ${sarpanchName}. Villagers report infrastructure problems, track resolution, see notices, give feedback. Answer concisely in English under 3 sentences.` }] },
-            contents: [...history, { role:"user", parts:[{ text }] }]
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: contents,
+            generation_config: { maxOutputTokens: 120, temperature: 0.7 }
           })
         }
       );
+      
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData?.error?.message || `API error: ${res.status}`);
+      }
+      
       const data = await res.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Could not get a response.";
-      setMsgs(prev => [...prev, { role:"ai", text:reply, id:id+1 }]);
-    } catch { setMsgs(prev => [...prev, { role:"ai", text:"Connection error. Try again.", id:Date.now() }]); }
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "❌ Could not get a response. Try again.";
+      setMsgs(prev => [...prev, { role:"ai", text: reply, id: id + 1 }]);
+    } catch (err: any) {
+      const errorMsg = err.message?.includes("API") ? "❌ API error. Try again later." : "❌ Connection error. Check your internet.";
+      setMsgs(prev => [...prev, { role:"ai", text: errorMsg, id: Date.now() }]);
+      console.error("AI Error:", err);
+    }
     setLoading(false);
     setTimeout(() => chatRef.current?.scrollTo({ top:99999, behavior:"smooth" }), 100);
   };
