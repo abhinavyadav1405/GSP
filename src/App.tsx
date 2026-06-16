@@ -76,6 +76,7 @@ const GLOBAL_STYLE = `
   @keyframes splashExit{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.04)}}
   @keyframes particleDrift{0%,100%{transform:translateY(0) scale(1);opacity:0.5}50%{transform:translateY(-28px) scale(1.3);opacity:1}}
   @keyframes typingDot{0%,100%{opacity:0.3;transform:scale(0.8);}50%{opacity:1;transform:scale(1);}}
+  @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(248,113,113,0.7)}50%{opacity:0.8;box-shadow:0 0 0 12px rgba(248,113,113,0)}}
   .shimmer-text{background:linear-gradient(90deg,#f0eeff 0%,#b57bee 28%,#38d9f5 50%,#b57bee 72%,#f0eeff 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmerTxt 4s linear infinite;}
   .grid-bg{background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);background-size:44px 44px;}
   @media(max-width:768px){.hero-split{flex-direction:column!important;}.hero-orb-col{display:none!important;}.hero-ctas{justify-content:center!important;}.hero-left{text-align:center;align-items:center!important;}.feat-grid{grid-template-columns:1fr 1fr!important;}}
@@ -479,7 +480,47 @@ function SubmitForm({ onSubmit }: { onSubmit: (p: Problem) => Promise<void> }) {
   const [locationText, setLocationText] = useState("");
   const [locationCoords, setLocationCoords] = useState<LatLng | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  // 🎤 Voice-to-Text for description
+  const startVoiceRecording = () => {
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      alert("🎤 Speech recognition not supported on your device");
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.lang = "hi-IN";
+    recognitionRef.current.continuous = true;
+    recognitionRef.current.interimResults = false;
+
+    recognitionRef.current.onstart = () => setIsRecording(true);
+
+    recognitionRef.current.onresult = (event: any) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          const transcript = event.results[i][0].transcript;
+          set("description", form.description + (form.description ? " " : "") + transcript);
+        }
+      }
+    };
+
+    recognitionRef.current.onend = () => setIsRecording(false);
+    recognitionRef.current.onerror = () => setIsRecording(false);
+
+    recognitionRef.current.start();
+  };
+
+  const stopVoiceRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    }
+  };
 
   const handle = async () => {
     if (!form.name || !form.mobile || !form.title || !form.description) { alert("Please fill all required fields."); return; }
@@ -518,7 +559,35 @@ function SubmitForm({ onSubmit }: { onSubmit: (p: Problem) => Promise<void> }) {
           {field("Category", <select value={form.category} onChange={e => set("category", e.target.value)}>{CATEGORIES.map(c => <option key={c}>{c}</option>)}</select>)}
         </div>
         {field("Problem Title *", <input value={form.title} onChange={e => set("title", e.target.value)} placeholder="Short, clear title (max 100 chars)" maxLength={100} />)}
-        {field("Description *", <textarea rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the problem in detail..." maxLength={500} />)}
+        {field("Description * (Use voice or type)", (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+              <textarea rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the problem in detail..." maxLength={500} style={{ flex: 1 }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 2 }}>
+                <button
+                  type="button"
+                  onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 9,
+                    border: "none",
+                    background: isRecording ? "rgba(248,113,113,0.2)" : "rgba(59,130,246,0.15)",
+                    color: isRecording ? "#f87171" : "#3b82f6",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={isRecording ? "Stop recording" : "Start voice input"}
+                >
+                  {isRecording ? "⏹ Stop" : "🎤 Voice"}
+                </button>
+              </div>
+            </div>
+            {isRecording && <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600 }}>🎤 Listening...</div>}
+          </div>
+        ))}
         {field("Photo (optional)", <PhotoUpload photo={photo} onPhoto={setPhoto} />)}
         {field("Location / Landmark (optional)", (
           <input
@@ -1670,6 +1739,115 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
 }
 
 
+// ── Enhanced Floating Action Button with Voice & Photo ─────────────────────
+function EnhancedFAB({ onOpenSubmit, isOpen }: { onOpenSubmit: () => void; isOpen: boolean }) {
+  const [isListening, setIsListening] = useState(false);
+  const [voiceText, setVoiceText] = useState("");
+  const recognitionRef = useRef<any>(null);
+
+  const startVoiceInput = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      alert("🎤 Speech recognition not supported on your device");
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.lang = "hi-IN";
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+
+    recognitionRef.current.onstart = () => setIsListening(true);
+    recognitionRef.current.onend = () => setIsListening(false);
+
+    recognitionRef.current.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setVoiceText(transcript);
+    };
+
+    recognitionRef.current.onerror = () => {
+      setIsListening(false);
+      alert("🎤 Mic access denied or error occurred");
+    };
+
+    recognitionRef.current.start();
+  };
+
+  return (
+    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-end" }}>
+      {/* Voice Button */}
+      <button
+        onClick={startVoiceInput}
+        title={isListening ? "Listening..." : "Report with voice"}
+        style={{
+          width: 56, height: 56, borderRadius: "50%",
+          background: isListening ? "rgba(248, 113, 113, 0.9)" : "rgba(59, 130, 246, 0.85)",
+          border: "2px solid rgba(255,255,255,0.2)",
+          color: "#fff",
+          fontSize: 24,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 8px 24px rgba(59,130,246,0.4)",
+          animation: isListening ? "pulse 1s infinite" : "none",
+          transition: "all 0.2s",
+        }}
+        onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.1)")}
+        onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+      >
+        {isListening ? "⏹" : "🎤"}
+      </button>
+
+      {/* Main Report Button */}
+      <button
+        onClick={onOpenSubmit}
+        title="Report a problem"
+        style={{
+          width: 64, height: 64, borderRadius: "50%",
+          background: isOpen ? "rgba(124,92,252,0.9)" : "linear-gradient(135deg,#7c5cfc 0%,#5b3fd4 100%)",
+          border: "2px solid rgba(255,255,255,0.25)",
+          color: "#fff",
+          fontSize: 28,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: isOpen ? "0 12px 40px rgba(124,92,252,0.6)" : "0 8px 24px rgba(124,92,252,0.35)",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={e => { 
+          e.currentTarget.style.transform = "scale(1.15) rotate(10deg)";
+          e.currentTarget.style.boxShadow = "0 16px 48px rgba(124,92,252,0.7)";
+        }}
+        onMouseLeave={e => { 
+          e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow = "0 8px 24px rgba(124,92,252,0.35)";
+        }}
+      >
+        {isOpen ? "✕" : "+"}
+      </button>
+
+      {/* Info Label */}
+      {!isOpen && (
+        <div className="glass" style={{ 
+          padding: "8px 14px", 
+          borderRadius: 12, 
+          fontSize: 12, 
+          fontWeight: 600,
+          color: "var(--text-main)",
+          whiteSpace: "nowrap",
+          animation: "fadeUp 0.3s ease",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.2)"
+        }}>
+          Report Problem
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Photo Carousel ───────────────────────────────────────────────────────────
 function PhotoCarousel({ media }: { media: any[] }) {
   const [current, setCurrent] = useState(0);
@@ -1961,6 +2139,7 @@ export default function App() {
   const [sarpanchPhoto, setSarpanchPhoto] = useState("");
   const [sarpanchAddress, setSarpanchAddress] = useState("Gram Sabha Pahrajpur, Ballia, Uttar Pradesh");
   const [theme, setTheme]                 = useState<"dark"|"light">("light");
+  const [showSubmitFAB, setShowSubmitFAB] = useState(false);
 
   
   // Load sarpanch settings from Firestore in realtime
@@ -2536,6 +2715,21 @@ export default function App() {
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
       {showLogin && <PhoneLogin onClose={() => setShowLogin(false)} />}
+
+      {/* Enhanced FAB with Voice & Photo */}
+      <EnhancedFAB onOpenSubmit={() => { setShowSubmitFAB(!showSubmitFAB); if (!firebaseUser) setShowLogin(true); }} isOpen={showSubmitFAB} />
+
+      {/* Submit Form Modal */}
+      {showSubmitFAB && firebaseUser && (
+        <div onClick={() => setShowSubmitFAB(false)} style={{
+          position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.5)",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)"
+        }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
+            <SubmitForm onSubmit={async (p) => { await addProblem(p); setShowSubmitFAB(false); }} />
+          </div>
+        </div>
+      )}
     </div>
     </>
   );
