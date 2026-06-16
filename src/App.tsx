@@ -1651,86 +1651,268 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [step, setStep] = useState<"login"|"register"|"reset">("login");
+  const [step, setStep] = useState<"login"|"register"|"forgot">("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [verificationSent, setVerificationSent] = useState(false);
 
   const handleReset = async () => {
-    if (!email) { setError("Please enter your email"); return; }
-    setLoading(true); setError(""); setSuccess("");
+    if (!email.trim()) { setError("❌ Please enter your email address"); return; }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) { setError("❌ Please enter a valid email address"); return; }
+    
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    
     try {
       await sendPasswordResetEmail(auth, email);
-      setSuccess("Password reset link sent! Check your inbox & spam folder.");
+      setSuccess("✅ Password reset link sent! Check your email inbox and spam folder. Link is valid for 1 hour.");
+      setVerificationSent(true);
+      setTimeout(() => {
+        setStep("login");
+        setEmail("");
+      }, 3000);
     } catch (e: any) {
-      setError("Could not send reset email. Check the address and try again.");
+      if (e.code === "auth/user-not-found") {
+        setError("❌ No account found with this email. Please register first.");
+      } else if (e.code === "auth/invalid-email") {
+        setError("❌ Invalid email format.");
+      } else {
+        setError("❌ Could not send reset email. Try again or contact support.");
+      }
     }
     setLoading(false);
   };
 
   const handleLogin = async () => {
-    if (!email || !password) { setError("Please fill all fields"); return; }
-    setLoading(true); setError("");
+    if (!email.trim() || !password) { setError("❌ Please fill all fields"); return; }
+    setLoading(true);
+    setError("");
+    
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
+      
+      // Check email verification status
       if (!cred.user.emailVerified) {
+        setError("⚠️ Your email is not verified yet. Check your inbox for verification link.");
+        
+        // Send another verification email
+        try {
+          await sendEmailVerification(cred.user);
+          setSuccess("📧 New verification email sent! Check inbox & spam folder.");
+        } catch (e) {
+          console.log("Couldn't resend verification", e);
+        }
+        
         await signOut(auth);
-        setError("Please verify your email first. Check your inbox.");
         return;
       }
-      onClose();
-    } catch {
-      setError("Wrong email or password.");
+      
+      setSuccess("✅ Login successful!");
+      setTimeout(() => onClose(), 500);
+    } catch (e: any) {
+      if (e.code === "auth/user-not-found") {
+        setError("❌ No account found with this email.");
+      } else if (e.code === "auth/wrong-password") {
+        setError("❌ Wrong password. Try again or click 'Forgot Password'.");
+      } else if (e.code === "auth/invalid-email") {
+        setError("❌ Invalid email format.");
+      } else if (e.code === "auth/too-many-requests") {
+        setError("❌ Too many login attempts. Try again later.");
+      } else {
+        setError("❌ Login failed. Try again.");
+      }
     }
     setLoading(false);
   };
 
   const handleRegister = async () => {
-    if (!email || !password || !name) { setError("Please fill all fields"); return; }
-    if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
-    setLoading(true); setError(""); setSuccess("");
+    if (!email.trim() || !password || !name.trim()) { setError("❌ Please fill all fields"); return; }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) { setError("❌ Please enter a valid email address"); return; }
+    if (password.length < 6) { setError("❌ Password must be at least 6 characters"); return; }
+    
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Send verification email
       await sendEmailVerification(result.user);
+      
+      // Save user data to Firestore
       await setDoc(doc(db, "users", result.user.uid), {
-        name: name.trim(), email, createdAt: new Date().toISOString(),
+        name: name.trim(),
+        email: email.trim(),
+        createdAt: new Date().toISOString(),
+        emailVerified: false,
       });
+      
       await signOut(auth);
-      setSuccess("Verification email sent! Check inbox & spam folder, then login.");
-      setStep("login");
+      setSuccess("✅ Account created! Verification email sent. Check inbox & spam folder to verify your email, then login.");
+      setVerificationSent(true);
+      
+      setTimeout(() => {
+        setStep("login");
+        setEmail("");
+        setPassword("");
+        setName("");
+      }, 3000);
     } catch (e: any) {
-      if (e.code === "auth/email-already-in-use") setError("Email already registered.");
-      else setError("Registration failed. Try again.");
+      if (e.code === "auth/email-already-in-use") {
+        setError("❌ This email is already registered. Try logging in or use a different email.");
+      } else if (e.code === "auth/weak-password") {
+        setError("❌ Password is too weak. Use a stronger password.");
+      } else if (e.code === "auth/invalid-email") {
+        setError("❌ Invalid email format.");
+      } else {
+        setError("❌ Registration failed. Try again.");
+      }
     }
     setLoading(false);
   };
 
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}>
-      <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center" }}>
-        <div style={{ fontSize:40, marginBottom:12 }}>🔐</div>
-        <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>
-          {step === "login" ? "Sign In" : "Create Account"}
-        </h2>
-        <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20 }}>
-          {step === "login" ? "Sign in to submit problems" : "Register to get started"}
-        </p>
-        <div style={{ display:"flex", flexDirection:"column", gap:10, textAlign:"left" }}>
-          {step === "register" && <input value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" />}
-          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email address" type="email" />
-          {step !== "reset" && <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min 6 chars)" type="password" />}
+    <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16, backdropFilter:"blur(4px)" }}>
+      <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center", maxHeight:"90vh", overflowY:"auto" }}>
+        
+        {/* Header */}
+        <div style={{ fontSize:40, marginBottom:12 }}>
+          {step === "login" ? "🔐" : step === "register" ? "📝" : "🔑"}
         </div>
-        {error && <div style={{ fontSize:12, color:"#f87171", margin:"10px 0" }}>{error}</div>}
-        {success && <div style={{ fontSize:13, color:"#000", margin:"10px 0", fontWeight:600, padding:"10px 12px", borderRadius:8, background:"#fff" }}>{success}</div>}
-        <button className="btn-white" onClick={step === "login" ? handleLogin : handleRegister} disabled={loading}
-          style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, marginTop:14 }}>
-          {loading ? "Please wait…" : step === "login" ? "Sign In →" : "Create Account →"}
+        
+        <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>
+          {step === "login" ? "Sign In" : step === "register" ? "Create Account" : "Reset Password"}
+        </h2>
+        
+        <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20, lineHeight:1.5 }}>
+          {step === "login" 
+            ? "Sign in to submit problems & track issues" 
+            : step === "register" 
+            ? "Register to get started" 
+            : "Enter your email to receive a password reset link"}
+        </p>
+
+        {/* Form Fields */}
+        <div style={{ display:"flex", flexDirection:"column", gap:10, textAlign:"left", marginBottom:16 }}>
+          {step === "register" && (
+            <input 
+              value={name} 
+              onChange={e => { setName(e.target.value); setError(""); }} 
+              placeholder="Full Name" 
+              disabled={loading}
+              style={{ opacity: loading ? 0.6 : 1 }}
+            />
+          )}
+          
+          <input 
+            value={email} 
+            onChange={e => { setEmail(e.target.value); setError(""); }} 
+            placeholder="Email address (name@example.com)" 
+            type="email"
+            disabled={loading}
+            style={{ opacity: loading ? 0.6 : 1 }}
+          />
+          
+          {step !== "forgot" && (
+            <input 
+              value={password} 
+              onChange={e => { setPassword(e.target.value); setError(""); }} 
+              placeholder={step === "login" ? "Your password" : "Password (min 6 chars)"} 
+              type="password"
+              disabled={loading}
+              style={{ opacity: loading ? 0.6 : 1 }}
+            />
+          )}
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div style={{ 
+            fontSize:12, 
+            color:"#f87171", 
+            margin:"12px 0", 
+            padding:"10px 12px",
+            borderRadius:8,
+            background:"rgba(248,113,113,0.1)",
+            border:"1px solid rgba(248,113,113,0.3)",
+            textAlign:"left",
+            lineHeight:1.5
+          }}>
+            {error}
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div style={{ 
+            fontSize:12, 
+            color:"#22c55e", 
+            margin:"12px 0", 
+            fontWeight:600, 
+            padding:"10px 12px", 
+            borderRadius:8, 
+            background:"rgba(34,197,94,0.1)",
+            border:"1px solid rgba(34,197,94,0.3)",
+            textAlign:"left",
+            lineHeight:1.5
+          }}>
+            {success}
+          </div>
+        )}
+
+        {/* Main Action Button */}
+        <button 
+          className="btn-white" 
+          onClick={step === "login" ? handleLogin : step === "register" ? handleRegister : handleReset} 
+          disabled={loading}
+          style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, marginTop:16, opacity: loading ? 0.7 : 1 }}>
+          {loading ? "⏳ Please wait…" : step === "login" ? "Sign In →" : step === "register" ? "Create Account →" : "Send Reset Link →"}
         </button>
-        <button onClick={() => { setStep(step === "login" ? "register" : "login"); setError(""); setSuccess(""); }}
-          style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:13, cursor:"pointer", marginTop:12 }}>
-          {step === "login" ? "No account? Register here" : "Already registered? Sign in"}
-        </button>
-        <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:12, cursor:"pointer", marginTop:8, display:"block", width:"100%" }}>
+
+        {/* Navigation Buttons */}
+        <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:16 }}>
+          {step === "login" && (
+            <>
+              <button 
+                onClick={() => { setStep("forgot"); setError(""); setSuccess(""); }} 
+                style={{ background:"none", border:"none", color:"#7c5cfc", fontSize:12, cursor:"pointer", fontWeight:600, textDecoration:"underline" }}>
+                Forgot Password?
+              </button>
+              <button 
+                onClick={() => { setStep("register"); setError(""); setSuccess(""); setEmail(""); setPassword(""); }} 
+                style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:13, cursor:"pointer" }}>
+                No account? Create one
+              </button>
+            </>
+          )}
+
+          {step === "register" && (
+            <button 
+              onClick={() => { setStep("login"); setError(""); setSuccess(""); setName(""); setPassword(""); }} 
+              style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:13, cursor:"pointer" }}>
+              Already have an account? Sign in
+            </button>
+          )}
+
+          {step === "forgot" && (
+            <button 
+              onClick={() => { setStep("login"); setError(""); setSuccess(""); setEmail(""); }} 
+              style={{ background:"none", border:"none", color:"var(--ct4)", fontSize:13, cursor:"pointer" }}>
+              ← Back to Sign In
+            </button>
+          )}
+        </div>
+
+        {/* Close Button */}
+        <button 
+          onClick={onClose} 
+          style={{ background:"none", border:"none", color:"var(--ct3)", fontSize:12, cursor:"pointer", marginTop:12, display:"block", width:"100%", opacity:0.6, hover: { opacity:1 } }}>
           Skip for now
         </button>
       </div>
