@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithPopup,
+  auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, signInWithRedirect, getRedirectResult,
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy,
   storage, ref, uploadBytes, getDownloadURL, sendPasswordResetEmail,
 } from "./firebase";
-import type { User } from "firebase/auth";
+import type { User, ConfirmationResult } from "firebase/auth";
 
 
 const GLOBAL_STYLE = `
@@ -121,7 +121,6 @@ interface MediaItem {
   title: string;
   caption?: string;
   url: string;
-  photo?: string;
   createdAt: string;
 }
 interface Notice {
@@ -1658,19 +1657,21 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [verificationSent, setVerificationSent] = useState(false);
 
   const handleReset = async () => {
     if (!email.trim()) { setError("❌ Please enter your email address"); return; }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) { setError("❌ Please enter a valid email address"); return; }
-
+    
     setLoading(true);
     setError("");
     setSuccess("");
-
+    
     try {
       await sendPasswordResetEmail(auth, email);
       setSuccess("✅ Password reset link sent! Check your email inbox and spam folder. Link is valid for 1 hour.");
+      setVerificationSent(true);
       setTimeout(() => {
         setStep("login");
         setEmail("");
@@ -1684,33 +1685,33 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
         setError("❌ Could not send reset email. Try again or contact support.");
       }
     }
-
     setLoading(false);
   };
 
   const handleLogin = async () => {
     if (!email.trim() || !password) { setError("❌ Please fill all fields"); return; }
-
     setLoading(true);
     setError("");
-
+    
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
-
+      
+      // Check email verification status
       if (!cred.user.emailVerified) {
         setError("⚠️ Your email is not verified yet. Check your inbox for verification link.");
-
+        
+        // Send another verification email
         try {
           await sendEmailVerification(cred.user);
           setSuccess("📧 New verification email sent! Check inbox & spam folder.");
-        } catch (err) {
-          console.log("Couldn't resend verification", err);
+        } catch (e) {
+          console.log("Couldn't resend verification", e);
         }
-
+        
         await signOut(auth);
         return;
       }
-
+      
       setSuccess("✅ Login successful!");
       setTimeout(() => onClose(), 500);
     } catch (e: any) {
@@ -1726,24 +1727,27 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
         setError("❌ Login failed. Try again.");
       }
     }
-
     setLoading(false);
   };
 
   const handleRegister = async () => {
     if (!email.trim() || !password || !name.trim() || !phone.trim() || !area.trim()) { setError("❌ Please fill all fields"); return; }
-
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) { setError("❌ Please enter a valid email address"); return; }
     if (password.length < 6) { setError("❌ Password must be at least 6 characters"); return; }
-
+    
     setLoading(true);
     setError("");
     setSuccess("");
-
+    
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Send verification email
       await sendEmailVerification(result.user);
+      
+      // Save user data to Firestore
       await setDoc(doc(db, "users", result.user.uid), {
         name: name.trim(),
         email: email.trim(),
@@ -1752,10 +1756,11 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
         createdAt: new Date().toISOString(),
         emailVerified: false,
       });
+      
       await signOut(auth);
-
       setSuccess("✅ Account created! Verification email sent. Check inbox & spam folder to verify your email, then login.");
-
+      setVerificationSent(true);
+      
       setTimeout(() => {
         setStep("login");
         setEmail("");
@@ -1773,7 +1778,6 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
         setError("❌ Registration failed. Try again.");
       }
     }
-
     setLoading(false);
   };
 
@@ -1781,14 +1785,15 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
     setLoading(true);
     setError("");
     setSuccess("");
-
+    
     try {
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
-
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
+      
+      // Save or update user data in Firestore
       try {
         await setDoc(doc(db, "users", user.uid), {
           name: user.displayName || "Google User",
@@ -1801,7 +1806,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
       } catch (firestoreError) {
         console.log("Firestore save error (non-critical):", firestoreError);
       }
-
+      
       setSuccess("✅ Google login successful!");
       setTimeout(() => onClose(), 500);
     } catch (e: any) {
@@ -1817,21 +1822,22 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
         setError("❌ Google login failed. Try again.");
       }
     }
-
     setLoading(false);
   };
 
   return (
     <div style={{ position:"fixed", inset:0, zIndex:9999, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", padding:16, backdropFilter:"blur(4px)" }}>
       <div className="glass" style={{ borderRadius:22, padding:"32px 24px", width:"100%", maxWidth:380, textAlign:"center", maxHeight:"90vh", overflowY:"auto" }}>
+        
+        {/* Header */}
         <div style={{ fontSize:40, marginBottom:12 }}>
           {step === "login" ? "🔐" : step === "register" ? "📝" : "🔑"}
         </div>
-
+        
         <h2 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:20, marginBottom:6, color:"var(--text-main)" }}>
           {step === "login" ? "Sign In" : step === "register" ? "Create Account" : "Reset Password"}
         </h2>
-
+        
         <p style={{ fontSize:13, color:"var(--ct4)", marginBottom:20, lineHeight:1.5 }}>
           {step === "login" 
             ? "Sign in to submit problems & track issues" 
@@ -1840,36 +1846,16 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
             : "Enter your email to receive a password reset link"}
         </p>
 
+        {/* Form Fields */}
         <div style={{ display:"flex", flexDirection:"column", gap:10, textAlign:"left", marginBottom:16 }}>
           {step === "register" && (
             <>
-              <input 
-                value={name} 
-                onChange={e => { setName(e.target.value); setError(""); }} 
-                placeholder="Full Name *" 
-                disabled={loading}
-                style={{ opacity: loading ? 0.6 : 1 }}
-              />
-              <div style={{ display:"flex", gap:8 }}>
-                <input 
-                  value={phone} 
-                  onChange={e => { setPhone(e.target.value); setError(""); }} 
-                  placeholder="Phone Number *" 
-                  type="tel"
-                  disabled={loading}
-                  style={{ opacity: loading ? 0.6 : 1, flex:1 }}
-                />
-                <input 
-                  value={area} 
-                  onChange={e => { setArea(e.target.value); setError(""); }} 
-                  placeholder="Area / Ward *" 
-                  disabled={loading}
-                  style={{ opacity: loading ? 0.6 : 1, flex:1 }}
-                />
-              </div>
+              <input value={name} onChange={e => { setName(e.target.value); setError(""); }} placeholder="Full Name *" disabled={loading} style={{ opacity: loading ? 0.6 : 1 }} />
+              <input value={phone} onChange={e => { setPhone(e.target.value); setError(""); }} placeholder="Phone Number *" type="tel" disabled={loading} style={{ opacity: loading ? 0.6 : 1 }} />
+              <input value={area} onChange={e => { setArea(e.target.value); setError(""); }} placeholder="Area / Ward *" disabled={loading} style={{ opacity: loading ? 0.6 : 1 }} />
             </>
           )}
-
+          
           <input 
             value={email} 
             onChange={e => { setEmail(e.target.value); setError(""); }} 
@@ -1878,7 +1864,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
             disabled={loading}
             style={{ opacity: loading ? 0.6 : 1 }}
           />
-
+          
           {step !== "forgot" && (
             <input 
               value={password} 
@@ -1891,18 +1877,42 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
+        {/* Error Message */}
         {error && (
-          <div style={{ fontSize:12, color:"#f87171", margin:"12px 0", padding:"10px 12px", borderRadius:8, background:"rgba(248,113,113,0.1)", border:"1px solid rgba(248,113,113,0.3)", textAlign:"left", lineHeight:1.5 }}>
+          <div style={{ 
+            fontSize:12, 
+            color:"#f87171", 
+            margin:"12px 0", 
+            padding:"10px 12px",
+            borderRadius:8,
+            background:"rgba(248,113,113,0.1)",
+            border:"1px solid rgba(248,113,113,0.3)",
+            textAlign:"left",
+            lineHeight:1.5
+          }}>
             {error}
           </div>
         )}
 
+        {/* Success Message */}
         {success && (
-          <div style={{ fontSize:12, color:"#22c55e", margin:"12px 0", fontWeight:600, padding:"10px 12px", borderRadius:8, background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.3)", textAlign:"left", lineHeight:1.5 }}>
+          <div style={{ 
+            fontSize:12, 
+            color:"#22c55e", 
+            margin:"12px 0", 
+            fontWeight:600, 
+            padding:"10px 12px", 
+            borderRadius:8, 
+            background:"rgba(34,197,94,0.1)",
+            border:"1px solid rgba(34,197,94,0.3)",
+            textAlign:"left",
+            lineHeight:1.5
+          }}>
             {success}
           </div>
         )}
 
+        {/* Main Action Button */}
         <button 
           className="btn-white" 
           onClick={step === "login" ? handleLogin : step === "register" ? handleRegister : handleReset} 
@@ -1911,18 +1921,39 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
           {loading ? "⏳ Please wait…" : step === "login" ? "Sign In →" : step === "register" ? "Create Account →" : "Send Reset Link →"}
         </button>
 
+        {/* Google Login - Only on Login/Register Steps */}
         {(step === "login" || step === "register") && (
           <>
+            {/* Divider */}
             <div style={{ display:"flex", alignItems:"center", gap:10, margin:"16px 0", color:"var(--ct4)", fontSize:12 }}>
               <div style={{ flex:1, height:"1px", background:"var(--cbg6)" }}/>
               <span>or</span>
               <div style={{ flex:1, height:"1px", background:"var(--cbg6)" }}/>
             </div>
 
+            {/* Google Sign-In Button */}
             <button 
               onClick={handleGoogleLogin}
               disabled={loading}
-              style={{ borderRadius:12, padding:"12px 0", width:"100%", fontSize:14, fontWeight:600, background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.15)", color:"var(--text-main)", cursor:loading ? "not-allowed" : "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, transition:"all 0.2s", opacity: loading ? 0.6 : 1 }}
+              style={{
+                borderRadius:12,
+                padding:"12px 0",
+                width:"100%",
+                fontSize:14,
+                fontWeight:600,
+                background:"rgba(255,255,255,0.08)",
+                border:"1px solid rgba(255,255,255,0.15)",
+                color:"var(--text-main)",
+                cursor:loading ? "not-allowed" : "pointer",
+                display:"flex",
+                alignItems:"center",
+                justifyContent:"center",
+                gap:8,
+                transition:"all 0.2s",
+                opacity: loading ? 0.6 : 1,
+              }}
+              onMouseEnter={e => !loading && (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
+              onMouseLeave={e => !loading && (e.currentTarget.style.background = "rgba(255,255,255,0.08)")}
               title="Sign in with your Google account">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
@@ -1933,6 +1964,7 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
           </>
         )}
 
+        {/* Navigation Buttons */}
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:16 }}>
           {step === "login" && (
             <>
@@ -1966,9 +1998,10 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
+        {/* Close Button */}
         <button 
           onClick={onClose} 
-          style={{ background:"none", border:"none", color:"var(--ct3)", fontSize:12, cursor:"pointer", marginTop:12, display:"block", width:"100%", opacity:0.6 }}>
+          style={{ background:"none", border:"none", color:"var(--ct3)", fontSize:12, cursor:"pointer", marginTop:12, display:"block", width:"100%", opacity:0.6, hover: { opacity:1 } }}>
           Skip for now
         </button>
       </div>
@@ -1977,7 +2010,6 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
 }
 
 
-// ── Enhanced Floating Action Button with Voice & Photo ─────────────────────
 // ── Enhanced Floating Action Button with Voice & Photo ─────────────────────
 function EnhancedFAB({ onOpenSubmit, isOpen }: { onOpenSubmit: () => void; isOpen: boolean }) {
   const [isListening, setIsListening] = useState(false);
@@ -2189,44 +2221,26 @@ function AIPanel({ villageName, sarpanchName }: { villageName: string; sarpanchN
       }
       contents.push({ role: "user", parts: [{ text }] });
       
-      const messages = [
-        {
-          author: "system",
-          content: [{ type: "text", text: systemPrompt }]
-        },
-        ...msgs.map(m => ({
-          author: m.role === "user" ? "user" : "assistant",
-          content: [{ type: "text", text: m.text }]
-        })),
-        {
-          author: "user",
-          content: [{ type: "text", text }]
-        }
-      ];
-
       const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateMessage?key=AQ.Ab8RN6J_98jKd4b3x2f9Sa4MnCl4CZsImX-gY9aKkhv2Du_Xxg",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAQ.Ab8RN6KwxYzs4QsJQMbWpA5U5gW8idv0jLPTaTuCVHTH9AS5tw",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            messages,
-            temperature: 0.7,
-            maxOutputTokens: 120,
-            candidateCount: 1
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: contents,
+            generation_config: { maxOutputTokens: 120, temperature: 0.7 }
           })
         }
       );
-
+      
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData?.error?.message || `API error: ${res.status}`);
       }
-
+      
       const data = await res.json();
-      const reply = data?.output?.[0]?.content?.find((item: any) => item.type === "text")?.text
-        || data?.candidates?.[0]?.content?.[0]?.text
-        || "❌ Could not get a response. Try again.";
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || "❌ Could not get a response. Try again.";
       setMsgs(prev => [...prev, { role:"ai", text: reply, id: id + 1 }]);
     } catch (err: any) {
       const errorMsg = err.message?.includes("API") ? "❌ API error. Try again later." : "❌ Connection error. Check your internet.";
@@ -2438,7 +2452,10 @@ export default function App() {
   useEffect(() => {
     const q = query(collection(db, "problems"), orderBy("submittedAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
-        const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as Problem));
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setProblems(list);
+    });
+    return () => unsub();
   }, []);
 
   
@@ -2480,17 +2497,8 @@ export default function App() {
 
   useEffect(() => {
     try {
-        const params = new URLSearchParams(window.location.search);
-        const pw   = params.get("pw");
-        const vill = params.get("vill");
-        const sarp = params.get("sarp");
-        const ach  = params.get("ach");
-        const med  = params.get("med");
-        const not  = params.get("not");
-        const fb   = params.get("fb");
-        const wa   = params.get("wa");
-        const ig   = params.get("ig");
-
+      if (pw)   setAdminPassword(pw);
+      if (vill) setVillageName(vill);
       if (sarp) setSarpanchName(sarp);
       if (ach)  setAchievements(JSON.parse(ach));
       if (med)  setMedia(JSON.parse(med));
@@ -3014,7 +3022,7 @@ export default function App() {
           </div>
         </div>
       )}
-      </div>
+    </div>
     </>
   );
 }

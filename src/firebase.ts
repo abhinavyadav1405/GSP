@@ -6,13 +6,13 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { User } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD2QNUMImsdaijSoE9kkk7_rwcr36REdDM",
-  authDomain: "gram-sabha-pahrajpur.firebaseapp.com",
-  projectId: "gram-sabha-pahrajpur",
-  storageBucket: "gram-sabha-pahrajpur.firebasestorage.app",
-  messagingSenderId: "549490337754",
-  appId: "1:549490337754:web:8121e99732697383bdc2e3",
-  measurementId: "G-8EWVJP3L9V"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -24,5 +24,5 @@ export const storage = getStorage(app);
 export { signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification };
 export { collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy };
 export { ref, uploadBytes, getDownloadURL };
-export type { User };
 export { sendPasswordResetEmail } from "firebase/auth";
+export type { User };
