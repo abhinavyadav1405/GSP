@@ -1,3 +1,4 @@
+import emailjs from "@emailjs/browser";
 import { useState, useEffect, useRef } from "react";
 import {
   auth, db, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, signInWithRedirect, getRedirectResult,
@@ -1744,8 +1745,15 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Send verification email
-      await sendEmailVerification(result.user);
+      // Send verification email via EmailJS (Gmail)
+      try {
+        await emailjs.send(
+          "service_q6ngyg6",
+          "template_t2uxk5l",
+          { to_email: email.trim(), to_name: name.trim(), name: "Gram Sabha Pahrajpur" },
+          "Ts_apw-EBTTA8xcRq"
+        );
+      } catch(emailErr) { console.log("EmailJS error:", emailErr); }
       
       // Save user data to Firestore
       await setDoc(doc(db, "users", result.user.uid), {
