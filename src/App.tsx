@@ -2019,7 +2019,16 @@ function PhoneLogin({ onClose }: { onClose: () => void }) {
 
 
 // ── Enhanced Floating Action Button with Voice & Photo ─────────────────────
-function EnhancedFAB({ onOpenSubmit, isOpen }: { onOpenSubmit: () => void; isOpen: boolean }) {
+function EnhancedFAB({
+  onOpenSubmit, isOpen, onOpenBoard, onOpenNotices, onOpenLogin, isLoggedIn,
+}: {
+  onOpenSubmit: () => void;
+  isOpen: boolean;
+  onOpenBoard: () => void;
+  onOpenNotices: () => void;
+  onOpenLogin: () => void;
+  isLoggedIn: boolean;
+}) {
   const [isListening, setIsListening] = useState(false);
   const [voiceText, setVoiceText] = useState("");
   const recognitionRef = useRef<any>(null);
@@ -2043,6 +2052,7 @@ function EnhancedFAB({ onOpenSubmit, isOpen }: { onOpenSubmit: () => void; isOpe
     recognitionRef.current.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       setVoiceText(transcript);
+      onOpenSubmit();
     };
 
     recognitionRef.current.onerror = () => {
@@ -2053,76 +2063,130 @@ function EnhancedFAB({ onOpenSubmit, isOpen }: { onOpenSubmit: () => void; isOpe
     recognitionRef.current.start();
   };
 
+  const handleAction = (fn: () => void) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    fn();
+  };
+
   return (
-    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-end" }}>
-      {/* Voice Button */}
-      <button
-        onClick={startVoiceInput}
-        title={isListening ? "Listening..." : "Report with voice"}
-        style={{
-          width: 56, height: 56, borderRadius: "50%",
-          background: isListening ? "rgba(248, 113, 113, 0.9)" : "rgba(59, 130, 246, 0.85)",
-          border: "2px solid rgba(255,255,255,0.2)",
-          color: "#fff",
-          fontSize: 24,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 8px 24px rgba(59,130,246,0.4)",
-          animation: isListening ? "pulse 1s infinite" : "none",
-          transition: "all 0.2s",
-        }}
-        onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.1)")}
-        onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-      >
-        {isListening ? "⏹" : "🎤"}
-      </button>
+    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
 
-      {/* Main Report Button */}
-      <button
-        onClick={onOpenSubmit}
-        title="Report a problem"
-        style={{
-          width: 64, height: 64, borderRadius: "50%",
-          background: isOpen ? "rgba(124,92,252,0.9)" : "linear-gradient(135deg,#7c5cfc 0%,#5b3fd4 100%)",
-          border: "2px solid rgba(255,255,255,0.25)",
-          color: "#fff",
-          fontSize: 28,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: isOpen ? "0 12px 40px rgba(124,92,252,0.6)" : "0 8px 24px rgba(124,92,252,0.35)",
-          transition: "all 0.3s ease",
-        }}
-        onMouseEnter={e => { 
-          e.currentTarget.style.transform = "scale(1.15) rotate(10deg)";
-          e.currentTarget.style.boxShadow = "0 16px 48px rgba(124,92,252,0.7)";
-        }}
-        onMouseLeave={e => { 
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 8px 24px rgba(124,92,252,0.35)";
-        }}
-      >
-        {isOpen ? "✕" : "+"}
-      </button>
-
-      {/* Info Label */}
-      {!isOpen && (
-        <div className="glass" style={{ 
-          padding: "8px 14px", 
-          borderRadius: 12, 
-          fontSize: 12, 
-          fontWeight: 600,
-          color: "var(--text-main)",
-          whiteSpace: "nowrap",
-          animation: "fadeUp 0.3s ease",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.2)"
-        }}>
-          Report Problem
-        </div>
+      {/* Backdrop dim when open */}
+      {isOpen && (
+        <div
+          onClick={onOpenSubmit}
+          style={{ position: "fixed", inset: 0, background: "rgba(5,10,8,0.45)", backdropFilter: "blur(3px)", zIndex: -1 }}
+        />
       )}
+
+      <style>{`
+        .lg-btn {
+          position: relative;
+          border-radius: 50%;
+          background: linear-gradient(155deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.09) 100%);
+          backdrop-filter: blur(18px) saturate(160%);
+          -webkit-backdrop-filter: blur(18px) saturate(160%);
+          border: 1px solid rgba(255,255,255,0.22);
+          box-shadow: 0 1px 1px rgba(255,255,255,0.35) inset, 0 -6px 12px rgba(255,255,255,0.05) inset, 0 12px 28px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; user-select: none;
+        }
+        .lg-btn::before {
+          content: ''; position: absolute; top: 6%; left: 12%; width: 50%; height: 35%;
+          border-radius: 50%; background: radial-gradient(ellipse, rgba(255,255,255,0.5) 0%, transparent 70%);
+          pointer-events: none; opacity: 0.8;
+        }
+        .lg-btn svg { display: block; flex-shrink: 0; }
+        .lg-action {
+          width: 52px; height: 52px; color: rgba(255,255,255,0.92);
+          opacity: 0; transform: translateY(16px) scale(0.5); pointer-events: none;
+          transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+        }
+        .lg-zone-open .lg-action { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+        .lg-zone-open .lg-action:nth-child(1) { transition-delay: 0.21s; }
+        .lg-zone-open .lg-action:nth-child(2) { transition-delay: 0.16s; }
+        .lg-zone-open .lg-action:nth-child(3) { transition-delay: 0.11s; }
+        .lg-zone-open .lg-action:nth-child(4) { transition-delay: 0.06s; }
+        .lg-zone-open .lg-action:nth-child(5) { transition-delay: 0.01s; }
+        .lg-action:active { transform: scale(0.88) !important; }
+        .lg-label {
+          position: absolute; right: 64px; top: 50%; transform: translateY(-50%);
+          background: rgba(20,28,22,0.92); color: #fff; font-size: 12.5px; font-weight: 500;
+          padding: 7px 12px; border-radius: 8px; white-space: nowrap;
+          opacity: 0; transition: opacity 0.3s; pointer-events: none;
+          border: 1px solid rgba(255,255,255,0.08);
+        }
+        .lg-zone-open .lg-action .lg-label { opacity: 1; }
+        .lg-zone-open .lg-action:nth-child(1) .lg-label { transition-delay: 0.43s; }
+        .lg-zone-open .lg-action:nth-child(2) .lg-label { transition-delay: 0.38s; }
+        .lg-zone-open .lg-action:nth-child(3) .lg-label { transition-delay: 0.33s; }
+        .lg-zone-open .lg-action:nth-child(4) .lg-label { transition-delay: 0.28s; }
+        .lg-zone-open .lg-action:nth-child(5) .lg-label { transition-delay: 0.23s; }
+        .lg-main { width: 64px; height: 64px; color: #fff; transition: transform 0.3s, background 0.3s, border-color 0.3s; }
+        .lg-main:active { transform: scale(0.92); }
+        .lg-main-icon { display:flex; align-items:center; justify-content:center; transition: transform 0.45s cubic-bezier(0.65,0,0.35,1); }
+        .lg-zone-open .lg-main { background: linear-gradient(155deg, rgba(248,113,113,0.35) 0%, rgba(255,255,255,0.06) 60%); border-color: rgba(248,113,113,0.4); }
+        .lg-zone-open .lg-main .lg-main-icon { transform: rotate(45deg); }
+        .lg-main::after {
+          content: ''; position: absolute; inset: -6px; border-radius: 50%;
+          border: 1.5px solid rgba(34,197,94,0.35); animation: lgPulse 2.6s ease-out infinite;
+        }
+        .lg-zone-open .lg-main::after { animation: none; opacity: 0; }
+        @keyframes lgPulse { 0% { transform: scale(1); opacity: .6; } 70% { transform: scale(1.35); opacity: 0; } 100% { transform: scale(1.35); opacity: 0; } }
+        .lg-mic { width: 52px; height: 52px; }
+        .lg-mic.listening { background: linear-gradient(155deg, rgba(248,113,113,0.4) 0%, rgba(255,255,255,0.06) 60%); border-color: rgba(248,113,113,0.5); animation: lgListenPulse 1s infinite; }
+        @keyframes lgListenPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.5); } 50% { box-shadow: 0 0 0 10px rgba(248,113,113,0); } }
+        @media (prefers-reduced-motion: reduce) { .lg-action, .lg-main, .lg-main-icon, .lg-mic { transition: none !important; animation: none !important; } }
+      `}</style>
+
+      <div className={isOpen ? "lg-zone-open" : ""} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+
+        {/* Login */}
+        <div className="lg-btn lg-action" onClick={handleAction(onOpenLogin)} title="Login">
+          <span className="lg-label">{isLoggedIn ? "My Account" : "Login"}</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+
+        {/* Notices */}
+        <div className="lg-btn lg-action" onClick={handleAction(onOpenNotices)} title="Notices">
+          <span className="lg-label">Notices</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+        </div>
+
+        {/* Board */}
+        <div className="lg-btn lg-action" onClick={handleAction(onOpenBoard)} title="All Issues">
+          <span className="lg-label">All Issues</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        </div>
+
+        {/* Voice */}
+        <div
+          className={`lg-btn lg-action lg-mic ${isListening ? "listening" : ""}`}
+          onClick={startVoiceInput}
+          title={isListening ? "Listening..." : "Report with voice"}
+        >
+          <span className="lg-label">{isListening ? "Listening…" : "Voice Report"}</span>
+          {isListening ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          )}
+        </div>
+
+        {/* Submit / Report */}
+        <div className="lg-btn lg-action" onClick={handleAction(onOpenSubmit)} title="Report a Problem">
+          <span className="lg-label">Report Problem</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+        </div>
+
+        {/* Main toggle */}
+        <div className="lg-btn lg-main" onClick={onOpenSubmit}>
+          <span className="lg-main-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          </span>
+        </div>
+
+      </div>
     </div>
   );
 }
@@ -3017,7 +3081,14 @@ export default function App() {
       {showLogin && <PhoneLogin onClose={() => setShowLogin(false)} />}
 
       {/* Enhanced FAB with Voice & Photo */}
-      <EnhancedFAB onOpenSubmit={() => { setShowSubmitFAB(!showSubmitFAB); if (!firebaseUser) setShowLogin(true); }} isOpen={showSubmitFAB} />
+      <EnhancedFAB
+        onOpenSubmit={() => { setShowSubmitFAB(!showSubmitFAB); if (!firebaseUser) setShowLogin(true); }}
+        isOpen={showSubmitFAB}
+        onOpenBoard={() => setPage("board")}
+        onOpenNotices={() => setPage("notices")}
+        onOpenLogin={() => setShowLogin(true)}
+        isLoggedIn={!!firebaseUser}
+      />
 
       {/* Submit Form Modal */}
       {showSubmitFAB && firebaseUser && (
