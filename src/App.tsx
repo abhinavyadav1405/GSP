@@ -2029,6 +2029,7 @@ function EnhancedFAB({
   onOpenLogin: () => void;
   isLoggedIn: boolean;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceText, setVoiceText] = useState("");
   const recognitionRef = useRef<any>(null);
@@ -2072,9 +2073,9 @@ function EnhancedFAB({
     <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
 
       {/* Backdrop dim when open */}
-      {isOpen && (
+      {menuOpen && (
         <div
-          onClick={onOpenSubmit}
+          onClick={() => setMenuOpen(false)}
           style={{ position: "fixed", inset: 0, background: "rgba(5,10,8,0.45)", backdropFilter: "blur(3px)", zIndex: -1 }}
         />
       )}
@@ -2151,7 +2152,7 @@ function EnhancedFAB({
         @media (prefers-reduced-motion: reduce) { .lg-action, .lg-main, .lg-main-icon, .lg-mic { transition: none !important; animation: none !important; } }
       `}</style>
 
-      <div className={isOpen ? "lg-zone-open" : ""} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+      <div className={menuOpen ? "lg-zone-open" : ""} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
 
         {/* Login */}
         <div className="lg-btn lg-action" onClick={handleAction(onOpenLogin)} title="Login">
@@ -2186,13 +2187,13 @@ function EnhancedFAB({
         </div>
 
         {/* Submit / Report */}
-        <div className="lg-btn lg-action" onClick={handleAction(onOpenSubmit)} title="Report a Problem">
+        <div className="lg-btn lg-action" onClick={(e) => { handleAction(onOpenSubmit)(e); setMenuOpen(false); }} title="Report a Problem">
           <span className="lg-label">Report Problem</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
         </div>
 
         {/* Main toggle */}
-        <div className="lg-btn lg-main" onClick={onOpenSubmit}>
+        <div className="lg-btn lg-main" onClick={() => setMenuOpen(m => !m)}>
           <span className="lg-main-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
           </span>
