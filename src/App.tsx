@@ -475,7 +475,8 @@ if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
 }
 
 // ── Submit Form ───────────────────────────────────────────────────────────────
-function SubmitForm({ onSubmit }: { onSubmit: (p: Problem) => Promise<void> }) {
+function SubmitForm({ onSubmit, sarpanchName = "Priyanka Yadav", sarpanchPhoto = "" }: { onSubmit: (p: Problem) => Promise<void>; sarpanchName?: string; sarpanchPhoto?: string }) {
+  const [showSuccess, setShowSuccess] = useState(false);
   const [form, setForm] = useState({ name: "", mobile: "", ward: WARDS[0], category: CATEGORIES[0], title: "", description: "", priority: "Medium" });
   const [photo, setPhoto]               = useState<string | null>(null);
   const [locationText, setLocationText] = useState("");
@@ -538,6 +539,7 @@ function SubmitForm({ onSubmit }: { onSubmit: (p: Problem) => Promise<void> }) {
     setLocationText("");
     setLocationCoords(null);
     setLoading(false);
+      setShowSuccess(true);
   };
 
   const field = (label: string, children: React.ReactNode) => (
@@ -614,6 +616,25 @@ function SubmitForm({ onSubmit }: { onSubmit: (p: Problem) => Promise<void> }) {
         </button>
       </div>
     </div>
+
+      {showSuccess && (
+        <div onClick={() => setShowSuccess(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, margin: "0 16px 16px", background: "var(--cbg5)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 24, padding: "32px 24px 26px", textAlign: "center", boxShadow: "0 -10px 60px rgba(0,0,0,0.4)" }}>
+            <div style={{ width: 80, height: 80, margin: "0 auto 16px", borderRadius: "50%", background: "linear-gradient(155deg, #4ade80 0%, #16a34a 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(22,163,74,0.4)" }}>
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div style={{ fontSize: 14, color: "var(--ct4)", marginBottom: 18 }}>आपकी समस्या सफलतापूर्वक दर्ज की गई है</div>
+            <div style={{ display: "flex", gap: 12, textAlign: "left", background: "var(--cbg6)", border: "1px solid var(--cbg12)", borderRadius: 16, padding: "14px 16px", marginBottom: 18 }}>
+              <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg, #f0d080, #c9a84c)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#1a3a2a" }}>{sarpanchPhoto ? <img src={sarpanchPhoto} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : sarpanchName.split(" ").map(n => n[0]).join("").slice(0,2)}</div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", marginBottom: 3 }}>{sarpanchName} · Sarpanch</div>
+                <div style={{ fontSize: 13.5, color: "var(--ct65)", lineHeight: 1.5 }}>धन्यवाद! आपकी समस्या जल्द ही हल की जाएगी। हम हर शिकायत को गंभीरता से लेते हैं — आपका सहयोग गाँव को बेहतर बनाता है। 🙏</div>
+              </div>
+            </div>
+            <button onClick={() => setShowSuccess(false)} style={{ width: "100%", padding: "13px 0", borderRadius: 12, background: "var(--cbg8)", border: "1px solid var(--cbg12)", color: "var(--text-main)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Theek Hai</button>
+          </div>
+        </div>
+      )}
   );
 }
 
@@ -3002,7 +3023,7 @@ export default function App() {
                 </div>
               </FadeIn>
             ) : (
-              <FadeIn><SubmitForm onSubmit={addProblem} /></FadeIn>
+              <FadeIn><SubmitForm onSubmit={addProblem} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} /></FadeIn>
             )}
           </div>
         )}
@@ -3110,7 +3131,7 @@ export default function App() {
           display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)"
         }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <SubmitForm onSubmit={async (p) => { await addProblem(p); setShowSubmitFAB(false); }} />
+            <SubmitForm onSubmit={async (p) => { await addProblem(p); setShowSubmitFAB(false); }} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} />
           </div>
         </div>
       )}
