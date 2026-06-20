@@ -550,6 +550,7 @@ function SubmitForm({ onSubmit, sarpanchName = "Priyanka Yadav", sarpanchPhoto =
   );
 
   return (
+      <>
     <div className="glass" style={{ borderRadius: 22, padding: "28px 24px", maxWidth: 560, margin: "0 auto" }}>
       <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22, marginBottom: 24 }}>Submit a Problem</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -635,6 +636,7 @@ function SubmitForm({ onSubmit, sarpanchName = "Priyanka Yadav", sarpanchPhoto =
           </div>
         </div>
       )}
+      </>
   );
 }
 
