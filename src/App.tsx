@@ -2605,7 +2605,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      // if (pw)   setAdminPassword(pw); // load from Firestore only
+      if (pw)   setAdminPassword(pw);
       if (vill) setVillageName(vill);
       if (sarp) setSarpanchName(sarp);
       if (ach)  setAchievements(JSON.parse(ach));
