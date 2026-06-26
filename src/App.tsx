@@ -2810,7 +2810,7 @@ export default function App() {
               position: "relative", overflow: "hidden",
             }}>
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg,rgba(255,255,255,0.2) 0%,transparent 60%)", borderRadius: 9 }} />
-              <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 12, color: "#fff", letterSpacing: "0.04em", position: "relative", zIndex: 1 }}>GSP</span>
+              <img src="/logo.png" alt="GSP Logo" style={{ width: 28, height: 28, borderRadius: 6, marginRight: 6, objectFit: "cover" }} /><span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 12, color: "#fff", letterSpacing: "0.04em", position: "relative", zIndex: 1 }}>GSP</span>
             </div>
             <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
               {villageName}
