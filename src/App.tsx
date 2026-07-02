@@ -2803,14 +2803,7 @@ export default function App() {
           {/* Logo + Name */}
           <div onClick={() => setPage("home")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flexShrink: 0 }}>
             <div style={{
-              width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-              background: "linear-gradient(135deg, #16a34a 0%, #166534 100%)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.15), 0 2px 8px rgba(22,163,74,0.4)",
-              position: "relative", overflow: "hidden",
-            }}>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(160deg,rgba(255,255,255,0.2) 0%,transparent 60%)", borderRadius: 9 }} />
-              <img src="/logo.png" alt="GSP Logo" style={{ width: 32, height: 32, borderRadius: 8, marginRight: 8, objectFit: "contain", background: "transparent" }} /><span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 12, color: "#fff", letterSpacing: "0.04em", position: "relative", zIndex: 1 }}>GSP</span>
+              <img src="/logo.png" alt="GSP Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "contain" }} />
             </div>
             <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
               {villageName}
