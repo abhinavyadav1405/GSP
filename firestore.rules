@@ -4,15 +4,15 @@ service cloud.firestore {
     match /problems/{id} {
       allow read: true;
       allow create: true;
-      allow update, delete: if false;
+      allow update, delete: if request.auth != null;
     }
     match /settings/{id} {
       allow read: true;
-      allow write: if false;
+      allow write: if request.auth != null;
     }
     match /{document=**} {
       allow read: true;
-      allow write: if false;
+      allow write: if request.auth != null;
     }
   }
 }
