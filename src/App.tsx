@@ -2394,10 +2394,11 @@ export default function App() {
         {page === "submit" && (
           <div style={{ paddingTop: 40 }}>
             <FadeIn><SubmitForm onSubmit={addProblem} onSubmitted={() => setPage("board")} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} /></FadeIn>
-          {page === "profile" && (
-            <FadeIn><ProfileLookup problems={problems} theme={theme} /></FadeIn>
-          )}
           </div>
+        )}
+
+        {page === "profile" && (
+          <FadeIn><ProfileLookup problems={problems} theme={theme} /></FadeIn>
         )}
 
         {/* ── BOARD ────────────────────────────────────────────────────────── */}
