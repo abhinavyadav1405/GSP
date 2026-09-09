@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserProfile from "./UserProfile";
 import { db, doc, getDoc, setDoc } from "../firebase";
 
@@ -52,6 +52,24 @@ export default function ProfileLookup({ problems, theme = "dark" }: ProfileLooku
   const [lastName, setLastName] = useState("");
   const [address, setAddress] = useState("");
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get("profile");
+    if (!profileId) return;
+    (async () => {
+      setLoading(true);
+      try {
+        const snap = await getDoc(doc(db, "users", profileId));
+        if (snap.exists()) {
+          setUserDoc(snap.data() as UserDoc);
+          setMobile(profileId);
+          setStep("view");
+        }
+      } catch (_) {}
+      setLoading(false);
+    })();
+  }, []);
 
   const isDark = theme === "dark";
   const c = {
