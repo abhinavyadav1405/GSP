@@ -2179,6 +2179,7 @@ export default function App() {
     { id: "notices"      as const, label: "📢 Notices" },
     { id: "achievements" as const, label: "🏆 Achievements" },
     { id: "board"        as const, label: "View All Issues" },
+    { id: "profile" as const, label: "👤 My Profile" },
   ];
 
   return (
