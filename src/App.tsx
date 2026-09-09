@@ -1,3 +1,5 @@
+import UserProfile from "./components/UserProfile";
+import ProfileLookup from "./components/ProfileLookup";
 import { useState, useEffect, useRef } from "react";
 import {
   db,
@@ -1955,7 +1957,7 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
 export default function App() {
   const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"board"|"submit"|"admin"|"settings"|"achievements"|"gallery"|"notices">("home");
+  const [page, setPage]             = useState<"home"|"board"|"submit"|"admin"|"settings"|"achievements"|"gallery"|"notices"|"profile">("home");
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
   const [toast, setToast]           = useState<string | null>(null);
   const [filterCat, setFilterCat]   = useState("All");
@@ -2391,6 +2393,9 @@ export default function App() {
         {page === "submit" && (
           <div style={{ paddingTop: 40 }}>
             <FadeIn><SubmitForm onSubmit={addProblem} onSubmitted={() => setPage("board")} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} /></FadeIn>
+          {page === "profile" && (
+            <FadeIn><ProfileLookup problems={problems} theme={theme} /></FadeIn>
+          )}
           </div>
         )}
 
