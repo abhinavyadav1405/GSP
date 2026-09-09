@@ -660,15 +660,22 @@ function FilterBar({ filterCat, setFilterCat, filterStatus, setFilterStatus, fil
 }
 
 // ── Admin Login ───────────────────────────────────────────────────────────────
-function AdminLogin({ correctPassword, onLogin }: { correctPassword: string; onLogin: () => void }) {
+type AdminRole = "super" | "user-admin" | "complaint-admin";
+
+function AdminLogin({ superPassword, userAdminPassword, complaintAdminPassword, onLogin }: {
+  superPassword: string; userAdminPassword: string; complaintAdminPassword: string;
+  onLogin: (role: AdminRole) => void;
+}) {
   const ADMIN_ID = "abhinavyadav1405";
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
   const attempt = () => {
     if (id !== ADMIN_ID) { setErr("Galat Admin ID!"); return; }
-    if (pw !== correctPassword) { setErr("Galat Password!"); return; }
-    setErr(""); onLogin();
+    if (pw === superPassword)            { setErr(""); onLogin("super"); return; }
+    if (pw === userAdminPassword)        { setErr(""); onLogin("user-admin"); return; }
+    if (pw === complaintAdminPassword)   { setErr(""); onLogin("complaint-admin"); return; }
+    setErr("Galat Password!");
   };
   return (
     <div style={{ maxWidth: 380, margin: "60px auto" }}>
@@ -685,6 +692,91 @@ function AdminLogin({ correctPassword, onLogin }: { correctPassword: string; onL
           <button className="btn-white" onClick={attempt} style={{ borderRadius: 12, padding: "12px 0", fontSize: 15, fontWeight: 600 }}>Login →</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Manage Users (User-Admin panel) ────────────────────────────────────────────
+interface BlockedUser { mobile: string; name: string; reason: string; blockedAt: string; }
+
+function ManageUsers({ problems, blockedUsers, onBlock, onUnblock, onDeleteUser, showToast }: {
+  problems: Problem[]; blockedUsers: BlockedUser[];
+  onBlock: (mobile: string, name: string) => void;
+  onUnblock: (mobile: string) => void;
+  onDeleteUser: (mobile: string, name: string) => void;
+  showToast: (m: string) => void;
+}) {
+  const [search, setSearch] = useState("");
+  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+
+  // Group complaints by mobile number → one row per unique user
+  const usersMap: Record<string, { name: string; mobile: string; count: number; lastDate: string }> = {};
+  problems.forEach(p => {
+    if (!p.mobile) return;
+    if (!usersMap[p.mobile]) usersMap[p.mobile] = { name: p.name, mobile: p.mobile, count: 0, lastDate: p.submittedAt };
+    usersMap[p.mobile].count += 1;
+    if (p.submittedAt > usersMap[p.mobile].lastDate) usersMap[p.mobile].lastDate = p.submittedAt;
+  });
+  const isBlocked = (mobile: string) => blockedUsers.some(b => b.mobile === mobile);
+
+  let users = Object.values(usersMap);
+  if (search.trim()) {
+    const s = search.trim().toLowerCase();
+    users = users.filter(u => u.name.toLowerCase().includes(s) || u.mobile.includes(s));
+  }
+  users.sort((a, b) => (a.name > b.name ? 1 : -1));
+
+  return (
+    <div style={{ maxWidth: 800, margin: "0 auto", paddingTop: 32 }}>
+      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>👥 Manage Users</h2>
+      <p style={{ fontSize: 13, color: "var(--ct4)", marginBottom: 20 }}>Complaint submit karne wale users ki list. Fake user ko block ya delete karein.</p>
+
+      <input placeholder="Naam ya mobile se search karein…" value={search} onChange={e => setSearch(e.target.value)} style={{ marginBottom: 20 }} />
+
+      {users.length === 0 && <div style={{ color: "var(--ct4)", fontSize: 13 }}>Abhi tak koi user nahi mila.</div>}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {users.map(u => {
+          const blocked = isBlocked(u.mobile);
+          return (
+            <div key={u.mobile} className="glass" style={{ borderRadius: 16, padding: "16px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 15 }}>{u.name} {blocked && <Badge text="🚫 Blocked" color="#f87171" />}</div>
+                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 4 }}>📞 {u.mobile} · {u.count} complaint{u.count > 1 ? "s" : ""} · Last: {fmtDate(u.lastDate)}</div>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {blocked ? (
+                  <button className="btn-ghost" onClick={() => { onUnblock(u.mobile); showToast(`✅ ${u.name} unblock ho gaya`); }} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Unblock</button>
+                ) : (
+                  <button className="btn-ghost" onClick={() => { onBlock(u.mobile, u.name); showToast(`🚫 ${u.name} block ho gaya`); }} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Block</button>
+                )}
+                {confirmDel === u.mobile ? (
+                  <>
+                    <button className="btn-danger" onClick={() => { onDeleteUser(u.mobile, u.name); setConfirmDel(null); }} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Pakka Delete?</button>
+                    <button className="btn-ghost" onClick={() => setConfirmDel(null)} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Cancel</button>
+                  </>
+                ) : (
+                  <button className="btn-danger" onClick={() => setConfirmDel(u.mobile)} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Delete</button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {blockedUsers.length > 0 && (
+        <div style={{ marginTop: 32 }}>
+          <SectionHead icon="🚫" title="Blocked Numbers" />
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {blockedUsers.map(b => (
+              <div key={b.mobile} className="glass" style={{ borderRadius: 12, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
+                <span>{b.name} · 📞 {b.mobile} · {b.reason}</span>
+                <button className="btn-ghost" onClick={() => onUnblock(b.mobile)} style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12 }}>Unblock</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1131,9 +1223,9 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
 }
 
 // ── Admin Settings Panel ──────────────────────────────────────────────────────
-function AdminSettings({ problems, achievements, media, notices, feedbacks, adminPassword, villageName, sarpanchName, sarpanchPhoto, sarpanchAddress, whatsapp, instagram, onSavePassword, onSaveInfo, onSaveSocial, onSaveSarpanchPhoto, onSaveSarpanchAddress, onClearResolved, onClearAll, onAddAchievement, onDeleteAchievement, onAddMedia, onDeleteMedia, onAddNotice, onDeleteNotice, onDeleteFeedback, showToast }: {
-  problems: Problem[]; achievements: Achievement[]; media: MediaItem[]; notices: Notice[]; feedbacks: Feedback[]; adminPassword: string; villageName: string; sarpanchName: string; sarpanchPhoto: string; sarpanchAddress: string; whatsapp: string; instagram: string;
-  onSavePassword: (p: string) => void; onSaveInfo: (v: string, s: string) => void; onSaveSocial: (w: string, i: string) => void; onSaveSarpanchPhoto: (p: string) => void; onSaveSarpanchAddress: (a: string) => void;
+function AdminSettings({ problems, achievements, media, notices, feedbacks, adminPassword, userAdminPassword, complaintAdminPassword, villageName, sarpanchName, sarpanchPhoto, sarpanchAddress, whatsapp, instagram, onSavePassword, onSaveUserAdminPassword, onSaveComplaintAdminPassword, onSaveInfo, onSaveSocial, onSaveSarpanchPhoto, onSaveSarpanchAddress, onClearResolved, onClearAll, onAddAchievement, onDeleteAchievement, onAddMedia, onDeleteMedia, onAddNotice, onDeleteNotice, onDeleteFeedback, showToast }: {
+  problems: Problem[]; achievements: Achievement[]; media: MediaItem[]; notices: Notice[]; feedbacks: Feedback[]; adminPassword: string; userAdminPassword: string; complaintAdminPassword: string; villageName: string; sarpanchName: string; sarpanchPhoto: string; sarpanchAddress: string; whatsapp: string; instagram: string;
+  onSavePassword: (p: string) => void; onSaveUserAdminPassword: (p: string) => void; onSaveComplaintAdminPassword: (p: string) => void; onSaveInfo: (v: string, s: string) => void; onSaveSocial: (w: string, i: string) => void; onSaveSarpanchPhoto: (p: string) => void; onSaveSarpanchAddress: (a: string) => void;
   onClearResolved: () => void; onClearAll: () => void;
   onAddAchievement: (a: Achievement) => void; onDeleteAchievement: (id: string) => void;
   onAddMedia: (m: MediaItem) => void; onDeleteMedia: (id: string) => void;
@@ -1144,6 +1236,8 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
   const [newPw, setNewPw]       = useState("");
   const [confirmPw, setConfirmPw] = useState("");
   const [pwErr, setPwErr]       = useState("");
+  const [newUserAdminPw, setNewUserAdminPw] = useState("");
+  const [newComplaintAdminPw, setNewComplaintAdminPw] = useState("");
   const [village, setVillage]   = useState(villageName);
   const [sarpanch, setSarpanch] = useState(sarpanchName);
   const [addr, setAddr]         = useState(sarpanchAddress);
@@ -1222,7 +1316,21 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
     if (newPw !== confirmPw) { setPwErr("Passwords do not match."); return; }
     onSavePassword(newPw);
     setNewPw(""); setConfirmPw(""); setPwErr("");
-    showToast("✅ Admin password updated successfully.");
+    showToast("✅ Super admin password updated successfully.");
+  };
+
+  const saveUserAdminPw = () => {
+    if (newUserAdminPw.length < 4) { showToast("⚠️ Password must be at least 4 characters."); return; }
+    onSaveUserAdminPassword(newUserAdminPw);
+    setNewUserAdminPw("");
+    showToast("✅ User-Admin password updated successfully.");
+  };
+
+  const saveComplaintAdminPw = () => {
+    if (newComplaintAdminPw.length < 4) { showToast("⚠️ Password must be at least 4 characters."); return; }
+    onSaveComplaintAdminPassword(newComplaintAdminPw);
+    setNewComplaintAdminPw("");
+    showToast("✅ Complaint-Admin password updated successfully.");
   };
 
   const exportCSV = () => {
@@ -1255,13 +1363,38 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
       {/* ── Change Password ── */}
       <FadeIn delay={80}>
         {card(<>
-          <SectionHead icon="🔑" title="Change Admin Password" />
+          <SectionHead icon="🔑" title="Change Super Admin Password" />
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <input type="password" placeholder="New password" value={newPw} onChange={e => { setNewPw(e.target.value); setPwErr(""); }} />
             <input type="password" placeholder="Confirm new password" value={confirmPw} onChange={e => { setConfirmPw(e.target.value); setPwErr(""); }} />
             {pwErr && <div style={{ fontSize: 13, color: "#ef4444" }}>{pwErr}</div>}
             <button className="btn-white" onClick={savePassword} style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }}>Update Password →</button>
           </div>
+        </>)}
+      </FadeIn>
+
+      {/* ── Role Admin Passwords ── */}
+      <FadeIn delay={90}>
+        {card(<>
+          <SectionHead icon="👥" title="User-Admin Password" />
+          <p style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 12 }}>Give this password to the person who will block/delete fake users.</p>
+          <div style={{ display: "flex", gap: 10 }}>
+            <input type="text" placeholder="New User-Admin password" value={newUserAdminPw} onChange={e => setNewUserAdminPw(e.target.value)} />
+            <button className="btn-white" onClick={saveUserAdminPw} style={{ borderRadius: 10, padding: "0 18px", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>Save</button>
+          </div>
+          <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 8 }}>Current: {userAdminPassword}</div>
+        </>)}
+      </FadeIn>
+
+      <FadeIn delay={100}>
+        {card(<>
+          <SectionHead icon="📋" title="Complaint-Admin Password" />
+          <p style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 12 }}>Give this password to the person who will filter and delete fake complaints.</p>
+          <div style={{ display: "flex", gap: 10 }}>
+            <input type="text" placeholder="New Complaint-Admin password" value={newComplaintAdminPw} onChange={e => setNewComplaintAdminPw(e.target.value)} />
+            <button className="btn-white" onClick={saveComplaintAdminPw} style={{ borderRadius: 10, padding: "0 18px", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>Save</button>
+          </div>
+          <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 8 }}>Current: {complaintAdminPassword}</div>
         </>)}
       </FadeIn>
 
@@ -1957,8 +2090,10 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
 export default function App() {
   const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"board"|"submit"|"admin"|"settings"|"achievements"|"gallery"|"notices"|"profile">("home");
+  const [page, setPage]             = useState<"home"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile">("home");
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
+  const [adminRole, setAdminRole] = useState<AdminRole | null>(() => (localStorage.getItem("adminRole") as AdminRole) || null);
+  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [toast, setToast]           = useState<string | null>(null);
   const [filterCat, setFilterCat]   = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -1969,6 +2104,8 @@ export default function App() {
 
   // Dynamic admin-configurable settings
   const [adminPassword, setAdminPassword] = useState("admin123");
+  const [userAdminPassword, setUserAdminPassword] = useState("useradmin123");
+  const [complaintAdminPassword, setComplaintAdminPassword] = useState("workadmin123");
   const [villageName, setVillageName]     = useState("Gram Sabha Pahrajpur");
   const [sarpanchName, setSarpanchName]   = useState("Priyanka Yadav");
   const [achievements, setAchievements]   = useState<Achievement[]>([]);
@@ -2020,6 +2157,8 @@ export default function App() {
         if (d.whatsapp) setWhatsapp(d.whatsapp);
         if (d.instagram) setInstagram(d.instagram);
         if (d.adminPassword) setAdminPassword(d.adminPassword);
+        if (d.userAdminPassword) setUserAdminPassword(d.userAdminPassword);
+        if (d.complaintAdminPassword) setComplaintAdminPassword(d.complaintAdminPassword);
         if (d.theme) setTheme(d.theme);
         if (d.sarpanchPhoto) setSarpanchPhoto(d.sarpanchPhoto);
       }
@@ -2049,6 +2188,14 @@ export default function App() {
     setLoading(false);
   }, []);
 
+  // Load blocked users list from Firestore in realtime
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "blockedUsers"), (snap) => {
+      setBlockedUsers(snap.docs.map(d => d.data() as BlockedUser));
+    });
+    return () => unsub();
+  }, []);
+
   // Cache media for instant load
   useEffect(() => {
     if (media.length > 0) {
@@ -2062,6 +2209,10 @@ export default function App() {
   };
 
   const addProblem = async (p: Problem) => {
+    if (blockedUsers.some(u => u.mobile === p.mobile)) {
+      showToast("❌ Aapka number block kar diya gaya hai. Aap complaint submit nahi kar sakte.");
+      throw new Error("blocked");
+    }
     try {
       const firestoreData = p as any;
       const cleanData = Object.fromEntries(Object.entries(firestoreData).filter(([_, v]) => v !== undefined));
@@ -2144,6 +2295,31 @@ export default function App() {
     localStorage.setItem("gram-seva:adminPw", pw);
   };
 
+  const saveUserAdminPassword = (pw: string) => {
+    try { setDoc(doc(db, "settings", "main"), { userAdminPassword: pw }, { merge: true }); } catch (_) {}
+    setUserAdminPassword(pw);
+  };
+
+  const saveComplaintAdminPassword = (pw: string) => {
+    try { setDoc(doc(db, "settings", "main"), { complaintAdminPassword: pw }, { merge: true }); } catch (_) {}
+    setComplaintAdminPassword(pw);
+  };
+
+  const blockUser = async (mobile: string, name: string, reason = "Fake / Spam") => {
+    await setDoc(doc(db, "blockedUsers", mobile), { mobile, name, reason, blockedAt: new Date().toISOString() });
+  };
+
+  const unblockUser = async (mobile: string) => {
+    await deleteDoc(doc(db, "blockedUsers", mobile));
+  };
+
+  const deleteUserAndComplaints = async (mobile: string, name: string) => {
+    const userProblems = problems.filter(p => p.mobile === mobile);
+    await Promise.all(userProblems.map(p => deleteDoc(doc(db, "problems", p.id))));
+    await blockUser(mobile, name, "Fake user — admin ne delete kiya");
+    showToast(`🗑 ${name} aur unki saari complaints delete kar di gayi`);
+  };
+
   const saveInfo = (v: string, s: string) => {
     setVillageName(v); setSarpanchName(s);
     saveSettings({ villageName: v });
@@ -2152,7 +2328,9 @@ export default function App() {
 
   const showToast = (msg: string) => setToast(msg);
 
-  const logout = () => { setIsAdmin(false); localStorage.removeItem("isAdmin"); setPage("home"); };
+  const logout = () => { setIsAdmin(false); setAdminRole(null); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); };
+  const canManageComplaints = adminRole === "super" || adminRole === "complaint-admin";
+  const canManageUsers = adminRole === "super" || adminRole === "user-admin";
 
   const filtered = problems.filter(p => {
     if (filterCat    !== "All" && p.category !== filterCat)    return false;
@@ -2208,10 +2386,16 @@ export default function App() {
                 {l.label}
               </button>
             ))}
-            {isAdmin && (
+            {isAdmin && canManageComplaints && (
               <button className="btn-ghost" onClick={() => setPage("settings")}
                 style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, background: page === "settings" ? "var(--cbg12)" : "var(--cbg5)", color: "#fbbf24" }}>
                 ⚙️
+              </button>
+            )}
+            {isAdmin && canManageUsers && (
+              <button className="btn-ghost" onClick={() => setPage("manageusers")}
+                style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, background: page === "manageusers" ? "var(--cbg12)" : "var(--cbg5)", color: "#38d9f5" }}>
+                👥
               </button>
             )}
             {isAdmin
@@ -2430,7 +2614,7 @@ export default function App() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {filtered.map((p, i) => (
                   <FadeIn key={p.id} delay={i * 40}>
-                    <ProblemCard problem={p} isAdmin={isAdmin} onUpdate={updateProblem} onDelete={deleteProblem} />
+                    <ProblemCard problem={p} isAdmin={isAdmin && canManageComplaints} onUpdate={updateProblem} onDelete={deleteProblem} />
                   </FadeIn>
                 ))}
               </div>
@@ -2465,15 +2649,41 @@ export default function App() {
 
         {/* ── ADMIN LOGIN ───────────────────────────────────────────────────── */}
         {page === "admin" && !isAdmin && (
-          <AdminLogin correctPassword={adminPassword} onLogin={() => { setIsAdmin(true); localStorage.setItem("isAdmin", "true"); localStorage.setItem("isAdmin-time", Date.now().toString()); setPage("board"); }} />
+          <AdminLogin
+            superPassword={adminPassword}
+            userAdminPassword={userAdminPassword}
+            complaintAdminPassword={complaintAdminPassword}
+            onLogin={(role) => {
+              setIsAdmin(true);
+              setAdminRole(role);
+              localStorage.setItem("isAdmin", "true");
+              localStorage.setItem("isAdmin-time", Date.now().toString());
+              localStorage.setItem("adminRole", role);
+              setPage(role === "user-admin" ? "manageusers" : "board");
+            }}
+          />
+        )}
+
+        {/* ── MANAGE USERS (User-Admin) ───────────────────────────────────────── */}
+        {page === "manageusers" && isAdmin && canManageUsers && (
+          <ManageUsers
+            problems={problems}
+            blockedUsers={blockedUsers}
+            onBlock={blockUser}
+            onUnblock={unblockUser}
+            onDeleteUser={deleteUserAndComplaints}
+            showToast={showToast}
+          />
         )}
 
         {/* ── SETTINGS ─────────────────────────────────────────────────────── */}
-        {page === "settings" && isAdmin && (
+        {page === "settings" && isAdmin && canManageComplaints && (
           <AdminSettings
             problems={problems} achievements={achievements} media={media} notices={notices} feedbacks={feedbacks} adminPassword={adminPassword}
+            userAdminPassword={userAdminPassword} complaintAdminPassword={complaintAdminPassword}
             villageName={villageName} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} sarpanchAddress={sarpanchAddress} whatsapp={whatsapp} instagram={instagram}
-            onSavePassword={savePassword} onSaveInfo={saveInfo} onSaveSocial={saveSocial} onSaveSarpanchPhoto={saveSarpanchPhoto} onSaveSarpanchAddress={saveSarpanchAddress}
+            onSavePassword={savePassword} onSaveUserAdminPassword={saveUserAdminPassword} onSaveComplaintAdminPassword={saveComplaintAdminPassword}
+            onSaveInfo={saveInfo} onSaveSocial={saveSocial} onSaveSarpanchPhoto={saveSarpanchPhoto} onSaveSarpanchAddress={saveSarpanchAddress}
             onClearResolved={clearResolved} onClearAll={clearAll}
             onAddAchievement={addAchievement} onDeleteAchievement={deleteAchievement}
             onAddMedia={addMedia} onDeleteMedia={deleteMedia}
