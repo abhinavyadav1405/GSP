@@ -71,6 +71,14 @@ export default function ProfileLookup({ problems, theme = "dark" }: ProfileLooku
   const checkMobile = async () => {
     const m = mobileInput.trim();
     if (!m) return;
+    if (!/^[6-9]\d{9}$/.test(m)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+    if (!/^[6-9]\d{9}$/.test(m)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
     setLoading(true);
     try {
       const snap = await getDoc(doc(db, "users", m));
