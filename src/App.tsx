@@ -128,11 +128,26 @@ const GLOBAL_STYLE = `
       padding-bottom: calc(6px + env(safe-area-inset-bottom));
     }
 
+    .mobile-nav-label {
+      display: block;
+      font-size: 9px;
+      line-height: 1;
+      margin-top: 3px;
+      font-weight: 700;
+      opacity: .58;
+      letter-spacing: .01em;
+    }
+
+    .mobile-nav-item.active .mobile-nav-label {
+      opacity: 1;
+    }
+
     .mobile-nav-item {
       position: relative;
       width: 54px;
       height: 54px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       background: transparent;
@@ -2919,10 +2934,446 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
   );
 }
 
+
+// ── User & Post Search ───────────────────────────────────────────────────────
+function UserSearchPage({
+  users,
+  problems,
+  onOpenPost
+}: {
+  users: AppUser[];
+  problems: Problem[];
+  onOpenPost: (user: AppUser | null, post?: Problem) => void;
+}) {
+  const [term, setTerm] = useState("");
+  const [mode, setMode] = useState<"users" | "posts">("users");
+  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
+
+  const q = term.trim().toLowerCase();
+
+  const matchedUsers = users
+    .filter(u => {
+      if (!q) return true;
+      return (
+        u.name?.toLowerCase().includes(q) ||
+        u.id?.toLowerCase().includes(q) ||
+        u.ward?.toLowerCase().includes(q)
+      );
+    })
+    .slice(0, 30);
+
+  const matchedPosts = problems
+    .filter(p => {
+      const text = [
+        p.title,
+        p.caption || "",
+        p.description,
+        p.name,
+        p.ward,
+        p.category
+      ].join(" ").toLowerCase();
+
+      if (selectedUser) {
+        return (
+          p.authorId === selectedUser.id ||
+          (p.name === selectedUser.name && p.mobile === selectedUser.mobile)
+        );
+      }
+
+      return !q || text.includes(q);
+    })
+    .slice(0, 50);
+
+  const avatar = (u: AppUser | null, size = 48) => (
+    <div
+      style={{
+        width: size,
+        height: size,
+        minWidth: size,
+        borderRadius: "50%",
+        overflow: "hidden",
+        display: "grid",
+        placeItems: "center",
+        background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
+        color: "#fff",
+        fontWeight: 800,
+        fontSize: Math.max(13, size * 0.36),
+        border: "2px solid rgba(124,92,252,.18)"
+      }}
+    >
+      {u?.avatar ? (
+        <img
+          src={u.avatar}
+          alt="Profile"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      ) : (
+        (u?.name || "U")
+          .split(" ")
+          .map(x => x[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase()
+      )}
+    </div>
+  );
+
+  return (
+    <div
+      style={{
+        maxWidth: 620,
+        margin: "0 auto",
+        padding: "24px 0 100px"
+      }}
+    >
+      <div style={{ marginBottom: 18 }}>
+        <div
+          style={{
+            fontSize: 11,
+            letterSpacing: ".12em",
+            color: "#8b5cf6",
+            fontWeight: 800
+          }}
+        >
+          DISCOVER
+        </div>
+
+        <h2
+          style={{
+            fontFamily: "'Space Grotesk',sans-serif",
+            fontSize: 28,
+            margin: "4px 0 6px"
+          }}
+        >
+          Search
+        </h2>
+
+        <div style={{ color: "var(--ct4)", fontSize: 13 }}>
+          Villagers aur community posts search karein.
+        </div>
+      </div>
+
+      <div
+        className="glass"
+        style={{
+          padding: 10,
+          borderRadius: 18,
+          marginBottom: 14
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 9
+          }}
+        >
+          <span style={{ fontSize: 20, opacity: .7 }}>⌕</span>
+
+          <input
+            value={term}
+            onChange={e => {
+              setTerm(e.target.value);
+              setSelectedUser(null);
+            }}
+            placeholder="Search user, post, ward..."
+            style={{
+              border: 0,
+              boxShadow: "none",
+              background: "transparent",
+              padding: "9px 4px",
+              margin: 0
+            }}
+            autoFocus
+          />
+
+          {term && (
+            <button
+              type="button"
+              onClick={() => {
+                setTerm("");
+                setSelectedUser(null);
+              }}
+              style={{
+                border: 0,
+                background: "transparent",
+                color: "var(--ct4)",
+                fontSize: 18,
+                cursor: "pointer"
+              }}
+            >
+              ×
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 8,
+          marginBottom: 16
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setMode("users");
+            setSelectedUser(null);
+          }}
+          style={{
+            padding: "10px 12px",
+            borderRadius: 12,
+            border: mode === "users"
+              ? "1px solid rgba(124,92,252,.45)"
+              : "1px solid var(--glass-border)",
+            background: mode === "users"
+              ? "rgba(124,92,252,.12)"
+              : "var(--cbg5)",
+            color: "var(--text-main)",
+            fontWeight: 700,
+            cursor: "pointer"
+          }}
+        >
+          👤 People
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setMode("posts");
+            setSelectedUser(null);
+          }}
+          style={{
+            padding: "10px 12px",
+            borderRadius: 12,
+            border: mode === "posts"
+              ? "1px solid rgba(124,92,252,.45)"
+              : "1px solid var(--glass-border)",
+            background: mode === "posts"
+              ? "rgba(124,92,252,.12)"
+              : "var(--cbg5)",
+            color: "var(--text-main)",
+            fontWeight: 700,
+            cursor: "pointer"
+          }}
+        >
+          📝 Posts
+        </button>
+      </div>
+
+      {selectedUser && (
+        <div
+          className="glass"
+          style={{
+            padding: 12,
+            borderRadius: 16,
+            marginBottom: 14,
+            display: "flex",
+            alignItems: "center",
+            gap: 11
+          }}
+        >
+          {avatar(selectedUser, 42)}
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 13 }}>
+              {selectedUser.name}
+            </div>
+            <div style={{ fontSize: 11, color: "var(--ct4)" }}>
+              {selectedUser.ward || "Village"} · User posts
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setSelectedUser(null)}
+            className="btn-ghost"
+            style={{
+              borderRadius: 9,
+              padding: "6px 10px",
+              fontSize: 11
+            }}
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {mode === "users" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {matchedUsers.length === 0 ? (
+            <div
+              className="glass"
+              style={{
+                borderRadius: 18,
+                padding: 42,
+                textAlign: "center",
+                color: "var(--ct4)"
+              }}
+            >
+              <div style={{ fontSize: 32, marginBottom: 8 }}>🔎</div>
+              No users found.
+            </div>
+          ) : (
+            matchedUsers.map(u => (
+              <button
+                key={u.id}
+                type="button"
+                onClick={() => {
+                  setSelectedUser(u);
+                  setMode("posts");
+                  setTerm(u.name);
+                  onOpenPost(u);
+                }}
+                className="glass"
+                style={{
+                  width: "100%",
+                  borderRadius: 16,
+                  padding: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  textAlign: "left",
+                  color: "var(--text-main)",
+                  cursor: "pointer",
+                  border: "1px solid var(--glass-border)"
+                }}
+              >
+                {avatar(u, 46)}
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>
+                    {u.name}
+                  </div>
+                  <div
+                    style={{
+                      color: "var(--ct4)",
+                      fontSize: 11,
+                      marginTop: 3
+                    }}
+                  >
+                    {u.ward || "Village"} · @{u.id}
+                  </div>
+                </div>
+
+                <span
+                  style={{
+                    fontSize: 18,
+                    color: "var(--ct4)"
+                  }}
+                >
+                  ›
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {matchedPosts.length === 0 ? (
+            <div
+              className="glass"
+              style={{
+                borderRadius: 18,
+                padding: 42,
+                textAlign: "center",
+                color: "var(--ct4)"
+              }}
+            >
+              <div style={{ fontSize: 32, marginBottom: 8 }}>📝</div>
+              No posts found.
+            </div>
+          ) : (
+            matchedPosts.map(p => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onOpenPost(null, p)}
+                className="glass"
+                style={{
+                  width: "100%",
+                  borderRadius: 16,
+                  padding: 14,
+                  textAlign: "left",
+                  color: "var(--text-main)",
+                  cursor: "pointer",
+                  border: "1px solid var(--glass-border)"
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    marginBottom: 8
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 34,
+                      height: 34,
+                      minWidth: 34,
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      display: "grid",
+                      placeItems: "center",
+                      background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
+                      color: "#fff",
+                      fontWeight: 800,
+                      fontSize: 12
+                    }}
+                  >
+                    {(p.name || "U").slice(0, 1).toUpperCase()}
+                  </div>
+
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 12 }}>
+                      {p.name}
+                    </div>
+                    <div style={{ color: "var(--ct4)", fontSize: 10 }}>
+                      {p.ward} · {p.category}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 800,
+                    marginBottom: 5
+                  }}
+                >
+                  {p.title || "Community Post"}
+                </div>
+
+                <div
+                  style={{
+                    color: "var(--ct45)",
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden"
+                  }}
+                >
+                  {p.caption || p.description || "No description"}
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings">("home");
+  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search">("home");
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
   const [publicProfileUser, setPublicProfileUser] = useState<PublicProfileData | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
@@ -2969,7 +3420,21 @@ export default function App() {
     return () => unsubSarpanch();
   }, []);
 
-    // Load problems from Firestore in realtime
+    // Search users state
+  const [searchUsers, setSearchUsers] = useState<AppUser[]>([]);
+
+  // Load registered users for public search
+  useEffect(() => {
+    const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
+      const list = snap.docs
+        .map(d => d.data() as AppUser)
+        .filter(u => !!u && !!u.id && !!u.name);
+      setSearchUsers(list);
+    });
+    return () => unsubUsers();
+  }, []);
+
+  // Load problems from Firestore in realtime
   useEffect(() => {
     const q = query(collection(db, "problems"), orderBy("submittedAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -3443,6 +3908,23 @@ export default function App() {
           </div>
         )}
 
+        {page === "search" && (
+          <FadeIn>
+            <UserSearchPage
+              users={searchUsers}
+              problems={problems}
+              onOpenPost={(selectedUser, post) => {
+                if (post) {
+                  setSearch(post.title || post.name || "");
+                  setPage("board");
+                } else if (selectedUser) {
+                  setPage("search");
+                }
+              }}
+            />
+          </FadeIn>
+        )}
+
         {page === "profile" && (
           <FadeIn>{currentUser ? <UserProfilePage user={currentUser} problems={problems} onUpdate={updateProblem as any} onDelete={deleteProblem} onLogout={logoutUser} onOpenSettings={() => setPage("user-settings")} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />}</FadeIn>
         )}
@@ -3572,6 +4054,19 @@ export default function App() {
           <svg viewBox="0 0 24 24">
             <path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5.2v-6.5H9.2V21H4a1 1 0 0 1-1-1v-9.2Z" />
           </svg>
+          <span className="mobile-nav-label">Home</span>
+        </button>
+
+        <button
+          className={`mobile-nav-item ${page === "search" ? "active" : ""}`}
+          onClick={() => setPage("search")}
+          aria-label="Search"
+        >
+          <svg viewBox="0 0 24 24">
+            <circle cx="10.8" cy="10.8" r="6.5" />
+            <path d="m16 16 5 5" />
+          </svg>
+          <span className="mobile-nav-label">Search</span>
         </button>
 
         <button
@@ -3603,6 +4098,7 @@ export default function App() {
           </div>
 
           {currentUser && <i className="mobile-profile-dot" />}
+          <span className="mobile-nav-label">Profile</span>
         </button>
 
       </div>
