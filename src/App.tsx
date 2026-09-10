@@ -2,6 +2,16 @@ import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
 import { useState, useEffect, useRef } from "react";
 import {
+  Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy,
+  LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle,
+  CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard,
+  Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren,
+  Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat,
+  Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown,
+  ShieldAlert, Upload, CircleUserRound
+} from "lucide-react";
+
+import {
   db,
   collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove,
   storage, ref, uploadBytes, getDownloadURL,
@@ -128,7 +138,14 @@ const GLOBAL_STYLE = `
       padding-bottom: calc(6px + env(safe-area-inset-bottom));
     }
 
-    .mobile-nav-label {
+    .icon-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .mobile-nav-label {
       display: block;
       font-size: 9px;
       line-height: 1;
@@ -340,6 +357,70 @@ const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =
     reader.readAsDataURL(file);
   });
 
+
+// ── Lucide UI icon helper ─────────────────────────────────────────────────────
+function UiIcon({
+  name,
+  size = 18,
+  strokeWidth = 2,
+  className
+}: {
+  name: string;
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}) {
+  const props = { size, strokeWidth, className };
+
+  const icons: Record<string, React.ReactNode> = {
+    "📷": <Camera {...props} />,
+    "🖼️": <ImageIcon {...props} />,
+    "🎬": <Video {...props} />,
+    "🗑": <Trash2 {...props} />,
+    "👤": <User {...props} />,
+    "📢": <Megaphone {...props} />,
+    "🏆": <Trophy {...props} />,
+    "🔐": <LockKeyhole {...props} />,
+    "🔍": <Search {...props} />,
+    "📞": <Phone {...props} />,
+    "⬇️": <Download {...props} />,
+    "⚙️": <Settings {...props} />,
+    "✏️": <Pencil {...props} />,
+    "⚠️": <AlertTriangle {...props} />,
+    "🚨": <Siren {...props} />,
+    "📅": <CalendarDays {...props} />,
+    "📍": <MapPin {...props} />,
+    "🗺": <Map {...props} />,
+    "📋": <Clipboard {...props} />,
+    "📌": <Pin {...props} />,
+    "📝": <FileText {...props} />,
+    "🎤": <Mic {...props} />,
+    "⭐": <Star {...props} />,
+    "⏳": <Clock3 {...props} />,
+    "🔄": <RefreshCw {...props} />,
+    "❌": <XCircle {...props} />,
+    "✅": <CheckCircle2 {...props} />,
+    "🏛": <Building2 {...props} />,
+    "🎉": <PartyPopper {...props} />,
+    "💧": <Droplets {...props} />,
+    "⚡": <Zap {...props} />,
+    "🏥": <Hospital {...props} />,
+    "🌊": <Waves {...props} />,
+    "🏗": <HardHat {...props} />,
+    "🛣": <Map {...props} />,
+    "⌂": <Home {...props} />,
+    "▦": <LayoutDashboard {...props} />,
+    "＋": <Plus {...props} />,
+    "➕": <Plus {...props} />,
+    "🔎": <Search {...props} />,
+    "🛡": <ShieldAlert {...props} />,
+    "📤": <Upload {...props} />,
+    "◉": <CircleUserRound {...props} />
+  };
+
+  return icons[name] ?? null;
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function AnimatedHeading({ text }: { text: string }) {
   const [visible, setVisible] = useState(false);
@@ -391,7 +472,9 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 function SectionHead({ icon, title }: { icon: string; title: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-      <span style={{ fontSize: 20 }}>{icon}</span>
+      <span style={{ width: 22, height: 22, display: "grid", placeItems: "center" }}>
+        <UiIcon name={icon} size={19} />
+      </span>
       <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 17 }}>{title}</h3>
     </div>
   );
@@ -422,8 +505,8 @@ function PhotoUpload({ photo, onPhoto }: { photo: string | null; onPhoto: (b64: 
         <div onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop} onClick={() => inputRef.current?.click()}
           style={{ border: `2px dashed ${dragging ? "var(--ct4)" : "rgba(255,255,255,0.14)"}`, borderRadius: 12, padding: "28px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: dragging ? "var(--cbg4)" : "transparent" }}>
           {compressing ? <div style={{ fontSize: 13, color: "var(--ct4)" }}>Compressing…</div> : (
-            <><div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div><div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}><button type="button" onClick={() => { const el = document.createElement("input"); el.type = "file"; el.accept = "image/*"; el.capture = "environment"; el.onchange = (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) process(f); }; el.click(); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>📷 Camera</button><button type="button" onClick={() => inputRef.current?.click()} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>🖼️ Gallery</button></div>
+            <><Camera size={28} style={{ marginBottom: 8 }} />
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div><div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}><button type="button" onClick={() => { const el = document.createElement("input"); el.type = "file"; el.accept = "image/*"; el.capture = "environment"; el.onchange = (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) process(f); }; el.click(); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}><Camera size={14} /> Camera</button><button type="button" onClick={() => inputRef.current?.click()} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}><ImageIcon size={14} /> Gallery</button></div>
             <div style={{ fontSize: 11, color: "var(--ct3)", marginTop: 4 }}>JPG, PNG, WebP · auto-compressed</div></>
           )}
         </div>
@@ -473,7 +556,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
             <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{problem.title}</div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {problem.photo && <span style={{ fontSize: 14 }} title="Has photo">📷</span>}
+            {problem.photo && <span style={{ fontSize: 14 }} title="Has photo"><Camera size={14} /></span>}
             <Badge text={sm.label} color={sm.color} bg={sm.bg} />
           </div>
         </div>
@@ -495,7 +578,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
           {/* Location text */}
           {problem.locationText && (
             <div style={{ marginTop: 12, display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", background: "rgba(59,130,246,0.06)", borderRadius: 10, border: "1px solid rgba(59,130,246,0.15)" }}>
-              <span style={{ fontSize: 16 }}>📍</span>
+              <span style={{ fontSize: 16 }}><MapPin size={16} /></span>
               <div>
                 <div style={{ fontSize: 11, color: "var(--ct4)", marginBottom: 2 }}>Location / Landmark</div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)" }}>{problem.locationText}</div>
@@ -523,7 +606,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
             <div style={{ marginTop: 14, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.10)" }}>
               <img src={problem.photo} alt="Problem photo" style={{ width: "100%", maxHeight: 320, objectFit: "cover", display: "block", cursor: "zoom-in" }}
                 onClick={e => { e.stopPropagation(); window.open(problem.photo, "_blank"); }} />
-              <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}>📷 Photo attached · click to open full size</div>
+              <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}><Camera size={13} style={{ verticalAlign: "middle" }} /> Photo attached · click to open full size</div>
             </div>
           )}
 
@@ -855,7 +938,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
   return <div style={{ maxWidth: 440, margin: "55px auto 90px" }}>
     <div className="glass" style={{ borderRadius: 24, padding: "30px 26px" }}>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ width: 64, height: 64, margin: "0 auto 14px", borderRadius: 18, background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontSize: 28, boxShadow: "0 12px 30px rgba(124,92,252,.25)" }}>👤</div>
+        <div style={{ width: 64, height: 64, margin: "0 auto 14px", borderRadius: 18, background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontSize: 28, boxShadow: "0 12px 30px rgba(124,92,252,.25)" }}><User size={28} /></div>
         <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26 }}>{mode === "login" ? "User Login" : "Create Account"}</h2>
         <p style={{ color: "var(--ct4)", fontSize: 13, marginTop: 6 }}>Community problems & profile ke liye login karein</p>
       </div>
@@ -1350,9 +1433,9 @@ style={{
   placeItems:"center",
   fontSize:13
 }}>📷</span>
-</button><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}>📞 {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⬇️ ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⚙️ Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
+</button><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}><Phone size={13} /> {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}><Download size={14} /> ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}><Settings size={14} /> Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
     <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}><h3 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:19}}>My Posts ({mine.length})</h3></div>
-    {mine.length===0 ? <div className="glass" style={{borderRadius:18,padding:40,textAlign:"center",color:"var(--ct4)"}}>Aapne abhi koi problem post nahi ki.</div> : mine.map(p => <div key={p.id}><CommunityPostCard problem={p} user={user} onUpdate={onUpdate} onOpenLogin={() => {}} /><div style={{display:"flex",gap:8,marginTop:-10,marginBottom:16}}><button className="btn-ghost" onClick={() => { const title=window.prompt("New title",p.title); if(title) onUpdate(p.id,{title}); }} style={{borderRadius:9,fontSize:12}}>✏️ Edit</button><button className="btn-danger" onClick={() => { if(confirm("Delete this post?")) onDelete(p.id); }} style={{borderRadius:9,fontSize:12,padding:"7px 12px"}}>🗑 Delete</button></div></div>)}
+    {mine.length===0 ? <div className="glass" style={{borderRadius:18,padding:40,textAlign:"center",color:"var(--ct4)"}}>Aapne abhi koi problem post nahi ki.</div> : mine.map(p => <div key={p.id}><CommunityPostCard problem={p} user={user} onUpdate={onUpdate} onOpenLogin={() => {}} /><div style={{display:"flex",gap:8,marginTop:-10,marginBottom:16}}><button className="btn-ghost" onClick={() => { const title=window.prompt("New title",p.title); if(title) onUpdate(p.id,{title}); }} style={{borderRadius:9,fontSize:12}}><Pencil size={14} /> Edit</button><button className="btn-danger" onClick={() => { if(confirm("Delete this post?")) onDelete(p.id); }} style={{borderRadius:9,fontSize:12,padding:"7px 12px"}}><Trash2 size={14} /> Delete</button></div></div>)}
   </div>;
 }
 
@@ -1388,7 +1471,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: AppUser; onSave: (u:
 
   return <div style={{maxWidth:560,margin:"32px auto 100px"}}>
     <div className="glass" style={{borderRadius:22,padding:24}}>
-      <h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:24}}>⚙️ Account Settings</h2>
+      <h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:24}}><Settings size={20} /> Account Settings</h2>
       <p style={{fontSize:13,color:"var(--ct4)",margin:"6px 0 20px"}}>Apni profile details aur preference change karein.</p>
 
       <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:22}}>
@@ -1528,7 +1611,7 @@ function AdminLogin({ superPassword, userAdminPassword, complaintAdminPassword, 
     <div style={{ maxWidth: 380, margin: "60px auto" }}>
       <div className="glass" style={{ borderRadius: 22, padding: "32px 28px" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>🔐</div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}><LockKeyhole size={40} /></div>
           <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22 }}>Admin Access</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)", marginTop: 8 }}>ID aur Password daalo</p>
         </div>
@@ -1734,11 +1817,11 @@ function FeedbackSection({ feedbacks, onAdd }: { feedbacks: Feedback[]; onAdd: (
             <div key={f.id} className="glass" style={{ borderRadius:14, padding:"14px 16px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div style={{ width:32, height:32, borderRadius:10, background:"var(--cbg7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>👤</div>
+                  <div style={{ width:32, height:32, borderRadius:10, background:"var(--cbg7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}><User size={28} /></div>
                   <span style={{ fontSize:13, fontWeight:600 }}>{f.name}</span>
                 </div>
                 <div style={{ display:"flex", gap:1 }}>
-                  {Array.from({length:5}).map((_,i)=><span key={i} style={{ fontSize:13,filter:i<f.rating?"none":"grayscale(1) opacity(0.2)" }}>⭐</span>)}
+                  {Array.from({length:5}).map((_,i)=><Star key={i} size={13} fill={i < f.rating ? "currentColor" : "none"} opacity={i < f.rating ? 1 : 0.2} />)}
                 </div>
               </div>
               <p style={{ fontSize:13, color:"var(--ct6)", lineHeight:1.65, margin:0 }}>{f.message}</p>
@@ -1800,15 +1883,15 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
               <div key={n.id} className="glass" style={{ borderRadius: 16, padding: "16px 18px", cursor: "pointer", borderLeft: `3px solid ${m.color}`, transition: "all 0.2s" }}
                 onClick={() => setExpanded(isExp ? null : n.id)}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>{m.icon}</div>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: m.color }}><UiIcon name={m.icon} size={17} /></div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 4 }}>
                       <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 14 }}>{n.title}</span>
-                      <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}>{m.icon} {m.label}</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}><UiIcon name={m.icon} size={12} />{m.label}</span>
                     </div>
                     <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}>📅 {n.date} · Posted {fmtDate(n.createdAt)}</div>
                   </div>
-                  <span style={{ color: "var(--ct3)", fontSize: 12, flexShrink: 0, paddingTop: 2 }}>{isExp ? "▲" : "▼"}</span>
+                  <span style={{ color: "var(--ct3)", fontSize: 12, flexShrink: 0, paddingTop: 2 }}>{isExp ? <ChevronUp size={15} /> : <ChevronDown size={15} />}</span>
                 </div>
                 {isExp && (
                   <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
@@ -1816,7 +1899,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
                     {isAdmin && (
                       <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
                         <button className="btn-danger" style={{ borderRadius: 9, padding: "7px 16px", fontSize: 13 }}
-                          onClick={e => { e.stopPropagation(); onDelete(n.id); }}>🗑 Delete</button>
+                          onClick={e => { e.stopPropagation(); onDelete(n.id); }}><Trash2 size={14} /> Delete</button>
                       </div>
                     )}
                   </div>
@@ -1873,7 +1956,7 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
 
       {compact && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📷 Village Gallery</h3>
+          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}><Camera size={17} /> Village Gallery</h3>
           {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
         </div>
       )}
@@ -1910,12 +1993,12 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
 
                 {/* Type badge */}
                 <div style={{ position: "absolute", top: 8, left: 8, fontSize: 11, padding: "3px 8px", borderRadius: 8, background: item.type === "photo" ? "rgba(168,85,247,0.8)" : "rgba(239,68,68,0.8)", color: "#fff", fontWeight: 600, backdropFilter: "blur(4px)" }}>
-                  {item.type === "photo" ? "📷 Photo" : "🎬 Video"}
+                  {item.type === "photo" ? "Photo" : "Video"}
                 </div>
 
                 {isAdmin && (
                   <button className="btn-danger" style={{ position: "absolute", top: 8, right: 8, borderRadius: 8, padding: "4px 10px", fontSize: 11 }}
-                    onClick={e => { e.stopPropagation(); onDelete(item.id); }}>🗑</button>
+                    onClick={e => { e.stopPropagation(); onDelete(item.id); }}><Trash2 size={15} /></button>
                 )}
               </div>
             );
@@ -2008,7 +2091,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
       ) : filtered.length === 0 ? (
         <FadeIn delay={200}>
           <div className="glass" style={{ borderRadius: 20, padding: "40px 32px", textAlign: "center" }}>
-            <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
+            <Search size={32} style={{ marginBottom: 10 }} />
             <div style={{ fontSize: 16, fontWeight: 600 }}>No matching works</div>
             <div style={{ color: "var(--ct4)", fontSize: 13, marginTop: 6 }}>Try adjusting the filters.</div>
           </div>
@@ -2033,11 +2116,11 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
                         <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: "rgba(34,197,94,0.12)", color: "#22c55e", fontWeight: 600 }}>✅ Done</span>
                       </div>
                       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 12, color: "var(--ct4)" }}>
-                        <span>📍 {a.village}</span>
-                        <span>📅 {a.date}</span>
+                        <span><MapPin size={13} /> {a.village}</span>
+                        <span><CalendarDays size={13} /> {a.date}</span>
                       </div>
                     </div>
-                    <div style={{ color: "var(--ct3)", fontSize: 13, flexShrink: 0, paddingTop: 2 }}>{isExp ? "▲" : "▼"}</div>
+                    <div style={{ color: "var(--ct3)", fontSize: 13, flexShrink: 0, paddingTop: 2 }}>{isExp ? <ChevronUp size={15} /> : <ChevronDown size={15} />}</div>
                   </div>
 
                   {/* Expanded */}
@@ -2048,13 +2131,13 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
                         <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
                           <img src={a.photo} alt={a.title} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block", cursor: "zoom-in" }}
                             onClick={e => { e.stopPropagation(); window.open(a.photo, "_blank"); }} />
-                          <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}>📷 Click to open full size</div>
+                          <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}><Camera size={13} style={{ verticalAlign: "middle" }} /> Click to open full size</div>
                         </div>
                       )}
                       {isAdmin && (
                         <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
                           <button className="btn-danger" style={{ borderRadius: 9, padding: "7px 16px", fontSize: 13 }}
-                            onClick={e => { e.stopPropagation(); onDelete(a.id); }}>🗑 Delete</button>
+                            onClick={e => { e.stopPropagation(); onDelete(a.id); }}><Trash2 size={14} /> Delete</button>
                         </div>
                       )}
                     </div>
@@ -2202,7 +2285,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
     <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 32 }}>
       <FadeIn>
         <div style={{ marginBottom: 28 }}>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>⚙️ Admin Settings</h2>
+          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}><Settings size={21} /> Admin Settings</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Full control over the portal — only visible to you.</p>
         </div>
       </FadeIn>
@@ -2355,7 +2438,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
 
             {/* Photo upload */}
             <label style={{ cursor: "pointer", border: "1px dashed rgba(34,197,94,0.3)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(34,197,94,0.03)" }}>
-              {achPhotoLoading ? "⏳ Compressing…" : achPhoto ? "📷 Photo attached — click to change" : "📷 Add Photo (optional)"}
+              {achPhotoLoading ? "Compressing…" : achPhoto ? "📷 Photo attached — click to change" : "📷 Add Photo (optional)"}
               <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) handleAchPhoto(e.target.files[0]); }} />
             </label>
             {achPhoto && (
@@ -2384,7 +2467,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {achievements.map(a => (
                 <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <div style={{ fontSize: 18 }}>{ACH_CAT_ICONS[a.category] ?? "✅"}</div>
+                  <div style={{ width: 30, height: 30, display: "grid", placeItems: "center" }}><UiIcon name={ACH_CAT_ICONS[a.category] ?? "✅"} size={18} /></div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.title}</div>
                     <div style={{ fontSize: 11, color: "var(--ct35)" }}>{a.category} · {a.village} · {a.date}</div>
@@ -2415,7 +2498,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 const m = NOTICE_META[t];
                 return (
                   <button key={t} onClick={() => setNoticeType(t)} style={{ padding: "6px 12px", borderRadius: 9, border: `1px solid ${noticeType === t ? m.color + "88" : "var(--cb10)"}`, background: noticeType === t ? m.bg : "rgba(255,255,255,0.03)", color: noticeType === t ? m.color : "rgba(255,255,255,0.38)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                    {m.icon} {m.label}
+                    <UiIcon name={m.icon} size={12} /> {m.label}
                   </button>
                 );
               })}
@@ -2443,7 +2526,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 const m = NOTICE_META[n.type];
                 return (
                   <div key={n.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderLeft: `3px solid ${m.color}` }}>
-                    <span style={{ fontSize: 18 }}>{m.icon}</span>
+                    <span style={{ fontSize: 18, display: "inline-flex" }}><UiIcon name={m.icon} size={18} /></span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title}</div>
                       <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.label} · {n.date}</div>
@@ -2469,7 +2552,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
           <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
             {(["photo","video"] as const).map(t => (
               <button key={t} onClick={() => setMediaType(t)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: `1px solid ${mediaType === t ? "rgba(168,85,247,0.5)" : "var(--cb10)"}`, background: mediaType === t ? "rgba(168,85,247,0.15)" : "var(--cbg4)", color: mediaType === t ? "#c084fc" : "var(--ct4)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                {t === "photo" ? "📷 Photo" : "🎬 YouTube Video"}
+                {t === "photo" ? "Photo" : "YouTube Video"}
               </button>
             ))}
           </div>
@@ -2480,7 +2563,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
 
             {mediaType === "photo" ? (<>
               <label style={{ cursor: "pointer", border: "1px dashed rgba(168,85,247,0.35)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(168,85,247,0.04)" }}>
-                {mediaPhotoLoading ? "⏳ Compressing…" : mediaPhoto ? "📷 Photo selected — click to change" : "📷 Select Photo"}
+                {mediaPhotoLoading ? "Compressing…" : mediaPhoto ? "📷 Photo selected — click to change" : "📷 Select Photo"}
                 <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) handleMediaPhoto(e.target.files[0]); }} />
               </label>
               {mediaPhoto && (
@@ -2507,10 +2590,10 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   {m.type === "photo"
                     ? <img src={m.url} alt={m.title} style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
-                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: "rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🎬</div>}
+                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: "rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}><Video size={20} /></div>}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</div>
-                    <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.type === "photo" ? "📷 Photo" : "🎬 Video"} · {fmtDate(m.createdAt)}</div>
+                    <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.type === "photo" ? "Photo" : "Video"} · {fmtDate(m.createdAt)}</div>
                   </div>
                   <button className="btn-danger" style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { onDeleteMedia(m.id); showToast("🗑 Removed from gallery."); }}>Delete</button>
                 </div>
@@ -2536,7 +2619,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontSize:13, fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
                       {f.name}
-                      <span style={{ fontSize:12 }}>{Array.from({length:f.rating}).map((_,i)=><span key={i}>⭐</span>)}</span>
+                      <span style={{ fontSize:12 }}>{Array.from({length:f.rating}).map((_,i)=><Star key={i} size={13} fill="currentColor" />)}</span>
                     </div>
                     <div style={{ fontSize:12, color:"var(--ct45)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{f.message}</div>
                     <div style={{ fontSize:11, color:"var(--cb25)", marginTop:2 }}>{fmtDate(f.createdAt)}</div>
@@ -3659,11 +3742,11 @@ export default function App() {
   };
 
   const navLinks = [
-    { id: "home" as const, label: "⌂ Home" },
-    { id: "dashboard" as const, label: "▦ Dashboard" },
-    { id: "notices" as const, label: "📢 Notices" },
-    { id: "achievements" as const, label: "🏆 Achievements" },
-    { id: "profile" as const, label: currentUser ? "👤 Profile" : "🔐 Login" },
+    { id: "home" as const, label: "Home", icon: "⌂" },
+    { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
+    { id: "notices" as const, label: "Notices", icon: "📢" },
+    { id: "achievements" as const, label: "Achievements", icon: "🏆" },
+    { id: "profile" as const, label: currentUser ? "Profile" : "Login", icon: currentUser ? "👤" : "🔐" },
   ];
 
   return (
@@ -3954,7 +4037,7 @@ export default function App() {
             ) : filtered.length === 0 ? (
               <FadeIn delay={200}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
-                  <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+                  <Search size={40} style={{ marginBottom: 12 }} />
                   <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 600, marginBottom: 8 }}>No issues found</div>
                   <div style={{ color: "var(--ct4)", fontSize: 13 }}>{problems.length === 0 ? "No problems have been submitted yet." : "Try adjusting your filters."}</div>
                 </div>
