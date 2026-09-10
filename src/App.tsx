@@ -867,7 +867,276 @@ function requireUser(user: AppUser | null, action: () => void, showToast: (m: st
   action();
 }
 
-function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: Problem; user: AppUser | null; onUpdate: (id: string, changes: any) => Promise<void> | void; onOpenLogin: () => void }) {
+
+interface PublicProfileData {
+  id: string;
+  name: string;
+  avatar?: string;
+  ward?: string;
+}
+
+function PublicUserProfile({
+  profile,
+  problems,
+  onClose
+}: {
+  profile: PublicProfileData;
+  problems: Problem[];
+  onClose: () => void;
+}) {
+  const userPosts = problems.filter(p =>
+    (profile.id && p.authorId === profile.id) ||
+    (!p.authorId && p.name === profile.name)
+  );
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        background: "rgba(0,0,0,.72)",
+        backdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16
+      }}
+      onClick={onClose}
+    >
+      <div
+        className="glass"
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 520,
+          maxHeight: "88vh",
+          overflowY: "auto",
+          borderRadius: 24,
+          padding: 24
+        }}
+      >
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 18
+        }}>
+          <h2 style={{
+            fontFamily: "'Space Grotesk',sans-serif",
+            fontSize: 21,
+            margin: 0
+          }}>
+            Public Profile
+          </h2>
+
+          <button
+            className="btn-ghost"
+            onClick={onClose}
+            style={{
+              borderRadius: 10,
+              fontSize: 18,
+              padding: "6px 10px"
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div style={{
+          textAlign: "center",
+          padding: "10px 0 22px"
+        }}>
+          <div
+            style={{
+              width: 100,
+              height: 100,
+              margin: "0 auto 14px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
+              display: "grid",
+              placeItems: "center",
+              overflow: "hidden",
+              border: "3px solid rgba(255,255,255,.2)",
+              fontSize: 40,
+              fontWeight: 800,
+              color: "#fff"
+            }}
+          >
+            {profile.avatar ? (
+              <img
+                src={profile.avatar}
+                alt="Profile"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover"
+                }}
+              />
+            ) : (
+              <span>{(profile.name || "U").slice(0,1).toUpperCase()}</span>
+            )}
+          </div>
+
+          <h3 style={{
+            fontFamily: "'Space Grotesk',sans-serif",
+            fontSize: 23,
+            margin: 0
+          }}>
+            {profile.name}
+          </h3>
+
+          <div style={{
+            color: "var(--ct4)",
+            fontSize: 13,
+            marginTop: 6
+          }}>
+            🏠 {profile.ward || "Village Member"}
+          </div>
+
+          <div style={{
+            color: "var(--ct4)",
+            fontSize: 12,
+            marginTop: 4
+          }}>
+            👤 Community Member
+          </div>
+        </div>
+
+        <div style={{
+          display: "flex",
+          gap: 10,
+          marginBottom: 18
+        }}>
+          <div
+            className="glass"
+            style={{
+              flex: 1,
+              textAlign: "center",
+              padding: 12,
+              borderRadius: 14
+            }}
+          >
+            <div style={{ fontSize: 21, fontWeight: 800 }}>
+              {userPosts.length}
+            </div>
+            <div style={{
+              fontSize: 11,
+              color: "var(--ct4)"
+            }}>
+              Posts
+            </div>
+          </div>
+
+          <div
+            className="glass"
+            style={{
+              flex: 1,
+              textAlign: "center",
+              padding: 12,
+              borderRadius: 14
+            }}
+          >
+            <div style={{ fontSize: 21, fontWeight: 800 }}>
+              🌱
+            </div>
+            <div style={{
+              fontSize: 11,
+              color: "var(--ct4)"
+            }}>
+              Community
+            </div>
+          </div>
+        </div>
+
+        <h3 style={{
+          fontFamily: "'Space Grotesk',sans-serif",
+          fontSize: 17,
+          marginBottom: 10
+        }}>
+          📝 Community Posts
+        </h3>
+
+        {userPosts.length === 0 ? (
+          <div
+            className="glass"
+            style={{
+              borderRadius: 14,
+              padding: 24,
+              textAlign: "center",
+              color: "var(--ct4)",
+              fontSize: 13
+            }}
+          >
+            Is user ne abhi koi post nahi ki.
+          </div>
+        ) : (
+          userPosts.slice(0, 10).map(post => (
+            <div
+              key={post.id}
+              className="glass"
+              style={{
+                borderRadius: 14,
+                padding: 13,
+                marginBottom: 10
+              }}
+            >
+              <div style={{
+                fontWeight: 700,
+                fontSize: 14
+              }}>
+                {post.title}
+              </div>
+
+              <div style={{
+                color: "var(--ct4)",
+                fontSize: 11,
+                marginTop: 5
+              }}>
+                {post.ward} · {fmtDate(post.submittedAt)}
+              </div>
+
+              <div style={{
+                fontSize: 12,
+                marginTop: 8,
+                lineHeight: 1.5
+              }}>
+                {post.caption || post.description}
+              </div>
+            </div>
+          ))
+        )}
+
+        <button
+          className="btn-ghost"
+          onClick={onClose}
+          style={{
+            width: "100%",
+            marginTop: 8,
+            borderRadius: 11,
+            padding: 11
+          }}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CommunityPostCard({
+  problem,
+  user,
+  onUpdate,
+  onOpenLogin,
+  onOpenUserProfile
+}: {
+  problem: Problem;
+  user: AppUser | null;
+  onUpdate: (id: string, changes: any) => Promise<void> | void;
+  onOpenLogin: () => void;
+  onOpenUserProfile?: (profile: PublicProfileData) => void;
+}) {
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const likes = problem.likes || [];
@@ -989,13 +1258,25 @@ function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: 
   </article>;
 }
 
-function CommunityFeed({ problems, user, onUpdate, onOpenLogin }: { problems: Problem[]; user: AppUser | null; onUpdate: (id: string, changes: any) => Promise<void> | void; onOpenLogin: () => void }) {
+function CommunityFeed({
+  problems,
+  user,
+  onUpdate,
+  onOpenLogin,
+  onOpenUserProfile
+}: {
+  problems: Problem[];
+  user: AppUser | null;
+  onUpdate: (id: string, changes: any) => Promise<void> | void;
+  onOpenLogin: () => void;
+  onOpenUserProfile: (profile: PublicProfileData) => void;
+}) {
   const [queryText, setQueryText] = useState("");
   const posts = problems.filter(p => !queryText || `${p.title} ${p.caption || ""} ${p.name}`.toLowerCase().includes(queryText.toLowerCase()));
   return <div style={{ maxWidth: 620, margin: "0 auto", padding: "28px 0 90px" }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}><div><div style={{ fontSize: 11, letterSpacing: ".12em", color: "#b57bee", fontWeight: 700 }}>COMMUNITY FEED</div><h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 28, marginTop: 4 }}>Village Problems</h2></div><button className="btn-ghost" onClick={onOpenLogin} style={{ borderRadius: 10, padding: "8px 12px" }}>{user ? "👤 " + user.name : "Login"}</button></div>
     <input value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search posts…" style={{ marginBottom: 16 }} />
-    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} />)}
+    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} />)}
   </div>;
 }
 
@@ -2643,6 +2924,7 @@ export default function App() {
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings">("home");
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
+  const [publicProfileUser, setPublicProfileUser] = useState<PublicProfileData | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
   const [adminRole, setAdminRole] = useState<AdminRole | null>(() => (localStorage.getItem("adminRole") as AdminRole) || null);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
@@ -2969,6 +3251,14 @@ export default function App() {
         </div>
       </nav>
 
+      {publicProfileUser && (
+        <PublicUserProfile
+          profile={publicProfileUser}
+          problems={problems}
+          onClose={() => setPublicProfileUser(null)}
+        />
+      )}
+
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 16px 60px" }}>
 
         {/* ── HOME ─────────────────────────────────────────────────────────── */}
@@ -3137,7 +3427,13 @@ export default function App() {
 
         {/* ── COMMUNITY HOME / INSTAGRAM-STYLE FEED ───────────────────────── */}
         {page === "home" && (
-          <CommunityFeed problems={problems} user={currentUser} onUpdate={updateProblem as any} onOpenLogin={() => setPage("login")} />
+          <CommunityFeed
+  problems={problems}
+  user={currentUser}
+  onUpdate={updateProblem as any}
+  onOpenLogin={() => setPage("login")}
+  onOpenUserProfile={setPublicProfileUser}
+/>
         )}
 
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
