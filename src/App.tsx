@@ -290,7 +290,7 @@ interface Feedback {
   rating: number;
   createdAt: string;
 }
-interface CommentItem { id: string; userId: string; userName: string; text: string; createdAt: string; }
+interface CommentItem { id: string; userId: string; userName: string; userAvatar?: string; text: string; createdAt: string; }
 interface Problem {
   id: string; name: string; mobile: string; ward: string;
   category: string; title: string; description: string; caption?: string;
@@ -299,6 +299,7 @@ interface Problem {
   locationText?: string;
   locationCoords?: LatLng;
   authorId?: string;
+  authorAvatar?: string;
   supporters?: string[];
   likes?: string[];
   comments?: CommentItem[];
@@ -684,7 +685,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "Priyanka Yadav", sa
     if (!form.name || !form.mobile || !form.title || !form.description) { alert("Please fill all required fields."); return; }
     setLoading(true);
     const problem: Problem = {
-      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: "Pending", adminNotes: "", caption: caption.trim() || undefined, authorId: currentUser?.id, supporters: [], likes: [], comments: [],
+      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: "Pending", adminNotes: "", caption: caption.trim() || undefined, authorId: currentUser?.id, authorAvatar: currentUser?.avatar, supporters: [], likes: [], comments: [],
       photo: photo || undefined,
       locationText: locationText || undefined,
       locationCoords: locationCoords || undefined,
@@ -884,7 +885,7 @@ function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: 
   const addComment = async () => {
     if (!user) { onOpenLogin(); return; }
     if (!comment.trim()) return;
-    const c: CommentItem = { id: uuid(), userId: user.id, userName: user.name, text: comment.trim(), createdAt: new Date().toISOString() };
+    const c: CommentItem = { id: uuid(), userId: user.id, userName: user.name, userAvatar: user.avatar, text: comment.trim(), createdAt: new Date().toISOString() };
     await onUpdate(problem.id, { comments: arrayUnion(c) });
     setComment(""); setShowComments(true);
   };
@@ -896,7 +897,31 @@ function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: 
   };
   return <article className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
     <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontWeight: 800, color: "#fff" }}>{(problem.name || "U").slice(0,1).toUpperCase()}</div>
+      <div
+        title={problem.authorAvatar ? "Profile Photo" : "Profile"}
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
+          display: "grid",
+          placeItems: "center",
+          fontWeight: 800,
+          color: "#fff",
+          overflow: "hidden",
+          flexShrink: 0
+        }}
+      >
+        {problem.authorAvatar ? (
+          <img
+            src={problem.authorAvatar}
+            alt="Profile"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <span>{(problem.name || "U").slice(0,1).toUpperCase()}</span>
+        )}
+      </div>
       <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, fontSize: 13 }}>{problem.name}</div><div style={{ color: "var(--ct4)", fontSize: 11 }}>{problem.ward} · {fmtDate(problem.submittedAt)}</div></div>
       <Badge text={STATUS_META[problem.status]?.label || problem.status} color={STATUS_META[problem.status]?.color || "#aaa"} />
     </div>
@@ -912,7 +937,52 @@ function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: 
         <button onClick={() => doAuth(() => toggleArray("supporters"))} style={{ marginLeft: "auto", borderRadius: 999, padding: "8px 14px", border: `1px solid ${supported ? "rgba(74,222,128,.5)" : "var(--btn-ghost-border)"}`, background: supported ? "rgba(74,222,128,.12)" : "var(--btn-ghost-bg)", color: supported ? "#4ade80" : "var(--btn-ghost-color)", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>{supported ? "✓ Supporting" : "+ Support"} · {supporters.length}</button>
       </div>
       {showComments && <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--cbg7)" }}>
-        {comments.slice(-5).map(c => <div key={c.id} style={{ padding: "7px 0", fontSize: 12 }}><b>{c.userName}</b> <span style={{ color: "var(--ct65)" }}>{c.text}</span></div>)}
+        {comments.slice(-5).map(c => (
+          <div
+            key={c.id}
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 8,
+              padding: "8px 0",
+              fontSize: 12
+            }}
+          >
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                minWidth: 30,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
+                display: "grid",
+                placeItems: "center",
+                overflow: "hidden",
+                fontWeight: 800,
+                color: "#fff"
+              }}
+            >
+              {c.userAvatar ? (
+                <img
+                  src={c.userAvatar}
+                  alt="Profile"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <span>{(c.userName || "U").slice(0,1).toUpperCase()}</span>
+              )}
+            </div>
+
+            <div style={{ minWidth: 0 }}>
+              <div>
+                <b>{c.userName}</b>
+              </div>
+              <div style={{ color: "var(--ct65)", marginTop: 2 }}>
+                {c.text}
+              </div>
+            </div>
+          </div>
+        ))}
         {user ? <div style={{ display: "flex", gap: 7, marginTop: 6 }}><input value={comment} onChange={e => setComment(e.target.value)} placeholder="Write a comment…" onKeyDown={e => e.key === "Enter" && addComment()} /><button className="btn-white" onClick={addComment} style={{ width: 80, borderRadius: 10 }}>Send</button></div> : <button className="btn-ghost" onClick={onOpenLogin} style={{ width: "100%", borderRadius: 10, padding: 9 }}>Login to comment</button>}
       </div>}
     </div>
@@ -941,12 +1011,50 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
     const a=document.createElement("a"); a.download=`GSP-ID-${user.id}.png`; a.href=c.toDataURL("image/png"); a.click();
   };
   return <div style={{ maxWidth: 760, margin: "28px auto 100px" }}>
-    <div className="glass" style={{ borderRadius: 22, padding: 22, marginBottom: 18 }}><div style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}><div style={{ width:78,height:78,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",display:"grid",placeItems:"center",fontSize:32,fontWeight:800,flexShrink:0 }}>
-  {user.avatar
-    ? <img src={user.avatar} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-    : <span>{user.name.slice(0,1).toUpperCase()}</span>
-  }
-</div><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}>📞 {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⬇️ ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⚙️ Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
+    <div className="glass" style={{ borderRadius: 22, padding: 22, marginBottom: 18 }}><div style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}><button
+type="button"
+onClick={onOpenSettings}
+title="Change profile photo"
+style={{
+  width:78,
+  height:78,
+  minWidth:78,
+  borderRadius:"50%",
+  border:"2px solid rgba(255,255,255,.25)",
+  padding:0,
+  background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",
+  display:"grid",
+  placeItems:"center",
+  fontSize:32,
+  fontWeight:800,
+  color:"#fff",
+  overflow:"hidden",
+  cursor:"pointer",
+  position:"relative"
+}}
+>
+{user.avatar ? (
+  <img
+    src={user.avatar}
+    alt="Profile"
+    style={{width:"100%",height:"100%",objectFit:"cover"}}
+  />
+) : (
+  <span>{user.name.slice(0,1).toUpperCase()}</span>
+)}
+<span style={{
+  position:"absolute",
+  right:1,
+  bottom:1,
+  width:25,
+  height:25,
+  borderRadius:"50%",
+  background:"rgba(0,0,0,.75)",
+  display:"grid",
+  placeItems:"center",
+  fontSize:13
+}}>📷</span>
+</button><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}>📞 {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⬇️ ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⚙️ Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
     <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}><h3 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:19}}>My Posts ({mine.length})</h3></div>
     {mine.length===0 ? <div className="glass" style={{borderRadius:18,padding:40,textAlign:"center",color:"var(--ct4)"}}>Aapne abhi koi problem post nahi ki.</div> : mine.map(p => <div key={p.id}><CommunityPostCard problem={p} user={user} onUpdate={onUpdate} onOpenLogin={() => {}} /><div style={{display:"flex",gap:8,marginTop:-10,marginBottom:16}}><button className="btn-ghost" onClick={() => { const title=window.prompt("New title",p.title); if(title) onUpdate(p.id,{title}); }} style={{borderRadius:9,fontSize:12}}>✏️ Edit</button><button className="btn-danger" onClick={() => { if(confirm("Delete this post?")) onDelete(p.id); }} style={{borderRadius:9,fontSize:12,padding:"7px 12px"}}>🗑 Delete</button></div></div>)}
   </div>;
