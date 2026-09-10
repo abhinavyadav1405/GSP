@@ -1516,7 +1516,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: AppUser; onSave: (u:
           disabled={avatarLoading}
           style={{marginTop:10,borderRadius:10,padding:"8px 16px",fontSize:12}}
         >
-          {avatarLoading ? "⏳ Processing..." : avatar ? "📷 Change DP" : "📷 Add Profile Photo"}
+          {avatarLoading ? "⏳ Processing..." : avatar ? <><Camera size={15} /> Change DP</> : <><Camera size={15} /> Add Profile Photo</>}
         </button>
 
         {avatar && !avatarLoading && (
@@ -1889,7 +1889,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
                       <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 14 }}>{n.title}</span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}><UiIcon name={m.icon} size={12} />{m.label}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}>📅 {n.date} · Posted {fmtDate(n.createdAt)}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}><CalendarDays size={14} /> {n.date} · Posted {fmtDate(n.createdAt)}</div>
                   </div>
                   <span style={{ color: "var(--ct3)", fontSize: 12, flexShrink: 0, paddingTop: 2 }}>{isExp ? <ChevronUp size={15} /> : <ChevronDown size={15} />}</span>
                 </div>
@@ -2867,7 +2867,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   if (!media || media.length === 0) return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
+      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}><Camera size={14} /> Village Gallery</h2>
       <div style={{ borderRadius: 16, background: "var(--cbg5)", height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "var(--ct4)", fontSize: 13 }}>No photos uploaded yet</p>
       </div>
@@ -2879,7 +2879,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}>📷 Village Gallery</h2>
+      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}><Camera size={14} /> Village Gallery</h2>
       <div style={{ 
         display: "flex", gap: 10, perspective: "1000px",
         transform: animating ? "rotateY(90deg)" : "rotateY(0deg)",
