@@ -1,3 +1,4 @@
+import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
 import { useState, useEffect, useRef } from "react";
@@ -1380,6 +1381,69 @@ function CommunityFeed({
     {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} />)}
   </div>;
 }
+
+
+class ProfileErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  state: { hasError: boolean; error?: Error } = { hasError: false };
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("PROFILE RUNTIME ERROR:", error);
+    console.error("PROFILE COMPONENT STACK:", info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: "100vh",
+          padding: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "sans-serif"
+        }}>
+          <div className="glass" style={{
+            maxWidth: 620,
+            width: "100%",
+            padding: 24,
+            borderRadius: 18
+          }}>
+            <h2 style={{ marginTop: 0 }}>Profile Error</h2>
+            <p style={{ color: "var(--ct4)" }}>
+              Profile page render karte waqt error aaya:
+            </p>
+            <pre style={{
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              padding: 14,
+              borderRadius: 12,
+              background: "var(--bg2, #f3f3f3)",
+              overflowX: "auto"
+            }}>
+              {this.state.error?.message || "Unknown runtime error"}
+            </pre>
+            <button
+              className="btn"
+              onClick={() => window.location.reload()}
+            >
+              Reload Profile
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 
 function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenSettings }: { user: AppUser; problems: Problem[]; onUpdate: (id: string, changes: any) => Promise<void>; onDelete: (id: string) => Promise<void>; onLogout: () => void; onOpenSettings: () => void }) {
   const mine = problems.filter(p => p.authorId === user.id || (p.mobile === user.mobile && p.name === user.name));
@@ -4086,7 +4150,7 @@ export default function App() {
         )}
 
         {page === "profile" && (
-          <FadeIn>{currentUser ? <UserProfilePage user={currentUser} problems={problems} onUpdate={updateProblem as any} onDelete={deleteProblem} onLogout={logoutUser} onOpenSettings={() => setPage("user-settings")} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />}</FadeIn>
+          <FadeIn>{currentUser ? <ProfileErrorBoundary><UserProfilePage user={currentUser} problems={problems} onUpdate={updateProblem as any} onDelete={deleteProblem} onLogout={logoutUser} onOpenSettings={() => setPage("user-settings")} /> </ProfileErrorBoundary> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />}</FadeIn>
         )}
 
         {/* ── USER LOGIN ───────────────────────────────────────────────────── */}
