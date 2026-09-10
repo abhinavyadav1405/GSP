@@ -87,25 +87,8 @@ const GLOBAL_STYLE = `
 
   /* INSTAGRAM STYLE MOBILE BOTTOM NAV */
   .mobile-bottom-nav {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .mobile-bottom-nav {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 68px;
-    padding-bottom: env(safe-area-inset-bottom);
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    box-sizing: border-box;
-    z-index: 9990;
+    display: none;
   }
-}
 
   @media (max-width: 768px) {
     .mobile-bottom-nav {
@@ -941,134 +924,16 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
     const a=document.createElement("a"); a.download=`GSP-ID-${user.id}.png`; a.href=c.toDataURL("image/png"); a.click();
   };
   return <div style={{ maxWidth: 760, margin: "28px auto 100px" }}>
-    <div className="glass" style={{ borderRadius: 22, padding: 22, marginBottom: 18 }}><div style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}><div style={{ width:78,height:78,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",display:"grid",placeItems:"center",fontSize:32,fontWeight:800,flexShrink:0 }}>
-  {user.avatar
-    ? <img src={user.avatar} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-    : <span>{user.name.slice(0,1).toUpperCase()}</span>
-  }
-</div><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}>📞 {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⬇️ ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⚙️ Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
+    <div className="glass" style={{ borderRadius: 22, padding: 22, marginBottom: 18 }}><div style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}><div style={{ width:78,height:78,borderRadius:"50%",background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",display:"grid",placeItems:"center",fontSize:32,fontWeight:800 }}>{user.name.slice(0,1).toUpperCase()}</div><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}>📞 {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⬇️ ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⚙️ Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
     <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}><h3 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:19}}>My Posts ({mine.length})</h3></div>
     {mine.length===0 ? <div className="glass" style={{borderRadius:18,padding:40,textAlign:"center",color:"var(--ct4)"}}>Aapne abhi koi problem post nahi ki.</div> : mine.map(p => <div key={p.id}><CommunityPostCard problem={p} user={user} onUpdate={onUpdate} onOpenLogin={() => {}} /><div style={{display:"flex",gap:8,marginTop:-10,marginBottom:16}}><button className="btn-ghost" onClick={() => { const title=window.prompt("New title",p.title); if(title) onUpdate(p.id,{title}); }} style={{borderRadius:9,fontSize:12}}>✏️ Edit</button><button className="btn-danger" onClick={() => { if(confirm("Delete this post?")) onDelete(p.id); }} style={{borderRadius:9,fontSize:12,padding:"7px 12px"}}>🗑 Delete</button></div></div>)}
   </div>;
 }
 
 function UserSettingsPage({ user, onSave, onBack }: { user: AppUser; onSave: (u: AppUser) => Promise<void>; onBack: () => void }) {
-  const [name,setName]=useState(user.name);
-  const [mobile,setMobile]=useState(user.mobile);
-  const [ward,setWard]=useState(user.ward);
-  const [theme,setTheme]=useState(localStorage.getItem("gsp-user-theme") || "system");
-  const [avatar,setAvatar]=useState<string | undefined>(user.avatar);
-  const [avatarLoading,setAvatarLoading]=useState(false);
-  const avatarInputRef=useRef<HTMLInputElement>(null);
-
-  const handleAvatar=async(file: File)=>{
-    if(!file.type.startsWith("image/")) return;
-    setAvatarLoading(true);
-    try{
-      const compressed=await compressImage(file,500,0.65);
-      setAvatar(compressed);
-    }catch(e){
-      console.error(e);
-      alert("Photo upload nahi ho paya.");
-    }finally{
-      setAvatarLoading(false);
-    }
-  };
-
-  const save=async()=>{
-    const next={...user,name:name.trim(),mobile:mobile.trim(),ward,avatar};
-    await onSave(next);
-    localStorage.setItem("gsp-user-theme",theme);
-    onBack();
-  };
-
-  return <div style={{maxWidth:560,margin:"32px auto 100px"}}>
-    <div className="glass" style={{borderRadius:22,padding:24}}>
-      <h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:24}}>⚙️ Account Settings</h2>
-      <p style={{fontSize:13,color:"var(--ct4)",margin:"6px 0 20px"}}>Apni profile details aur preference change karein.</p>
-
-      <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:22}}>
-        <div
-          onClick={()=>avatarInputRef.current?.click()}
-          style={{
-            width:110,
-            height:110,
-            borderRadius:"50%",
-            overflow:"hidden",
-            cursor:"pointer",
-            position:"relative",
-            background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",
-            display:"grid",
-            placeItems:"center",
-            border:"3px solid rgba(255,255,255,0.18)",
-            boxShadow:"0 8px 30px rgba(124,92,252,0.30)"
-          }}
-        >
-          {avatar
-            ? <img src={avatar} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-            : <span style={{fontSize:42,fontWeight:800,color:"#fff"}}>{name.slice(0,1).toUpperCase() || "U"}</span>
-          }
-        </div>
-
-        <input
-          ref={avatarInputRef}
-          type="file"
-          accept="image/*"
-          style={{display:"none"}}
-          onChange={e=>{
-            const file=e.target.files?.[0];
-            if(file) handleAvatar(file);
-            e.target.value="";
-          }}
-        />
-
-        <button
-          type="button"
-          className="btn-ghost"
-          onClick={()=>avatarInputRef.current?.click()}
-          disabled={avatarLoading}
-          style={{marginTop:10,borderRadius:10,padding:"8px 16px",fontSize:12}}
-        >
-          {avatarLoading ? "⏳ Processing..." : avatar ? "📷 Change DP" : "📷 Add Profile Photo"}
-        </button>
-
-        {avatar && !avatarLoading && (
-          <button
-            type="button"
-            onClick={()=>setAvatar(undefined)}
-            style={{marginTop:6,border:"none",background:"none",color:"#f87171",fontSize:11,cursor:"pointer"}}
-          >
-            Remove photo
-          </button>
-        )}
-
-        <div style={{fontSize:11,color:"var(--ct3)",marginTop:6}}>
-          JPG, PNG or WebP · photo will be compressed automatically
-        </div>
-      </div>
-
-      <div style={{display:"flex",flexDirection:"column",gap:12}}>
-        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Name"/>
-        <input value={mobile} onChange={e=>setMobile(e.target.value)} placeholder="Mobile"/>
-        <select value={ward} onChange={e=>setWard(e.target.value)}>
-          {WARDS.map(w=><option key={w}>{w}</option>)}
-        </select>
-
-        <select value={theme} onChange={e=>setTheme(e.target.value)}>
-          <option value="system">System theme</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-
-        <div style={{display:"flex",gap:10}}>
-          <button className="btn-ghost" onClick={onBack} style={{flex:1,borderRadius:10}}>Cancel</button>
-          <button className="btn-white" onClick={save} disabled={avatarLoading} style={{flex:1,borderRadius:10}}>
-            Save Settings
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>;
+  const [name,setName]=useState(user.name); const [mobile,setMobile]=useState(user.mobile); const [ward,setWard]=useState(user.ward); const [theme,setTheme]=useState(localStorage.getItem("gsp-user-theme") || "system");
+  const save=async()=>{const next={...user,name:name.trim(),mobile:mobile.trim(),ward}; await onSave(next); localStorage.setItem("gsp-user-theme",theme); onBack();};
+  return <div style={{maxWidth:560,margin:"32px auto 100px"}}><div className="glass" style={{borderRadius:22,padding:24}}><h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:24}}>⚙️ Account Settings</h2><p style={{fontSize:13,color:"var(--ct4)",margin:"6px 0 20px"}}>Apni profile details aur preference change karein.</p><div style={{display:"flex",flexDirection:"column",gap:12}}><input value={name} onChange={e=>setName(e.target.value)} placeholder="Name"/><input value={mobile} onChange={e=>setMobile(e.target.value)} placeholder="Mobile"/><select value={ward} onChange={e=>setWard(e.target.value)}>{WARDS.map(w=><option key={w}>{w}</option>)}</select><select value={theme} onChange={e=>setTheme(e.target.value)}><option value="system">System theme</option><option value="light">Light</option><option value="dark">Dark</option></select><div style={{display:"flex",gap:10}}><button className="btn-ghost" onClick={onBack} style={{flex:1,borderRadius:10}}>Cancel</button><button className="btn-white" onClick={save} style={{flex:1,borderRadius:10}}>Save Settings</button></div></div></div></div>;
 }
 
 // ── Filter Bar ────────────────────────────────────────────────────────────────
