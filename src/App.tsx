@@ -1885,7 +1885,7 @@ function CategoryGrid({ problems, onNavigate }: { problems: Problem[]; onNavigat
           onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}>
           <div style={{ width: 8, height: 8, borderRadius: 4, background: CAT_COLORS[cat] || "#6b7280", marginBottom: 10 }} />
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{cat}</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[cat] || "#6b7280", fontFamily: "'Space Grotesk',sans-serif" }}>{counts[cat]}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[cat] || "#6b7280", fontFamily: "'Space Grotesk',sans-serif" }}>{counts[cat}}</div>
           <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 2 }}>issues</div>
         </div>
       ))}
@@ -1965,7 +1965,7 @@ function FeedbackSection({ feedbacks, onAdd }: { feedbacks: Feedback[]; onAdd: (
             <span key={s} onClick={()=>setRating(s)} onMouseEnter={()=>setHovered(s)} onMouseLeave={()=>setHovered(0)}
               style={{ fontSize:28, cursor:"pointer", filter:s<=(hovered||rating)?"none":"grayscale(1) opacity(0.25)", transition:"all 0.15s" }}>⭐</span>
           ))}
-          <span style={{ fontSize:12, color:"rgba(255,255,255,0.38)", marginLeft:10 }}>{["","Poor","Fair","Good","Very Good","Excellent"][hovered||rating]}</span>
+          <span style={{ fontSize:12, color:"rgba(255,255,255,0.38)", marginLeft:10 }}>{["","Poor","Fair","Good","Very Good","Excellent"][hovered||rating}}</span>
         </div>
         <input placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} maxLength={60} style={{ marginBottom:10 }} />
         <textarea rows={3} placeholder="Your feedback, suggestions or appreciation…" value={message} onChange={e=>setMessage(e.target.value)} maxLength={400} style={{ marginBottom:12 }} />
@@ -4124,7 +4124,7 @@ useEffect(() => {
                   <FadeIn delay={180}>
                     <h1 style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:"clamp(28px,4.5vw,56px)",lineHeight:1.06,letterSpacing:"-0.03em",marginBottom:18 }}>
                       <span style={{ display:"block",color:"var(--text-main)" }}>Gram Sabha Pahrajpur</span>
-                      <span className="shimmer-text" style={{ display:"block" }}>{villageName.split(" ").slice(-1)[0]}</span>
+                      <span className="shimmer-text" style={{ display:"block" }}>{villageName.split(" ").slice(-1)[0}}</span>
                       <span style={{ display:"block",color:"var(--ct4)",fontWeight:400,fontSize:"0.52em",marginTop:10,letterSpacing:"-0.01em",fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Village Governance, Reimagined</span>
                     </h1>
                   </FadeIn>
