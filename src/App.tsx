@@ -430,8 +430,8 @@ function AnimatedHeading({ text }: { text: string }) {
 
 return () => clearTimeout(t); }, []);
   const lines = text.split("\n"); let charIdx = 0;
-  return (
           <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
+
           <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: "\"Space Grotesk\", sans-serif" }}>{counts[cat]}</div>
         <div key={li} style={{ display: "block" }}>
           {line.split("").map((ch) => {
