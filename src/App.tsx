@@ -431,7 +431,7 @@ function AnimatedHeading({ text }: { text: string }) {
 return () => clearTimeout(t); }, []);
   const lines = text.split("\n"); let charIdx = 0;
   return (
-    <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.04em" }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
       {lines.map((line, li) => (
         <div key={li} style={{ display: "block" }}>
           {line.split("").map((ch) => {
@@ -464,7 +464,7 @@ function Toast({ msg, onClose }: { msg: string; onClose: () => void }) {
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="glass" style={{ borderRadius: 16, padding: "20px 24px", flex: 1, minWidth: 120 }}>
-      <div style={{ fontSize: 32, fontWeight: 700, color, fontFamily: "'Space Grotesk',sans-serif" }}>{value}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
       <div style={{ fontSize: 13, color: "var(--ct5)", marginTop: 4 }}>{label}</div>
     </div>
   );
@@ -477,7 +477,7 @@ function SectionHead({ icon, title }: { icon: string; title: string }) {
       <span style={{ width: 22, height: 22, display: "grid", placeItems: "center" }}>
         <UiIcon name={icon} size={19} />
       </span>
-      <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 17 }}>{title}</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
     </div>
   );
 }
@@ -815,7 +815,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
   return (
       <>
     <div className="glass" style={{ borderRadius: 22, padding: "28px 24px", maxWidth: 560, margin: "0 auto" }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22, marginBottom: 24 }}>Submit a Problem</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {field("Your Name *", <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Full name" />)}
@@ -941,7 +941,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
     <div className="glass" style={{ borderRadius: 24, padding: "30px 26px" }}>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <div style={{ width: 64, height: 64, margin: "0 auto 14px", borderRadius: 18, background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontSize: 28, boxShadow: "0 12px 30px rgba(124,92,252,.25)" }}><User size={28} /></div>
-        <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26 }}>{mode === "login" ? "User Login" : "Create Account"}</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
         <p style={{ color: "var(--ct4)", fontSize: 13, marginTop: 6 }}>Community problems & profile ke liye login karein</p>
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
@@ -1023,7 +1023,7 @@ function PublicUserProfile({
           marginBottom: 18
         }}>
           <h2 style={{
-            fontFamily: "'Space Grotesk',sans-serif",
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
             fontSize: 21,
             margin: 0
           }}>
@@ -1079,7 +1079,7 @@ function PublicUserProfile({
           </div>
 
           <h3 style={{
-            fontFamily: "'Space Grotesk',sans-serif",
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
             fontSize: 23,
             margin: 0
           }}>
@@ -1150,7 +1150,7 @@ function PublicUserProfile({
         </div>
 
         <h3 style={{
-          fontFamily: "'Space Grotesk',sans-serif",
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           fontSize: 17,
           marginBottom: 10
         }}>
@@ -1294,7 +1294,7 @@ function CommunityPostCard({
       <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, fontSize: 13 }}>{problem.name}</div><div style={{ color: "var(--ct4)", fontSize: 11 }}>{problem.ward} · {fmtDate(problem.submittedAt)}</div></div>
       <Badge text={STATUS_META[problem.status]?.label || problem.status} color={STATUS_META[problem.status]?.color || "#aaa"} />
     </div>
-    {problem.photo ? <img src={problem.photo} alt={problem.title} style={{ width: "100%", maxHeight: 520, objectFit: "cover", display: "block" }} /> : <div style={{ minHeight: 180, padding: 24, display: "grid", placeItems: "center", background: "linear-gradient(135deg,rgba(124,92,252,.12),rgba(56,217,245,.06))" }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 42 }}>📢</div><div style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 20, marginTop: 8 }}>{problem.title}</div></div></div>}
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
     <div style={{ padding: "12px 16px 16px" }}>
       <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}><Badge text={problem.category} color={CAT_COLORS[problem.category] || "#aaa"} /><Badge text={problem.priority} color={PRIORITY_META[problem.priority]?.color || "#aaa"} /></div>
       <div style={{ fontSize: 15, fontWeight: 700 }}>{problem.title}</div>
@@ -1374,7 +1374,7 @@ function CommunityFeed({
   const [queryText, setQueryText] = useState("");
   const posts = problems.filter(p => !queryText || `${p.title} ${p.caption || ""} ${p.name}`.toLowerCase().includes(queryText.toLowerCase()));
   return <div style={{ maxWidth: 620, margin: "0 auto", padding: "28px 0 90px" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}><div><div style={{ fontSize: 11, letterSpacing: ".12em", color: "#b57bee", fontWeight: 700 }}>COMMUNITY FEED</div><h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 28, marginTop: 4 }}>Village Problems</h2></div><button className="btn-ghost" onClick={onOpenLogin} style={{ borderRadius: 10, padding: "8px 12px" }}>{user ? "👤 " + user.name : "Login"}</button></div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
     <input value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search posts…" style={{ marginBottom: 16 }} />
     {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} />)}
   </div>;
@@ -1717,7 +1717,7 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
           {user.avatar ? <img src={user.avatar} style={{width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover"}} alt="Avatar" /> : (user.name || "U").slice(0,1).toUpperCase()}
         </div>
         <div style={{ flex: 1 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 5px", fontFamily: "'Space Grotesk',sans-serif" }}>{user.name}</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <div style={{ color: "var(--ct4)", fontSize: 14 }}><Phone size={12} style={{verticalAlign:"middle", marginRight: 4}}/> {user.mobile} <span style={{margin:"0 8px"}}>•</span> <Home size={12} style={{verticalAlign:"middle", marginRight: 4}}/> {user.ward}</div>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -1726,7 +1726,7 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
           <button className="btn-danger" onClick={onLogout} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}><LogIn size={14} style={{transform:"rotate(180deg)"}}/> Logout</button>
         </div>
       </div>
-      <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, marginBottom: 14 }}>My Submitted Issues</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
       <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or ID…" style={{ flex: "1 1 180px", minWidth: 140 }} />
@@ -1775,7 +1775,7 @@ function AdminLogin({ superPassword, userAdminPassword, complaintAdminPassword, 
       <div className="glass" style={{ borderRadius: 22, padding: "32px 28px" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}><LockKeyhole size={40} /></div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22 }}>Admin Access</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <p style={{ fontSize: 13, color: "var(--ct4)", marginTop: 8 }}>ID aur Password daalo</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -1821,7 +1821,7 @@ function ManageUsers({ problems, blockedUsers, onBlock, onUnblock, onDeleteUser,
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", paddingTop: 32 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>👥 Manage Users</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
       <p style={{ fontSize: 13, color: "var(--ct4)", marginBottom: 20 }}>Complaint submit karne wale users ki list. Fake user ko block ya delete karein.</p>
 
       <input placeholder="Naam ya mobile se search karein…" value={search} onChange={e => setSearch(e.target.value)} style={{ marginBottom: 20 }} />
@@ -1885,7 +1885,7 @@ function CategoryGrid({ problems, onNavigate }: { problems: Problem[]; onNavigat
           onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}>
           <div style={{ width: 8, height: 8, borderRadius: 4, background: CAT_COLORS[cat] || "#6b7280", marginBottom: 10 }} />
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{cat}</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[cat} || "#6b7280", fontFamily: "'Space Grotesk',sans-serif" }}>{counts[cat}}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 2 }}>issues</div>
         </div>
       ))}
@@ -1907,7 +1907,7 @@ function SarpanchCard({ sarpanchName, photo, whatsapp, instagram, address }: { s
         </div>
         <div style={{ flex: 1, minWidth: 150 }}>
           <div style={{ fontSize: 10, color: "#22c55e", fontWeight: 700, letterSpacing: "0.12em", marginBottom: 5 }}>GRAM PRADHAN · SARPANCH</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>{sarpanchName}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <div style={{ fontSize: 12, color: "var(--ct4)", lineHeight: 1.5 }}>{address}</div>
         </div>
         {/* Contact Buttons */}
@@ -2018,7 +2018,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
     <div>
       {compact ? (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📢 Notices & Announcements</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
         </div>
       ) : (
@@ -2026,7 +2026,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", fontSize: 12, color: "#f59e0b", marginBottom: 16, fontWeight: 600 }}>
             📢 Official Notices
           </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Notices & Announcements</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Official announcements from Sarpanch  — Gram Sabha Pahrajpur</p>
         </div>
       )}
@@ -2034,7 +2034,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
       {notices.length === 0 ? (
         <div className="glass" style={{ borderRadius: 20, padding: compact ? "28px 24px" : "48px 32px", textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: compact ? 15 : 19, fontWeight: 600, marginBottom: 8 }}>No notices yet</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Notices to post your first announcement." : "Official notices from the Sarpanch will appear here."}</div>
         </div>
       ) : (
@@ -2049,7 +2049,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: m.color }}><UiIcon name={m.icon} size={17} /></div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 14 }}>{n.title}</span>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}><UiIcon name={m.icon} size={12} />{m.label}</span>
                     </div>
                     <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}><CalendarDays size={14} /> {n.date} · Posted {fmtDate(n.createdAt)}</div>
@@ -2110,14 +2110,14 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.25)", fontSize: 12, color: "#a855f7", marginBottom: 16, fontWeight: 600 }}>
             📷 Village Gallery
           </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Photos & Videos</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Precious moments, places, and milestones of Gram Sabha Pahrajpur</p>
         </div>
       )}
 
       {compact && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}><Camera size={17} /> Village Gallery</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
         </div>
       )}
@@ -2125,7 +2125,7 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
       {media.length === 0 ? (
         <div className="glass" style={{ borderRadius: 20, padding: compact ? "32px 24px" : "48px 32px", textAlign: "center" }}>
           <div style={{ fontSize: 42, marginBottom: 12 }}>🖼</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: compact ? 16 : 20, fontWeight: 600, marginBottom: 8 }}>No photos or videos yet</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Gallery to add your first photo or video." : "Village photos and videos will appear here soon."}</div>
         </div>
       ) : (
@@ -2205,7 +2205,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 600 }}>
             🏆 Development Works
           </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Completed Achievements</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Works and developments completed under the leadership of Sarpanch </p>
         </div>
       </FadeIn>
@@ -2219,7 +2219,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
             { label: "Categories", value: [...new Set(achievements.map(a => a.category))].length, color: "#f59e0b" },
           ].map(s => (
             <div key={s.label} className="glass" style={{ borderRadius: 14, padding: "14px 20px", flex: 1, minWidth: 120 }}>
-              <div style={{ fontSize: 22, fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, color: s.color }}>{s.value}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
               <div style={{ fontSize: 11, color: "var(--ct4)", marginTop: 3 }}>{s.label}</div>
             </div>
           ))}
@@ -2245,7 +2245,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
         <FadeIn delay={200}>
           <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
             <div style={{ fontSize: 44, marginBottom: 14 }}>🏆</div>
-            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No achievements yet</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
             <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Achievements to add your first completed work." : "Completed works will be listed here soon."}</div>
           </div>
         </FadeIn>
@@ -2272,7 +2272,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
                     <div style={{ width: 42, height: 42, borderRadius: 12, background: color + "22", border: `1px solid ${color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{icon}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-                        <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 15 }}>{a.title}</span>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                         <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: color + "22", color, fontWeight: 600 }}>{a.category}</span>
                         <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: "rgba(34,197,94,0.12)", color: "#22c55e", fontWeight: 600 }}>✅ Done</span>
                       </div>
@@ -2446,7 +2446,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
     <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 32 }}>
       <FadeIn>
         <div style={{ marginBottom: 28 }}>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}><Settings size={21} /> Admin Settings</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Full control over the portal — only visible to you.</p>
         </div>
       </FadeIn>
@@ -2457,7 +2457,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
           <SectionHead icon="🔑" title="
               {/* 🛡️ All 3 Admins Management Section */}
               <div className="glass" style={{ borderRadius: 20, padding: "24px", marginBottom: 24, border: "2px solid rgba(251,191,36,0.5)" }}>
-                <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, marginBottom: 12, color: "#fbbf24" }}>🛡️ Manage All 3 Admins (Super, User & Complaint Admin)</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                 <p style={{ fontSize: 13, color: "var(--ct4)", marginBottom: 16 }}>Teeno admins ki details yahan set karein taaki user profile aur home directory mein unka naam, photo aur contact buttons dikhein.</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {["super", "userAdmin", "complaintAdmin"].map((key) => {
@@ -2488,7 +2488,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
               
               {/* 🛡️ All 3 Admins Management Section */}
               <div className="glass" style={{ borderRadius: 20, padding: "24px", marginBottom: 24, border: "2px solid rgba(251,191,36,0.6)" }}>
-                <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, marginBottom: 10, color: "#fbbf24" }}>🛡️ Manage All 3 Admins (Super, User & Complaint Admin)</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                 <p style={{ fontSize: 13, color: "var(--ct4)", marginBottom: 16 }}>Teeno admins ki details yahan bharein taaki user profile aur home directory mein unka naam, photo aur contact buttons dikhein.</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {["super", "userAdmin", "complaintAdmin"].map((key) => {
@@ -3086,7 +3086,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   if (!media || media.length === 0) return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}><Camera size={14} /> Village Gallery</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
       <div style={{ borderRadius: 16, background: "var(--cbg5)", height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "var(--ct4)", fontSize: 13 }}>No photos uploaded yet</p>
       </div>
@@ -3098,7 +3098,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}><Camera size={14} /> Village Gallery</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
       <div style={{ 
         display: "flex", gap: 10, perspective: "1000px",
         transform: animating ? "rotateY(90deg)" : "rotateY(0deg)",
@@ -3342,7 +3342,7 @@ function UserSearchPage({
 
         <h2
           style={{
-            fontFamily: "'Space Grotesk',sans-serif",
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
             fontSize: 28,
             margin: "4px 0 6px"
           }}
@@ -3693,7 +3693,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
         <button className="btn-ghost" onClick={onBack} style={{ borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 6 }}>
           <span>←</span> Back
         </button>
-        <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 24, margin: 0 }}>Profile Settings</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
       </div>
       <div className="glass" style={{ borderRadius: 20, padding: "24px" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -4059,7 +4059,7 @@ useEffect(() => {
             <div style={{ width: 36, height: 36, borderRadius: 8, overflow: "hidden", background: "rgba(255,255,255,0.08)" }}>
               <img src="/logo.png" alt="GSP Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
-            <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
               {villageName}
             </span>
           </div>
@@ -4122,7 +4122,7 @@ useEffect(() => {
                   </FadeIn>
 
                   <FadeIn delay={180}>
-                    <h1 style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:"clamp(28px,4.5vw,56px)",lineHeight:1.06,letterSpacing:"-0.03em",marginBottom:18 }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                       <span style={{ display:"block",color:"var(--text-main)" }}>Gram Sabha Pahrajpur</span>
                       <span className="shimmer-text" style={{ display:"block" }}>{villageName.split(" ").slice(-1)[0}}</span>
                       <span style={{ display:"block",color:"var(--ct4)",fontWeight:400,fontSize:"0.52em",marginTop:10,letterSpacing:"-0.01em",fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Village Governance, Reimagined</span>
@@ -4155,17 +4155,17 @@ useEffect(() => {
                       <div style={{ position:"absolute",inset:-40,borderRadius:"50%",background:"radial-gradient(ellipse,rgba(124,92,252,0.22) 0%,transparent 70%)",animation:"pulseGlow 3s ease-in-out infinite",pointerEvents:"none" }}/>
                       <div style={{ position:"absolute",inset:16,borderRadius:"50%",background:"radial-gradient(ellipse at 35% 30%,rgba(181,123,238,0.95) 0%,rgba(124,92,252,0.75) 45%,rgba(56,217,245,0.45) 100%)",boxShadow:"0 0 60px rgba(124,92,252,0.55),0 0 120px rgba(124,92,252,0.22),inset 0 0 36px rgba(255,255,255,0.10)",animation:"floatOrb 5s ease-in-out infinite" }}>
                         <div style={{ position:"absolute",top:"14%",left:"20%",width:"38%",height:"22%",borderRadius:"50%",background:"rgba(255,255,255,0.26)",filter:"blur(7px)" }}/>
-                        <div style={{ position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"rgba(255,255,255,0.92)",letterSpacing:"0.06em",textShadow:"0 2px 12px rgba(0,0,0,0.4)" }}>GSP</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                       </div>
                       <div style={{ position:"absolute",top:"50%",left:"50%",width:11,height:11,marginTop:-5.5,marginLeft:-5.5,animation:"orbit1 5s linear infinite" }}><div style={{ width:11,height:11,borderRadius:"50%",background:"#38d9f5",boxShadow:"0 0 12px #38d9f5" }}/></div>
                       <div style={{ position:"absolute",top:"50%",left:"50%",width:8,height:8,marginTop:-4,marginLeft:-4,animation:"orbit2 7s linear infinite" }}><div style={{ width:8,height:8,borderRadius:"50%",background:"#f4c95d",boxShadow:"0 0 10px #f4c95d" }}/></div>
                       <div className="glass" style={{ position:"absolute",top:-6,right:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4s ease-in-out infinite" }}>
                         <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>Resolved</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"#4ade80" }}>{stats.resolved}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                       </div>
                       <div className="glass" style={{ position:"absolute",bottom:6,left:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4.5s ease-in-out infinite 0.8s" }}>
                         <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>Total</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"#b57bee" }}>{stats.total}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                       </div>
                       <div className="glass" style={{ position:"absolute",bottom:52,right:-20,padding:"6px 12px",borderRadius:11,animation:"floatChip 6s ease-in-out infinite 1.2s" }}>
                         <div style={{ display:"flex",alignItems:"center",gap:5 }}><div style={{ width:7,height:7,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 7px #4ade80",animation:"pulse-dot 2s infinite" }}/><span style={{ fontSize:11,color:"var(--text-main)",fontWeight:600 }}>Live</span></div>
@@ -4176,7 +4176,7 @@ useEffect(() => {
                       <div style={{ display:"flex" }}>
                         {([{num:stats.total,label:"Total",color:"#b57bee"},{num:stats.resolved,label:"Done",color:"#4ade80"},{num:stats.pending,label:"Pending",color:"#f4c95d"},{num:stats.inprogress,label:"Active",color:"#38d9f5"}] as const).map((s,i)=>(
                           <div key={s.label} style={{ flex:1,textAlign:"center",padding:"11px 4px",borderRight:i<3?"1px solid rgba(124,92,252,0.10)":"none" }}>
-                            <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:16,color:s.color }}>{s.num}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                             <div style={{ fontSize:10,color:"var(--ct4)",marginTop:2,fontWeight:500 }}>{s.label}</div>
                           </div>
                         ))}
@@ -4197,7 +4197,7 @@ useEffect(() => {
             </FadeIn>
 
             <FadeIn delay={1700}>
-              <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16, color: "var(--text-main)" }}>Issues by Category</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
               <CategoryGrid problems={problems} onNavigate={() => setPage("board")} />
             </FadeIn>
 
@@ -4205,7 +4205,7 @@ useEffect(() => {
               <FadeIn delay={1900}>
                 <div style={{ marginTop: 40 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>Recent Issues</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                     <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -4219,7 +4219,7 @@ useEffect(() => {
               <FadeIn delay={1600}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", marginTop: 20 }}>
                   <div style={{ fontSize: 48, marginBottom: 16 }}>🌱</div>
-                  <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No issues reported yet</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                   <div style={{ color: "var(--ct4)", fontSize: 14, marginBottom: 24 }}>Be the first to report a problem in your village.</div>
                   <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 600 }}>Submit First Problem →</button>
                 </div>
@@ -4229,7 +4229,7 @@ useEffect(() => {
             
             {/* Panchayat Admins Directory for Users */}
             <div style={{ marginTop: 40 }}>
-              <h3 style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:600, fontSize:18, marginBottom:14, color:"var(--text-main)" }}>🛡️ Panchayat Admins & Team</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
                 {Object.entries(adminDetails || {}).map(([key, adm]: [string, any]) => {
                   if (!adm || !adm.name) return null;
@@ -4275,7 +4275,7 @@ useEffect(() => {
             {/* Sarpanch Profile + Social */}
             <FadeIn delay={1800}>
               <div style={{ marginTop: 40 }}>
-                <h3 style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:600, fontSize:18, marginBottom:14, color:"var(--text-main)" }}>Your Sarpanch</h3>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                 <SarpanchCard sarpanchName={sarpanchName} photo={sarpanchPhoto} whatsapp={whatsapp} instagram={instagram} address={sarpanchAddress} />
               </div>
             </FadeIn>
@@ -4364,7 +4364,7 @@ useEffect(() => {
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#fbbf24", background: "rgba(251,191,36,0.12)", padding: "3px 10px", borderRadius: 20, marginBottom: 6 }}>
                     ⭐ Verified Administrator
                   </div>
-                  <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26, margin: 0 }}>{sarpanchName || "Portal Admin"}</h2>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                   <div style={{ color: "var(--ct4)", fontSize: 13, marginTop: 4 }}>
                     Role: <span style={{ color: "var(--text-main)", fontWeight: 600 }}>{adminRole === "super" ? "Super Admin" : adminRole === "user-admin" ? "User Admin" : "Complaint Admin"}</span>
                   </div>
@@ -4423,7 +4423,7 @@ useEffect(() => {
           <div style={{ paddingTop: 32 }}>
             <FadeIn>
               <div style={{ marginBottom: 24 }}>
-                <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                   {isAdmin ? "🛡 Admin Dashboard" : "All Reported Issues"}
                 </h2>
                 <p style={{ fontSize: 13, color: "var(--ct4)" }}>{filtered.length} of {problems.length} issues shown</p>
@@ -4439,7 +4439,7 @@ useEffect(() => {
               <FadeIn delay={200}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
                   <Search size={40} style={{ marginBottom: 12 }} />
-                  <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 600, marginBottom: 8 }}>No issues found</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[idx] || "#fbbf24", fontFamily: '"Space Grotesk", sans-serif' }}>{counts[cat]}</div>
                   <div style={{ color: "var(--ct4)", fontSize: 13 }}>{problems.length === 0 ? "No problems have been submitted yet." : "Try adjusting your filters."}</div>
                 </div>
               </FadeIn>
