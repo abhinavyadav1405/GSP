@@ -1368,7 +1368,19 @@ function CommunityFeed({
   const [queryText, setQueryText] = useState("");
   const posts = problems.filter(p => !queryText || `${p.title} ${p.caption || ""} ${p.name}`.toLowerCase().includes(queryText.toLowerCase()));
   return <div style={{ maxWidth: 620, margin: "0 auto", padding: "28px 0 90px" }}>
-              <input value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search posts…" style={{ marginBottom: 16 }} />
+                    <div style={{ marginBottom: 24, textAlign: "left" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 20, background: "rgba(124,92,252,0.12)", border: "1px solid rgba(124,92,252,0.25)", fontSize: 11, color: "#b57bee", marginBottom: 12, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 8px #4ade80" }}></span>
+          Community Voice
+        </div>
+        <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 32, margin: 0, letterSpacing: "-0.02em" }}>
+          Village Problems
+        </h2>
+        <p style={{ color: "var(--ct45)", fontSize: 13, marginTop: 6, lineHeight: 1.5 }}>
+          Gaon ki sabhi samasyaein aur community posts yahan dekhein.
+        </p>
+      </div>
+      <input value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search posts…" style={{ marginBottom: 16 }} />
     {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} />)}
   </div>;
 }
