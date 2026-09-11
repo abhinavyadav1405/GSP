@@ -3710,6 +3710,13 @@ export default function App() {
   const [whatsapp, setWhatsapp]           = useState("");
   const [instagram, setInstagram]         = useState("");
   const [sarpanchPhoto, setSarpanchPhoto] = useState("");
+  
+  const [adminDetails, setAdminDetails] = useState({
+    super: { name: "Priyanka Yadav", phone: "", email: "", whatsapp: "", instagram: "", photo: "" },
+    userAdmin: { name: "User Admin", phone: "", email: "", whatsapp: "", instagram: "", photo: "" },
+    complaintAdmin: { name: "Complaint Admin", phone: "", email: "", whatsapp: "", instagram: "", photo: "" }
+  });
+
   const [sarpanchAddress, setSarpanchAddress] = useState("Gram Sabha Pahrajpur, Ballia, Uttar Pradesh");
   const [theme, setTheme]                 = useState<"dark"|"light">("light");
   const [showSubmitFAB, setShowSubmitFAB] = useState(false);
@@ -3717,7 +3724,15 @@ export default function App() {
 
   
   // Load sarpanch settings from Firestore in realtime
+  
   useEffect(() => {
+    const unsubAdmin = onSnapshot(doc(db, "settings", "allAdmins"), (snap) => {
+      if (snap.exists()) setAdminDetails(snap.data() as any);
+    });
+    return () => unsubAdmin();
+  }, []);
+
+useEffect(() => {
     const sq = doc(db, "settings", "sarpanch");
     const unsubSarpanch = onSnapshot(sq, (snap) => {
       if (snap.exists()) {
