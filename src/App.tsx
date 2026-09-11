@@ -460,8 +460,6 @@ function Badge({ text, color, bg }: { text: string; color: string; bg?: string }
 
 function Toast({ msg, onClose }: { msg: string; onClose: () => void }) {
   useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
-  return <div className="glass" style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, padding: "14px 20px", borderRadius: 14, maxWidth: 320, fontSize: 14, lineHeight: 1.5, animation: "fadeUp 0.3s ease" }}>{msg}</div>;
-}
 
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
@@ -2100,8 +2098,6 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
     <div>
       {/* Lightbox */}
       {lightbox && lightbox.type === "photo" && (
-        <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(8px)" }}>
-          <div onClick={e => e.stopPropagation()} style={{ maxWidth: 900, width: "100%", position: "relative" }}>
             <img src={lightbox.url} alt={lightbox.title} style={{ width: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 16, display: "block" }} />
             {lightbox.caption && <p style={{ textAlign: "center", marginTop: 12, color: "rgba(255,255,255,0.55)", fontSize: 14 }}>{lightbox.caption}</p>}
             <button onClick={() => setLightbox(null)} style={{ position: "absolute", top: -12, right: -12, width: 36, height: 36, borderRadius: "50%", background: "var(--cb10)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
@@ -2947,14 +2943,10 @@ function EnhancedFAB({
   };
 
   return (
-    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-
       {/* Backdrop dim when open */}
       {menuOpen && (
         <div
           onClick={() => setMenuOpen(false)}
-          style={{ position: "fixed", inset: 0, background: "rgba(5,10,8,0.45)", backdropFilter: "blur(3px)", zIndex: -1 }}
-        />
       )}
 
       <style>{`
@@ -4598,8 +4590,6 @@ useEffect(() => {
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
 
       {submitSuccess && (
-        <div onClick={() => setSubmitSuccess(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, margin: "0 16px 16px", background: "var(--cbg5)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 24, padding: "32px 24px 26px", textAlign: "center", boxShadow: "0 -10px 60px rgba(0,0,0,0.4)" }}>
             <div style={{ width: 80, height: 80, margin: "0 auto 16px", borderRadius: "50%", background: "linear-gradient(155deg, #4ade80 0%, #16a34a 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(22,163,74,0.4)" }}>
               <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </div>
@@ -4631,8 +4621,6 @@ useEffect(() => {
       {/* Submit Form Modal */}
       {showSubmitFAB && currentUser && (
         <div onClick={() => setShowSubmitFAB(false)} style={{
-          position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.5)",
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)"
         }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
             <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} />
