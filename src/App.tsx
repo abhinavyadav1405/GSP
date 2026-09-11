@@ -4388,7 +4388,8 @@ useEffect(() => {
           <div style={{ paddingTop: 32 }}>
             <FadeIn>
               <div style={{ marginBottom: 24 }}>
-                            {isAdmin ? "🛡 Admin Dashboard" : "All Reported Issues"}
+                <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
+                  {isAdmin ? "🛡 Admin Dashboard" : "All Reported Issues"}
                 </h2>
                 <p style={{ fontSize: 13, color: "var(--ct4)" }}>{filtered.length} of {problems.length} issues shown</p>
               </div>
