@@ -3723,7 +3723,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
+  const [showSplash, setShowSplash] = useState(false);
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search">("dashboard");
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
