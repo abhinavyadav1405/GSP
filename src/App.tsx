@@ -734,7 +734,7 @@ if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
 }
 
 // ── Submit Form ───────────────────────────────────────────────────────────────
-function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "Priyanka Yadav", sarpanchPhoto = "", currentUser }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null }) {
+function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = "", currentUser }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null }) {
   const [caption, setCaption] = useState("");
   const [form, setForm] = useState({ name: currentUser?.name || "", mobile: currentUser?.mobile || "", ward: currentUser?.ward || WARDS[0], category: CATEGORIES[0], title: "", description: "", priority: "Medium" });
   const [photo, setPhoto]               = useState<string | null>(null);
@@ -2029,7 +2029,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
             📢 Official Notices
           </div>
           <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Notices & Announcements</h2>
-          <p style={{ fontSize: 13, color: "var(--ct4)" }}>Official announcements from Sarpanch Priyanka Yadav — Gram Sabha Pahrajpur</p>
+          <p style={{ fontSize: 13, color: "var(--ct4)" }}>Official announcements from Sarpanch  — Gram Sabha Pahrajpur</p>
         </div>
       )}
 
@@ -2210,7 +2210,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
             🏆 Development Works
           </div>
           <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Completed Achievements</h2>
-          <p style={{ fontSize: 13, color: "var(--ct4)" }}>Works and developments completed under the leadership of Sarpanch Priyanka Yadav</p>
+          <p style={{ fontSize: 13, color: "var(--ct4)" }}>Works and developments completed under the leadership of Sarpanch </p>
         </div>
       </FadeIn>
 
@@ -3764,7 +3764,7 @@ export default function App() {
   const [userAdminPassword, setUserAdminPassword] = useState("useradmin123");
   const [complaintAdminPassword, setComplaintAdminPassword] = useState("workadmin123");
   const [villageName, setVillageName]     = useState("Gram Sabha Pahrajpur");
-  const [sarpanchName, setSarpanchName]   = useState("Priyanka Yadav");
+  const [sarpanchName, setSarpanchName]   = useState("");
   const [achievements, setAchievements]   = useState<Achievement[]>([]);
   const [media, setMedia]                 = useState<MediaItem[]>([]);
   const [notices, setNotices]             = useState<Notice[]>([]);
@@ -3774,7 +3774,7 @@ export default function App() {
   const [sarpanchPhoto, setSarpanchPhoto] = useState("");
   
   const [adminDetails, setAdminDetails] = useState({
-    super: { name: "Priyanka Yadav", phone: "", email: "", whatsapp: "", instagram: "", photo: "" },
+    super: { name: "", phone: "", email: "", whatsapp: "", instagram: "", photo: "" },
     userAdmin: { name: "User Admin", phone: "", email: "", whatsapp: "", instagram: "", photo: "" },
     complaintAdmin: { name: "Complaint Admin", phone: "", email: "", whatsapp: "", instagram: "", photo: "" }
   });
