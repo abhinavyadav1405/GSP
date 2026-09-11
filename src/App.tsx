@@ -3724,7 +3724,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 export default function App() {
   const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search">("home");
+  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search">("dashboard");
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
   const [publicProfileUser, setPublicProfileUser] = useState<PublicProfileData | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
@@ -4507,6 +4507,11 @@ useEffect(() => {
       {/* Instagram-style mobile bottom navigation */}
             {/* Instagram-style mobile bottom navigation */}
       <div className="mobile-bottom-nav">
+        <button className={`mobile-nav-item ${page === "dashboard" ? "active" : ""}`} onClick={() => setPage("dashboard")}>
+          <LayoutDashboard size={26} strokeWidth={page === "dashboard" ? 2.5 : 2} />
+          <span className="mobile-nav-label">Dash</span>
+        </button>
+
         <button className={`mobile-nav-item ${page === "home" ? "active" : ""}`} onClick={() => setPage("home")}>
           <Home size={26} strokeWidth={page === "home" ? 2.5 : 2} />
           <span className="mobile-nav-label">Home</span>
