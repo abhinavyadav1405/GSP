@@ -1722,7 +1722,8 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
           {user.avatar ? <img src={user.avatar} style={{width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover"}} alt="Avatar" /> : (user.name || "U").slice(0,1).toUpperCase()}
         </div>
         <div style={{ flex: 1 }}>
-                    <div style={{ color: "var(--ct4)", fontSize: 14 }}><Phone size={12} style={{verticalAlign:"middle", marginRight: 4}}/> {user.mobile} <span style={{margin:"0 8px"}}>•</span> <Home size={12} style={{verticalAlign:"middle", marginRight: 4}}/> {user.ward}</div>
+          <div style={{ fontSize: 22, fontWeight: 700, fontFamily: "\"Space Grotesk\", sans-serif", marginBottom: 6 }}>{user.name}</div>
+          <div style={{ color: "var(--ct4)", fontSize: 14 }}><Phone size={12} style={{verticalAlign:"middle", marginRight: 4}}/> {user.mobile} <span style={{margin:"0 8px"}}>•</span> <Home size={12} style={{verticalAlign:"middle", marginRight: 4}}/> {user.ward}</div>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button className="btn-white" onClick={downloadIdCard} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6 }}><FileText size={14}/> ID Card</button>
