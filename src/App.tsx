@@ -4554,9 +4554,12 @@ useEffect(() => {
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
 
       {submitSuccess && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div className="glass" style={{ maxWidth: 420, width: "100%", borderRadius: 24, padding: 28, textAlign: "center" }}>
             <div style={{ width: 80, height: 80, margin: "0 auto 16px", borderRadius: "50%", background: "linear-gradient(155deg, #4ade80 0%, #16a34a 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(22,163,74,0.4)" }}>
               <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
             </div>
+            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>धन्यवाद!</div>
             <div style={{ fontSize: 14, color: "var(--ct4)", marginBottom: 18 }}>आपकी समस्या सफलतापूर्वक दर्ज की गई है</div>
             <div style={{ display: "flex", gap: 12, textAlign: "left", background: "var(--cbg6)", border: "1px solid var(--cbg12)", borderRadius: 16, padding: "14px 16px", marginBottom: 18 }}>
               <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg, #f0d080, #c9a84c)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#1a3a2a" }}>{sarpanchPhoto ? <img src={sarpanchPhoto} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : sarpanchName.split(" ").map(n => n[0]).join("").slice(0,2)}</div>
