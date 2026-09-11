@@ -1447,7 +1447,13 @@ class ProfileErrorBoundary extends React.Component<
 
 function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenSettings }: { user: AppUser; problems: Problem[]; onUpdate: (id: string, changes: any) => Promise<void>; onDelete: (id: string) => Promise<void>; onLogout: () => void; onOpenSettings: () => void }) {
   const [sort, setSort] = useState("newest");
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterCat, setFilterCat] = useState("All");
+  const [filterWard, setFilterWard] = useState("All");
+
   const mine = problems.filter(p => p.authorId === user.id || (p.mobile === user.mobile && p.name === user.name));
+
   const downloadIdCard = () => {
     const canvas = document.createElement("canvas");
     canvas.width = 1400;
@@ -1705,6 +1711,7 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
       drawInitial();
     }
   };
+
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 0" }}>
       <div className="glass" style={{ borderRadius: 20, padding: "24px", marginBottom: 20, display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
@@ -1727,7 +1734,9 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or ID…" style={{ flex: "1 1 180px", minWidth: 140 }} />
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
             <option value="All">All Status</option>
-            {Object.keys(STATUS_META).map(s => <option key={s}>{s}</option>)}
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
           </select>
           <select value={sort} onChange={e => setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
             <option value="newest">Newest First</option>
