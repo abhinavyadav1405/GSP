@@ -1885,7 +1885,7 @@ function CategoryGrid({ problems, onNavigate }: { problems: Problem[]; onNavigat
           onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}>
           <div style={{ width: 8, height: 8, borderRadius: 4, background: CAT_COLORS[cat] || "#6b7280", marginBottom: 10 }} />
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{cat}</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[cat] || "#6b7280", fontFamily: "'Space Grotesk',sans-serif" }}>{counts[cat}}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[cat} || "#6b7280", fontFamily: "'Space Grotesk',sans-serif" }}>{counts[cat}}</div>
           <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 2 }}>issues</div>
         </div>
       ))}
