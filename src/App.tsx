@@ -4034,8 +4034,7 @@ useEffect(() => {
             <div style={{ width: 36, height: 36, borderRadius: 8, overflow: "hidden", background: "rgba(255,255,255,0.08)" }}>
               <img src="/logo.png" alt="GSP Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
-                        {villageName}
-            </span>
+            <span style={{ fontSize: 16, fontWeight: 700 }}>{villageName}</span>
           </div>
           {/* Scrollable nav links */}
           <div style={{ flex: 1, overflowX: "auto", display: "flex", gap: 4, alignItems: "center", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
@@ -4096,10 +4095,11 @@ useEffect(() => {
                   </FadeIn>
 
                   <FadeIn delay={180}>
-                                <span style={{ display:"block",color:"var(--text-main)" }}>Gram Sabha Pahrajpur</span>
-                      <span className="shimmer-text" style={{ display:"block" }}>{villageName.split(" ").slice(-1)[0}}</span>
-                      <span style={{ display:"block",color:"var(--ct4)",fontWeight:400,fontSize:"0.52em",marginTop:10,letterSpacing:"-0.01em",fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Village Governance, Reimagined</span>
-                    </h1>
+                <h1 style={{ margin: 0, fontSize: "clamp(28px, 5vw, 42px)", lineHeight: 1.2 }}>
+                  <span style={{ display:"block",color:"var(--text-main)" }}>Gram Sabha Pahrajpur</span>
+                  <span className="shimmer-text" style={{ display:"block" }}>{villageName.split(" ").slice(-1)[0]}</span>
+                  <span style={{ display:"block",color:"var(--ct4)",fontWeight:400,fontSize:"0.52em",marginTop:10,letterSpacing:"-0.01em",fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Village Governance, Reimagined</span>
+                </h1>
                   </FadeIn>
 
                   <FadeIn delay={400}>
