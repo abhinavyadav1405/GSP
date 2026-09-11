@@ -4504,24 +4504,22 @@ useEffect(() => {
         )}
       </div>
 
-      {/* Instagram-style mobile bottom navigation */}
             {/* Instagram-style mobile bottom navigation */}
       <div className="mobile-bottom-nav">
-        <button className={`mobile-nav-item ${page === "dashboard" ? "active" : ""}`} onClick={() => setPage("dashboard")}>
-          <LayoutDashboard size={26} strokeWidth={page === "dashboard" ? 2.5 : 2} />
-          <span className="mobile-nav-label">Dash</span>
-        </button>
-
         <button className={`mobile-nav-item ${page === "home" ? "active" : ""}`} onClick={() => setPage("home")}>
           <Home size={26} strokeWidth={page === "home" ? 2.5 : 2} />
           <span className="mobile-nav-label">Home</span>
         </button>
-        <button className={`mobile-nav-item ${page === "search" ? "active" : ""}`} onClick={() => setPage("search")}>
-          <Search size={26} strokeWidth={page === "search" ? 2.5 : 2} />
-          <span className="mobile-nav-label">Search</span>
+        <button className={`mobile-nav-item ${page === "dashboard" ? "active" : ""}`} onClick={() => setPage("dashboard")}>
+          <LayoutDashboard size={26} strokeWidth={page === "dashboard" ? 2.5 : 2} />
+          <span className="mobile-nav-label">Dash</span>
         </button>
         <button className="mobile-post-button" onClick={() => currentUser ? setPage("submit") : setPage("login")}>
           <Plus size={32} strokeWidth={2.5} color="#fff" />
+        </button>
+        <button className={`mobile-nav-item ${page === "search" ? "active" : ""}`} onClick={() => setPage("search")}>
+          <Search size={26} strokeWidth={page === "search" ? 2.5 : 2} />
+          <span className="mobile-nav-label">Search</span>
         </button>
         <button className={`mobile-nav-item mobile-profile-item ${page === "profile" ? "active" : ""}`} onClick={() => currentUser ? setPage("profile") : setPage("login")}>
           <div className="mobile-profile-avatar">
