@@ -4034,7 +4034,9 @@ useEffect(() => {
             <div style={{ width: 36, height: 36, borderRadius: 8, overflow: "hidden", background: "rgba(255,255,255,0.08)" }}>
               <img src="/logo.png" alt="GSP Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
-            <span style={{ fontSize: 16, fontWeight: 700 }}>{villageName}</span>
+            <span style={{ fontSize: 16, fontWeight: 700 }}>
+              {villageName}
+            </span>
           </div>
           {/* Scrollable nav links */}
           <div style={{ flex: 1, overflowX: "auto", display: "flex", gap: 4, alignItems: "center", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
