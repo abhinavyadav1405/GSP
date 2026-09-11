@@ -1,7 +1,7 @@
 import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
-import { Leaf,  useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy,
   LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle,
