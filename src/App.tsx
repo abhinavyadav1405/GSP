@@ -2292,7 +2292,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
 }
 
 // ── Admin Settings Panel ──────────────────────────────────────────────────────
-function AdminSettings({ problems, achievements, media, notices, feedbacks, adminPassword, userAdminPassword, complaintAdminPassword, villageName, sarpanchName, sarpanchPhoto, sarpanchAddress, whatsapp, instagram, onSavePassword, onSaveUserAdminPassword, onSaveComplaintAdminPassword, onSaveInfo, onSaveSocial, onSaveSarpanchPhoto, onSaveSarpanchAddress, onClearResolved, onClearAll, onAddAchievement, onDeleteAchievement, onAddMedia, onDeleteMedia, onAddNotice, onDeleteNotice, onDeleteFeedback, showToast }: {
+function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, media, notices, feedbacks, adminPassword, userAdminPassword, complaintAdminPassword, villageName, sarpanchName, sarpanchPhoto, sarpanchAddress, whatsapp, instagram, onSavePassword, onSaveUserAdminPassword, onSaveComplaintAdminPassword, onSaveInfo, onSaveSocial, onSaveSarpanchPhoto, onSaveSarpanchAddress, onClearResolved, onClearAll, onAddAchievement, onDeleteAchievement, onAddMedia, onDeleteMedia, onAddNotice, onDeleteNotice, onDeleteFeedback, showToast }: {
   problems: Problem[]; achievements: Achievement[]; media: MediaItem[]; notices: Notice[]; feedbacks: Feedback[]; adminPassword: string; userAdminPassword: string; complaintAdminPassword: string; villageName: string; sarpanchName: string; sarpanchPhoto: string; sarpanchAddress: string; whatsapp: string; instagram: string;
   onSavePassword: (p: string) => void; onSaveUserAdminPassword: (p: string) => void; onSaveComplaintAdminPassword: (p: string) => void; onSaveInfo: (v: string, s: string) => void; onSaveSocial: (w: string, i: string) => void; onSaveSarpanchPhoto: (p: string) => void; onSaveSarpanchAddress: (a: string) => void;
   onClearResolved: () => void; onClearAll: () => void;
@@ -4476,6 +4476,7 @@ useEffect(() => {
         {/* ── SETTINGS ─────────────────────────────────────────────────────── */}
         {page === "settings" && isAdmin && canManageComplaints && (
           <AdminSettings
+            adminDetails={adminDetails} setAdminDetails={setAdminDetails}
             problems={problems} achievements={achievements} media={media} notices={notices} feedbacks={feedbacks} adminPassword={adminPassword}
             userAdminPassword={userAdminPassword} complaintAdminPassword={complaintAdminPassword}
             villageName={villageName} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} sarpanchAddress={sarpanchAddress} whatsapp={whatsapp} instagram={instagram}
