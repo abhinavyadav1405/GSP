@@ -1,7 +1,7 @@
 import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
-import { useState, useEffect, useRef } from "react";
+import { Leaf,  useState, useEffect, useRef } from "react";
 import {
   Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy,
   LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle,
@@ -2018,7 +2018,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
 
       {notices.length === 0 ? (
         <div className="glass" style={{ borderRadius: 20, padding: compact ? "28px 24px" : "48px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+          <div style={{ marginBottom: 12 }}><Clipboard size={40} color="#f59e0b" /></div>
                     <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Notices to post your first announcement." : "Official notices from the Sarpanch will appear here."}</div>
         </div>
       ) : (
@@ -2107,7 +2107,7 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
 
       {media.length === 0 ? (
         <div className="glass" style={{ borderRadius: 20, padding: compact ? "32px 24px" : "48px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 42, marginBottom: 12 }}>🖼</div>
+          <div style={{ marginBottom: 12 }}><ImageIcon size={42} color="#a855f7" /></div>
                     <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Gallery to add your first photo or video." : "Village photos and videos will appear here soon."}</div>
         </div>
       ) : (
@@ -2224,7 +2224,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
       {achievements.length === 0 ? (
         <FadeIn delay={200}>
           <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
-            <div style={{ fontSize: 44, marginBottom: 14 }}>🏆</div>
+            <div style={{ marginBottom: 14 }}><Trophy size={44} color="#22c55e" /></div>
                       <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Achievements to add your first completed work." : "Completed works will be listed here soon."}</div>
           </div>
         </FadeIn>
@@ -3491,7 +3491,7 @@ function UserSearchPage({
                 color: "var(--ct4)"
               }}
             >
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🔎</div>
+              <div style={{ marginBottom: 8 }}><Search size={32} color="#8b5cf6" /></div>
               No users found.
             </div>
           ) : (
@@ -3560,7 +3560,7 @@ function UserSearchPage({
                 color: "var(--ct4)"
               }}
             >
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📝</div>
+              <div style={{ marginBottom: 8 }}><FileText size={32} color="#38d9f5" /></div>
               No posts found.
             </div>
           ) : (
@@ -4187,7 +4187,7 @@ useEffect(() => {
             {problems.length === 0 && !loading && (
               <FadeIn delay={1600}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", marginTop: 20 }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>🌱</div>
+                  <div style={{ marginBottom: 16 }}><Leaf size={48} color="#4ade80" /></div>
                             <div style={{ color: "var(--ct4)", fontSize: 14, marginBottom: 24 }}>Be the first to report a problem in your village.</div>
                   <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 600 }}>Submit First Problem →</button>
                 </div>
@@ -4493,63 +4493,26 @@ useEffect(() => {
       </div>
 
       {/* Instagram-style mobile bottom navigation */}
+            {/* Instagram-style mobile bottom navigation */}
       <div className="mobile-bottom-nav">
-
-        <button
-          className={`mobile-nav-item ${page === "home" ? "active" : ""}`}
-          onClick={() => setPage("home")}
-          aria-label="Home"
-        >
-          <svg viewBox="0 0 24 24">
-            <path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5.2v-6.5H9.2V21H4a1 1 0 0 1-1-1v-9.2Z" />
-          </svg>
+        <button className={`mobile-nav-item ${page === "home" ? "active" : ""}`} onClick={() => setPage("home")}>
+          <Home size={26} strokeWidth={page === "home" ? 2.5 : 2} />
           <span className="mobile-nav-label">Home</span>
         </button>
-
-        <button
-          className={`mobile-nav-item ${page === "search" ? "active" : ""}`}
-          onClick={() => setPage("search")}
-          aria-label="Search"
-        >
-          <svg viewBox="0 0 24 24">
-            <circle cx="10.8" cy="10.8" r="6.5" />
-            <path d="m16 16 5 5" />
-          </svg>
+        <button className={`mobile-nav-item ${page === "search" ? "active" : ""}`} onClick={() => setPage("search")}>
+          <Search size={26} strokeWidth={page === "search" ? 2.5 : 2} />
           <span className="mobile-nav-label">Search</span>
         </button>
-
-        <button
-          className="mobile-post-button"
-          onClick={() => currentUser ? setPage("submit") : setPage("login")}
-          aria-label="Create post"
-        >
-          <span>+</span>
+        <button className="mobile-post-button" onClick={() => currentUser ? setPage("submit") : setPage("login")}>
+          <Plus size={32} strokeWidth={2.5} color="#fff" />
         </button>
-
-        <button
-          className={`mobile-nav-item mobile-profile-item ${page === "profile" ? "active" : ""}`}
-          onClick={() => currentUser ? setPage("profile") : setPage("login")}
-          aria-label="Profile"
-        >
+        <button className={`mobile-nav-item mobile-profile-item ${page === "profile" ? "active" : ""}`} onClick={() => currentUser ? setPage("profile") : setPage("login")}>
           <div className="mobile-profile-avatar">
-            {currentUser?.avatar ? (
-              <img src={currentUser.avatar} alt="Profile" />
-            ) : (
-              <span>
-                {currentUser?.name
-                  ?.split(" ")
-                  .map(n => n[0])
-                  .join("")
-                  .slice(0, 2)
-                  .toUpperCase() || "U"}
-              </span>
-            )}
+            {currentUser?.avatar ? <img src={currentUser.avatar} alt="Profile" /> : <User size={20} />}
           </div>
-
           {currentUser && <i className="mobile-profile-dot" />}
           <span className="mobile-nav-label">Profile</span>
         </button>
-
       </div>
 
       {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
