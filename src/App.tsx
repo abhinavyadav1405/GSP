@@ -1446,6 +1446,7 @@ class ProfileErrorBoundary extends React.Component<
 
 
 function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenSettings }: { user: AppUser; problems: Problem[]; onUpdate: (id: string, changes: any) => Promise<void>; onDelete: (id: string) => Promise<void>; onLogout: () => void; onOpenSettings: () => void }) {
+  const [sort, setSort] = useState("newest");
   const mine = problems.filter(p => p.authorId === user.id || (p.mobile === user.mobile && p.name === user.name));
   const downloadIdCard = () => {
     const canvas = document.createElement("canvas");
