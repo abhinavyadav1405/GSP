@@ -1,17 +1,6 @@
-import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
 import { useState, useEffect, useRef } from "react";
-import {
-  Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy,
-  LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle,
-  CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard,
-  Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren,
-  Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat,
-  Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown,
-  ShieldAlert, Upload, CircleUserRound
-} from "lucide-react";
-
 import {
   db,
   collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove,
@@ -139,33 +128,11 @@ const GLOBAL_STYLE = `
       padding-bottom: calc(6px + env(safe-area-inset-bottom));
     }
 
-    .icon-inline {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-
-  .mobile-nav-label {
-      display: block;
-      font-size: 9px;
-      line-height: 1;
-      margin-top: 3px;
-      font-weight: 700;
-      opacity: .58;
-      letter-spacing: .01em;
-    }
-
-    .mobile-nav-item.active .mobile-nav-label {
-      opacity: 1;
-    }
-
     .mobile-nav-item {
       position: relative;
       width: 54px;
       height: 54px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       background: transparent;
@@ -323,7 +290,7 @@ interface Feedback {
   rating: number;
   createdAt: string;
 }
-interface CommentItem { id: string; userId: string; userName: string; userAvatar?: string; text: string; createdAt: string; }
+interface CommentItem { id: string; userId: string; userName: string; text: string; createdAt: string; }
 interface Problem {
   id: string; name: string; mobile: string; ward: string;
   category: string; title: string; description: string; caption?: string;
@@ -332,7 +299,6 @@ interface Problem {
   locationText?: string;
   locationCoords?: LatLng;
   authorId?: string;
-  authorAvatar?: string;
   supporters?: string[];
   likes?: string[];
   comments?: CommentItem[];
@@ -358,77 +324,10 @@ const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =
     reader.readAsDataURL(file);
   });
 
-
-// ── Lucide UI icon helper ─────────────────────────────────────────────────────
-function UiIcon({
-  name,
-  size = 18,
-  strokeWidth = 2,
-  className
-}: {
-  name: string;
-  size?: number;
-  strokeWidth?: number;
-  className?: string;
-}) {
-  const props = { size, strokeWidth, className };
-
-  const icons: Record<string, React.ReactNode> = {
-    "📷": <Camera {...props} />,
-    "🖼️": <ImageIcon {...props} />,
-    "🎬": <Video {...props} />,
-    "🗑": <Trash2 {...props} />,
-    "👤": <User {...props} />,
-    "📢": <Megaphone {...props} />,
-    "🏆": <Trophy {...props} />,
-    "🔐": <LockKeyhole {...props} />,
-    "🔍": <Search {...props} />,
-    "📞": <Phone {...props} />,
-    "⬇️": <Download {...props} />,
-    "⚙️": <Settings {...props} />,
-    "✏️": <Pencil {...props} />,
-    "⚠️": <AlertTriangle {...props} />,
-    "🚨": <Siren {...props} />,
-    "📅": <CalendarDays {...props} />,
-    "📍": <MapPin {...props} />,
-    "🗺": <Map {...props} />,
-    "📋": <Clipboard {...props} />,
-    "📌": <Pin {...props} />,
-    "📝": <FileText {...props} />,
-    "🎤": <Mic {...props} />,
-    "⭐": <Star {...props} />,
-    "⏳": <Clock3 {...props} />,
-    "🔄": <RefreshCw {...props} />,
-    "❌": <XCircle {...props} />,
-    "✅": <CheckCircle2 {...props} />,
-    "🏛": <Building2 {...props} />,
-    "🎉": <PartyPopper {...props} />,
-    "💧": <Droplets {...props} />,
-    "⚡": <Zap {...props} />,
-    "🏥": <Hospital {...props} />,
-    "🌊": <Waves {...props} />,
-    "🏗": <HardHat {...props} />,
-    "🛣": <Map {...props} />,
-    "⌂": <Home {...props} />,
-    "▦": <LayoutDashboard {...props} />,
-    "＋": <Plus {...props} />,
-    "➕": <Plus {...props} />,
-    "🔎": <Search {...props} />,
-    "🛡": <ShieldAlert {...props} />,
-    "📤": <Upload {...props} />,
-    "◉": <CircleUserRound {...props} />
-  };
-
-  return icons[name] ?? null;
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function AnimatedHeading({ text }: { text: string }) {
   const [visible, setVisible] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVisible(true), 200); 
-
-
-return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 200); return () => clearTimeout(t); }, []);
   const lines = text.split("\n"); let charIdx = 0;
   return (
     <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.04em" }}>
@@ -476,9 +375,7 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 function SectionHead({ icon, title }: { icon: string; title: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-      <span style={{ width: 22, height: 22, display: "grid", placeItems: "center" }}>
-        <UiIcon name={icon} size={19} />
-      </span>
+      <span style={{ fontSize: 20 }}>{icon}</span>
       <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 17 }}>{title}</h3>
     </div>
   );
@@ -509,8 +406,8 @@ function PhotoUpload({ photo, onPhoto }: { photo: string | null; onPhoto: (b64: 
         <div onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop} onClick={() => inputRef.current?.click()}
           style={{ border: `2px dashed ${dragging ? "var(--ct4)" : "rgba(255,255,255,0.14)"}`, borderRadius: 12, padding: "28px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: dragging ? "var(--cbg4)" : "transparent" }}>
           {compressing ? <div style={{ fontSize: 13, color: "var(--ct4)" }}>Compressing…</div> : (
-            <><Camera size={28} style={{ marginBottom: 8 }} />
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div><div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}><button type="button" onClick={() => { const el = document.createElement("input"); el.type = "file"; el.accept = "image/*"; el.capture = "environment"; el.onchange = (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) process(f); }; el.click(); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}><Camera size={14} /> Camera</button><button type="button" onClick={() => inputRef.current?.click()} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}><ImageIcon size={14} /> Gallery</button></div>
+            <><div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div><div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}><button type="button" onClick={() => { const el = document.createElement("input"); el.type = "file"; el.accept = "image/*"; el.capture = "environment"; el.onchange = (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) process(f); }; el.click(); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>📷 Camera</button><button type="button" onClick={() => inputRef.current?.click()} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>🖼️ Gallery</button></div>
             <div style={{ fontSize: 11, color: "var(--ct3)", marginTop: 4 }}>JPG, PNG, WebP · auto-compressed</div></>
           )}
         </div>
@@ -560,7 +457,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
             <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{problem.title}</div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {problem.photo && <span style={{ fontSize: 14 }} title="Has photo"><Camera size={14} /></span>}
+            {problem.photo && <span style={{ fontSize: 14 }} title="Has photo">📷</span>}
             <Badge text={sm.label} color={sm.color} bg={sm.bg} />
           </div>
         </div>
@@ -582,7 +479,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
           {/* Location text */}
           {problem.locationText && (
             <div style={{ marginTop: 12, display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", background: "rgba(59,130,246,0.06)", borderRadius: 10, border: "1px solid rgba(59,130,246,0.15)" }}>
-              <span style={{ fontSize: 16 }}><MapPin size={16} /></span>
+              <span style={{ fontSize: 16 }}>📍</span>
               <div>
                 <div style={{ fontSize: 11, color: "var(--ct4)", marginBottom: 2 }}>Location / Landmark</div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)" }}>{problem.locationText}</div>
@@ -610,7 +507,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
             <div style={{ marginTop: 14, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.10)" }}>
               <img src={problem.photo} alt="Problem photo" style={{ width: "100%", maxHeight: 320, objectFit: "cover", display: "block", cursor: "zoom-in" }}
                 onClick={e => { e.stopPropagation(); window.open(problem.photo, "_blank"); }} />
-              <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}><Camera size={13} style={{ verticalAlign: "middle" }} /> Photo attached · click to open full size</div>
+              <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}>📷 Photo attached · click to open full size</div>
             </div>
           )}
 
@@ -787,7 +684,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "Priyanka Yadav", sa
     if (!form.name || !form.mobile || !form.title || !form.description) { alert("Please fill all required fields."); return; }
     setLoading(true);
     const problem: Problem = {
-      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: "Pending", adminNotes: "", caption: caption.trim() || undefined, authorId: currentUser?.id, authorAvatar: currentUser?.avatar, supporters: [], likes: [], comments: [],
+      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: "Pending", adminNotes: "", caption: caption.trim() || undefined, authorId: currentUser?.id, supporters: [], likes: [], comments: [],
       photo: photo || undefined,
       locationText: locationText || undefined,
       locationCoords: locationCoords || undefined,
@@ -942,7 +839,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
   return <div style={{ maxWidth: 440, margin: "55px auto 90px" }}>
     <div className="glass" style={{ borderRadius: 24, padding: "30px 26px" }}>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ width: 64, height: 64, margin: "0 auto 14px", borderRadius: 18, background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontSize: 28, boxShadow: "0 12px 30px rgba(124,92,252,.25)" }}><User size={28} /></div>
+        <div style={{ width: 64, height: 64, margin: "0 auto 14px", borderRadius: 18, background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontSize: 28, boxShadow: "0 12px 30px rgba(124,92,252,.25)" }}>👤</div>
         <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26 }}>{mode === "login" ? "User Login" : "Create Account"}</h2>
         <p style={{ color: "var(--ct4)", fontSize: 13, marginTop: 6 }}>Community problems & profile ke liye login karein</p>
       </div>
@@ -969,276 +866,7 @@ function requireUser(user: AppUser | null, action: () => void, showToast: (m: st
   action();
 }
 
-
-interface PublicProfileData {
-  id: string;
-  name: string;
-  avatar?: string;
-  ward?: string;
-}
-
-function PublicUserProfile({
-  profile,
-  problems,
-  onClose
-}: {
-  profile: PublicProfileData;
-  problems: Problem[];
-  onClose: () => void;
-}) {
-  const userPosts = problems.filter(p =>
-    (profile.id && p.authorId === profile.id) ||
-    (!p.authorId && p.name === profile.name)
-  );
-
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 9999,
-        background: "rgba(0,0,0,.72)",
-        backdropFilter: "blur(8px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16
-      }}
-      onClick={onClose}
-    >
-      <div
-        className="glass"
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: "100%",
-          maxWidth: 520,
-          maxHeight: "88vh",
-          overflowY: "auto",
-          borderRadius: 24,
-          padding: 24
-        }}
-      >
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 18
-        }}>
-          <h2 style={{
-            fontFamily: "'Space Grotesk',sans-serif",
-            fontSize: 21,
-            margin: 0
-          }}>
-            Public Profile
-          </h2>
-
-          <button
-            className="btn-ghost"
-            onClick={onClose}
-            style={{
-              borderRadius: 10,
-              fontSize: 18,
-              padding: "6px 10px"
-            }}
-          >
-            ✕
-          </button>
-        </div>
-
-        <div style={{
-          textAlign: "center",
-          padding: "10px 0 22px"
-        }}>
-          <div
-            style={{
-              width: 100,
-              height: 100,
-              margin: "0 auto 14px",
-              borderRadius: "50%",
-              background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
-              display: "grid",
-              placeItems: "center",
-              overflow: "hidden",
-              border: "3px solid rgba(255,255,255,.2)",
-              fontSize: 40,
-              fontWeight: 800,
-              color: "#fff"
-            }}
-          >
-            {profile.avatar ? (
-              <img
-                src={profile.avatar}
-                alt="Profile"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover"
-                }}
-              />
-            ) : (
-              <span>{(profile.name || "U").slice(0,1).toUpperCase()}</span>
-            )}
-          </div>
-
-          <h3 style={{
-            fontFamily: "'Space Grotesk',sans-serif",
-            fontSize: 23,
-            margin: 0
-          }}>
-            {profile.name}
-          </h3>
-
-          <div style={{
-            color: "var(--ct4)",
-            fontSize: 13,
-            marginTop: 6
-          }}>
-            🏠 {profile.ward || "Village Member"}
-          </div>
-
-          <div style={{
-            color: "var(--ct4)",
-            fontSize: 12,
-            marginTop: 4
-          }}>
-            👤 Community Member
-          </div>
-        </div>
-
-        <div style={{
-          display: "flex",
-          gap: 10,
-          marginBottom: 18
-        }}>
-          <div
-            className="glass"
-            style={{
-              flex: 1,
-              textAlign: "center",
-              padding: 12,
-              borderRadius: 14
-            }}
-          >
-            <div style={{ fontSize: 21, fontWeight: 800 }}>
-              {userPosts.length}
-            </div>
-            <div style={{
-              fontSize: 11,
-              color: "var(--ct4)"
-            }}>
-              Posts
-            </div>
-          </div>
-
-          <div
-            className="glass"
-            style={{
-              flex: 1,
-              textAlign: "center",
-              padding: 12,
-              borderRadius: 14
-            }}
-          >
-            <div style={{ fontSize: 21, fontWeight: 800 }}>
-              🌱
-            </div>
-            <div style={{
-              fontSize: 11,
-              color: "var(--ct4)"
-            }}>
-              Community
-            </div>
-          </div>
-        </div>
-
-        <h3 style={{
-          fontFamily: "'Space Grotesk',sans-serif",
-          fontSize: 17,
-          marginBottom: 10
-        }}>
-          📝 Community Posts
-        </h3>
-
-        {userPosts.length === 0 ? (
-          <div
-            className="glass"
-            style={{
-              borderRadius: 14,
-              padding: 24,
-              textAlign: "center",
-              color: "var(--ct4)",
-              fontSize: 13
-            }}
-          >
-            Is user ne abhi koi post nahi ki.
-          </div>
-        ) : (
-          userPosts.slice(0, 10).map(post => (
-            <div
-              key={post.id}
-              className="glass"
-              style={{
-                borderRadius: 14,
-                padding: 13,
-                marginBottom: 10
-              }}
-            >
-              <div style={{
-                fontWeight: 700,
-                fontSize: 14
-              }}>
-                {post.title}
-              </div>
-
-              <div style={{
-                color: "var(--ct4)",
-                fontSize: 11,
-                marginTop: 5
-              }}>
-                {post.ward} · {fmtDate(post.submittedAt)}
-              </div>
-
-              <div style={{
-                fontSize: 12,
-                marginTop: 8,
-                lineHeight: 1.5
-              }}>
-                {post.caption || post.description}
-              </div>
-            </div>
-          ))
-        )}
-
-        <button
-          className="btn-ghost"
-          onClick={onClose}
-          style={{
-            width: "100%",
-            marginTop: 8,
-            borderRadius: 11,
-            padding: 11
-          }}
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function CommunityPostCard({
-  problem,
-  user,
-  onUpdate,
-  onOpenLogin,
-  onOpenUserProfile
-}: {
-  problem: Problem;
-  user: AppUser | null;
-  onUpdate: (id: string, changes: any) => Promise<void> | void;
-  onOpenLogin: () => void;
-  onOpenUserProfile?: (profile: PublicProfileData) => void;
-}) {
+function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: Problem; user: AppUser | null; onUpdate: (id: string, changes: any) => Promise<void> | void; onOpenLogin: () => void }) {
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const likes = problem.likes || [];
@@ -1256,7 +884,7 @@ function CommunityPostCard({
   const addComment = async () => {
     if (!user) { onOpenLogin(); return; }
     if (!comment.trim()) return;
-    const c: CommentItem = { id: uuid(), userId: user.id, userName: user.name, userAvatar: user.avatar, text: comment.trim(), createdAt: new Date().toISOString() };
+    const c: CommentItem = { id: uuid(), userId: user.id, userName: user.name, text: comment.trim(), createdAt: new Date().toISOString() };
     await onUpdate(problem.id, { comments: arrayUnion(c) });
     setComment(""); setShowComments(true);
   };
@@ -1268,31 +896,7 @@ function CommunityPostCard({
   };
   return <article className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
     <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-      <div
-        title={problem.authorAvatar ? "Profile Photo" : "Profile"}
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: "50%",
-          background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
-          display: "grid",
-          placeItems: "center",
-          fontWeight: 800,
-          color: "#fff",
-          overflow: "hidden",
-          flexShrink: 0
-        }}
-      >
-        {problem.authorAvatar ? (
-          <img
-            src={problem.authorAvatar}
-            alt="Profile"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        ) : (
-          <span>{(problem.name || "U").slice(0,1).toUpperCase()}</span>
-        )}
-      </div>
+      <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontWeight: 800, color: "#fff" }}>{(problem.name || "U").slice(0,1).toUpperCase()}</div>
       <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, fontSize: 13 }}>{problem.name}</div><div style={{ color: "var(--ct4)", fontSize: 11 }}>{problem.ward} · {fmtDate(problem.submittedAt)}</div></div>
       <Badge text={STATUS_META[problem.status]?.label || problem.status} color={STATUS_META[problem.status]?.color || "#aaa"} />
     </div>
@@ -1308,438 +912,191 @@ function CommunityPostCard({
         <button onClick={() => doAuth(() => toggleArray("supporters"))} style={{ marginLeft: "auto", borderRadius: 999, padding: "8px 14px", border: `1px solid ${supported ? "rgba(74,222,128,.5)" : "var(--btn-ghost-border)"}`, background: supported ? "rgba(74,222,128,.12)" : "var(--btn-ghost-bg)", color: supported ? "#4ade80" : "var(--btn-ghost-color)", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>{supported ? "✓ Supporting" : "+ Support"} · {supporters.length}</button>
       </div>
       {showComments && <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--cbg7)" }}>
-        {comments.slice(-5).map(c => (
-          <div
-            key={c.id}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 8,
-              padding: "8px 0",
-              fontSize: 12
-            }}
-          >
-            <div
-              style={{
-                width: 30,
-                height: 30,
-                minWidth: 30,
-                borderRadius: "50%",
-                background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
-                display: "grid",
-                placeItems: "center",
-                overflow: "hidden",
-                fontWeight: 800,
-                color: "#fff"
-              }}
-            >
-              {c.userAvatar ? (
-                <img
-                  src={c.userAvatar}
-                  alt="Profile"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <span>{(c.userName || "U").slice(0,1).toUpperCase()}</span>
-              )}
-            </div>
-
-            <div style={{ minWidth: 0 }}>
-              <div>
-                <b>{c.userName}</b>
-              </div>
-              <div style={{ color: "var(--ct65)", marginTop: 2 }}>
-                {c.text}
-              </div>
-            </div>
-          </div>
-        ))}
+        {comments.slice(-5).map(c => <div key={c.id} style={{ padding: "7px 0", fontSize: 12 }}><b>{c.userName}</b> <span style={{ color: "var(--ct65)" }}>{c.text}</span></div>)}
         {user ? <div style={{ display: "flex", gap: 7, marginTop: 6 }}><input value={comment} onChange={e => setComment(e.target.value)} placeholder="Write a comment…" onKeyDown={e => e.key === "Enter" && addComment()} /><button className="btn-white" onClick={addComment} style={{ width: 80, borderRadius: 10 }}>Send</button></div> : <button className="btn-ghost" onClick={onOpenLogin} style={{ width: "100%", borderRadius: 10, padding: 9 }}>Login to comment</button>}
       </div>}
     </div>
   </article>;
 }
 
-function CommunityFeed({
-  problems,
-  user,
-  onUpdate,
-  onOpenLogin,
-  onOpenUserProfile
-}: {
-  problems: Problem[];
-  user: AppUser | null;
-  onUpdate: (id: string, changes: any) => Promise<void> | void;
-  onOpenLogin: () => void;
-  onOpenUserProfile: (profile: PublicProfileData) => void;
-}) {
+function CommunityFeed({ problems, user, onUpdate, onOpenLogin }: { problems: Problem[]; user: AppUser | null; onUpdate: (id: string, changes: any) => Promise<void> | void; onOpenLogin: () => void }) {
   const [queryText, setQueryText] = useState("");
   const posts = problems.filter(p => !queryText || `${p.title} ${p.caption || ""} ${p.name}`.toLowerCase().includes(queryText.toLowerCase()));
   return <div style={{ maxWidth: 620, margin: "0 auto", padding: "28px 0 90px" }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}><div><div style={{ fontSize: 11, letterSpacing: ".12em", color: "#b57bee", fontWeight: 700 }}>COMMUNITY FEED</div><h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 28, marginTop: 4 }}>Village Problems</h2></div><button className="btn-ghost" onClick={onOpenLogin} style={{ borderRadius: 10, padding: "8px 12px" }}>{user ? "👤 " + user.name : "Login"}</button></div>
     <input value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search posts…" style={{ marginBottom: 16 }} />
-    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} />)}
+    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} />)}
   </div>;
 }
 
-
-class ProfileErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error?: Error }
-> {
-  state: { hasError: boolean; error?: Error } = { hasError: false };
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error("PROFILE RUNTIME ERROR:", error);
-    console.error("PROFILE COMPONENT STACK:", info.componentStack);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{
-          minHeight: "100vh",
-          padding: 24,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "sans-serif"
-        }}>
-          <div className="glass" style={{
-            maxWidth: 620,
-            width: "100%",
-            padding: 24,
-            borderRadius: 18
-          }}>
-            <h2 style={{ marginTop: 0 }}>Profile Error</h2>
-            <p style={{ color: "var(--ct4)" }}>
-              Profile page render karte waqt error aaya:
-            </p>
-            <pre style={{
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              padding: 14,
-              borderRadius: 12,
-              background: "var(--bg2, #f3f3f3)",
-              overflowX: "auto"
-            }}>
-              {this.state.error?.message || "Unknown runtime error"}
-            </pre>
-            <button
-              className="btn"
-              onClick={() => window.location.reload()}
-            >
-              Reload Profile
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-
 function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenSettings }: { user: AppUser; problems: Problem[]; onUpdate: (id: string, changes: any) => Promise<void>; onDelete: (id: string) => Promise<void>; onLogout: () => void; onOpenSettings: () => void }) {
-  const [sort, setSort] = useState("newest");
   const mine = problems.filter(p => p.authorId === user.id || (p.mobile === user.mobile && p.name === user.name));
   const downloadIdCard = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1400;
-    canvas.height = 820;
+    const c = document.createElement("canvas"); c.width = 1200; c.height = 720; const x = c.getContext("2d")!;
+    x.fillStyle = "#0d0a1b"; x.fillRect(0,0,c.width,c.height); x.fillStyle = "#7c5cfc"; x.fillRect(0,0,c.width,16); x.fillStyle = "#38d9f5"; x.fillRect(0,c.height-16,c.width,16);
+    x.fillStyle = "#fff"; x.font = "bold 48px Arial"; x.fillText("GRAM SABHA PAHRAJPUR", 70, 110); x.font = "28px Arial"; x.fillStyle = "#bdb7d7"; x.fillText("COMMUNITY USER ID CARD", 72, 155);
+    x.beginPath(); x.arc(150,310,92,0,Math.PI*2); x.fillStyle = "#7c5cfc"; x.fill(); x.fillStyle = "#fff"; x.font = "bold 76px Arial"; x.textAlign="center"; x.fillText(user.name.slice(0,1).toUpperCase(),150,337); x.textAlign="left";
+    x.fillStyle="#fff"; x.font="bold 42px Arial"; x.fillText(user.name,300,270); x.font="28px Arial"; x.fillStyle="#bdb7d7"; x.fillText(`User ID: ${user.id}`,300,320); x.fillText(`Mobile: ${user.mobile}`,300,365); x.fillText(`Ward: ${user.ward}`,300,410); x.fillText(`Member since: ${fmtDate(user.createdAt)}`,300,455);
+    x.fillStyle="#38d9f5"; x.font="bold 24px Arial"; x.fillText("This card identifies the registered community user.",72,610);
+    const a=document.createElement("a"); a.download=`GSP-ID-${user.id}.png`; a.href=c.toDataURL("image/png"); a.click();
+  };
+  return <div style={{ maxWidth: 760, margin: "28px auto 100px" }}>
+    <div className="glass" style={{ borderRadius: 22, padding: 22, marginBottom: 18 }}><div style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}><div style={{ width:78,height:78,borderRadius:"50%",overflow:"hidden",background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",display:"grid",placeItems:"center",fontSize:32,fontWeight:800,flexShrink:0 }}>
+  {user.avatar
+    ? <img src={user.avatar} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+    : <span>{user.name.slice(0,1).toUpperCase()}</span>
+  }
+</div><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}>📞 {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⬇️ ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⚙️ Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
+    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}><h3 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:19}}>My Posts ({mine.length})</h3></div>
+    {mine.length===0 ? <div className="glass" style={{borderRadius:18,padding:40,textAlign:"center",color:"var(--ct4)"}}>Aapne abhi koi problem post nahi ki.</div> : mine.map(p => <div key={p.id}><CommunityPostCard problem={p} user={user} onUpdate={onUpdate} onOpenLogin={() => {}} /><div style={{display:"flex",gap:8,marginTop:-10,marginBottom:16}}><button className="btn-ghost" onClick={() => { const title=window.prompt("New title",p.title); if(title) onUpdate(p.id,{title}); }} style={{borderRadius:9,fontSize:12}}>✏️ Edit</button><button className="btn-danger" onClick={() => { if(confirm("Delete this post?")) onDelete(p.id); }} style={{borderRadius:9,fontSize:12,padding:"7px 12px"}}>🗑 Delete</button></div></div>)}
+  </div>;
+}
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+function UserSettingsPage({ user, onSave, onBack }: { user: AppUser; onSave: (u: AppUser) => Promise<void>; onBack: () => void }) {
+  const [name,setName]=useState(user.name);
+  const [mobile,setMobile]=useState(user.mobile);
+  const [ward,setWard]=useState(user.ward);
+  const [theme,setTheme]=useState(localStorage.getItem("gsp-user-theme") || "system");
+  const [avatar,setAvatar]=useState<string | undefined>(user.avatar);
+  const [avatarLoading,setAvatarLoading]=useState(false);
+  const avatarInputRef=useRef<HTMLInputElement>(null);
 
-    const role = String(
-      (user as any).role ||
-      (user as any).adminRole ||
-      (user as any).post ||
-      ""
-    ).toLowerCase();
-
-    const isAdmin =
-      role.includes("super-admin") ||
-      role.includes("super admin") ||
-      role.includes("user-admin") ||
-      role.includes("user admin") ||
-      role.includes("complaint-admin") ||
-      role.includes("complaint admin") ||
-      role === "admin" ||
-      role === "administrator";
-
-    const roleLabel =
-      role.includes("super")
-        ? "Super Admin"
-        : role.includes("complaint")
-        ? "Complaint Admin"
-        : role.includes("user-admin") || role.includes("user admin")
-        ? "User Admin"
-        : isAdmin
-        ? "Administrator"
-        : String((user as any).post || "Community Member");
-
-    const statusLabel = String((user as any).status || "Active");
-
-    const memberSince = user.createdAt
-      ? fmtDate(user.createdAt)
-      : "Registered Member";
-
-    const bg = isAdmin ? "#17120a" : "#0c0a1b";
-    const accent = isAdmin ? "#d6a84f" : "#7c5cff";
-    const accent2 = isAdmin ? "#f4d27a" : "#38d9f5";
-    const text = "#ffffff";
-    const muted = isAdmin ? "#c9b98e" : "#b8b4d7";
-
-    // Background
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Premium borders
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 8;
-    ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36);
-
-    ctx.strokeStyle = accent2;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(32, 32, canvas.width - 64, canvas.height - 64);
-
-    // Header
-    ctx.fillStyle = accent;
-    ctx.font = "bold 48px Arial";
-    ctx.fillText("GRAM SABHA PAHRAJPUR", 80, 100);
-
-    ctx.fillStyle = muted;
-    ctx.font = "24px Arial";
-    ctx.fillText(
-      isAdmin
-        ? "AUTHORIZED ADMINISTRATOR ID CARD"
-        : "COMMUNITY USER ID CARD",
-      82,
-      142
-    );
-
-    // Admin badge
-    if (isAdmin) {
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.roundRect(1030, 70, 260, 58, 29);
-      ctx.fill();
-
-      ctx.fillStyle = "#17120a";
-      ctx.font = "bold 24px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("ADMINISTRATOR", 1160, 108);
-      ctx.textAlign = "left";
-    }
-
-    // Photo
-    const photoX = 80;
-    const photoY = 205;
-    const photoSize = 270;
-
-    ctx.fillStyle = accent;
-    ctx.beginPath();
-    ctx.roundRect(photoX, photoY, photoSize, photoSize, 32);
-    ctx.fill();
-
-    const drawInitial = () => {
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.roundRect(
-        photoX + 8,
-        photoY + 8,
-        photoSize - 16,
-        photoSize - 16,
-        26
-      );
-      ctx.fill();
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 110px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(
-        String(user.name || "U").slice(0, 1).toUpperCase(),
-        photoX + photoSize / 2,
-        photoY + photoSize / 2
-      );
-
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
-
-      drawDetails();
-    };
-
-    const drawDetails = () => {
-      const x = 420;
-
-      ctx.fillStyle = text;
-      ctx.font = "bold 42px Arial";
-      ctx.fillText(
-        String(user.name || "Community Member"),
-        x,
-        235
-      );
-
-      ctx.fillStyle = accent2;
-      ctx.font = "bold 24px Arial";
-      ctx.fillText(roleLabel, x, 278);
-
-      const details = [
-        ["User ID", String(user.id || "-")],
-        ["Ward", String(user.ward || "Not specified")],
-        ["Member Since", memberSince],
-        ["Status", statusLabel],
-        ["Post / Role", roleLabel]
-      ];
-
-      let y = 340;
-
-      details.forEach(([label, value]) => {
-        ctx.fillStyle = muted;
-        ctx.font = "bold 21px Arial";
-        ctx.fillText(label, x, y);
-
-        ctx.fillStyle = text;
-        ctx.font = "24px Arial";
-        ctx.fillText(value, x + 190, y);
-
-        y += 58;
-      });
-
-      // Status
-      const active =
-        statusLabel.toLowerCase() === "active" ||
-        statusLabel.toLowerCase() === "approved";
-
-      ctx.fillStyle = active ? "#34d399" : "#f59e0b";
-      ctx.beginPath();
-      ctx.roundRect(1070, 650, 210, 52, 26);
-      ctx.fill();
-
-      ctx.fillStyle = "#08110d";
-      ctx.font = "bold 22px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(
-        active
-          ? "STATUS: ACTIVE"
-          : `STATUS: ${statusLabel.toUpperCase()}`,
-        1175,
-        683
-      );
-      ctx.textAlign = "left";
-
-      // Footer
-      ctx.fillStyle = accent;
-      ctx.font = "bold 22px Arial";
-      ctx.fillText(
-        isAdmin
-          ? "Authorized administrator of Gram Sabha Pahrajpur."
-          : "This card identifies the registered community user.",
-        80,
-        755
-      );
-
-      ctx.fillStyle = muted;
-      ctx.font = "16px Arial";
-      ctx.fillText(
-        "Gram Sabha Pahrajpur • Community Identity Card",
-        80,
-        785
-      );
-
-      // Download
-      const link = document.createElement("a");
-
-      const safeName = String(user.name || "community-user")
-        .replace(/[^a-z0-9]+/gi, "-")
-        .replace(/^-+|-+$/g, "")
-        .toLowerCase();
-
-      link.download =
-        `${safeName || "community-user"}-id-card.png`;
-
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-
-    if (user.avatar) {
-      const img = new Image();
-
-      img.onload = () => {
-        ctx.save();
-
-        ctx.beginPath();
-        ctx.roundRect(
-          photoX + 8,
-          photoY + 8,
-          photoSize - 16,
-          photoSize - 16,
-          26
-        );
-
-        ctx.clip();
-
-        ctx.drawImage(
-          img,
-          photoX + 8,
-          photoY + 8,
-          photoSize - 16,
-          photoSize - 16
-        );
-
-        ctx.restore();
-
-        drawDetails();
-      };
-
-      img.onerror = drawInitial;
-      img.src = user.avatar;
-    } else {
-      drawInitial();
+  const handleAvatar=async(file: File)=>{
+    if(!file.type.startsWith("image/")) return;
+    setAvatarLoading(true);
+    try{
+      const compressed=await compressImage(file,500,0.65);
+      setAvatar(compressed);
+    }catch(e){
+      console.error(e);
+      alert("Photo upload nahi ho paya.");
+    }finally{
+      setAvatarLoading(false);
     }
   };
+
+  const save=async()=>{
+    const next={...user,name:name.trim(),mobile:mobile.trim(),ward,avatar};
+    await onSave(next);
+    localStorage.setItem("gsp-user-theme",theme);
+    onBack();
+  };
+
+  return <div style={{maxWidth:560,margin:"32px auto 100px"}}>
+    <div className="glass" style={{borderRadius:22,padding:24}}>
+      <h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:24}}>⚙️ Account Settings</h2>
+      <p style={{fontSize:13,color:"var(--ct4)",margin:"6px 0 20px"}}>Apni profile details aur preference change karein.</p>
+
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:22}}>
+        <div
+          onClick={()=>avatarInputRef.current?.click()}
+          style={{
+            width:110,
+            height:110,
+            borderRadius:"50%",
+            overflow:"hidden",
+            cursor:"pointer",
+            position:"relative",
+            background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",
+            display:"grid",
+            placeItems:"center",
+            border:"3px solid rgba(255,255,255,0.18)",
+            boxShadow:"0 8px 30px rgba(124,92,252,0.30)"
+          }}
+        >
+          {avatar
+            ? <img src={avatar} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+            : <span style={{fontSize:42,fontWeight:800,color:"#fff"}}>{name.slice(0,1).toUpperCase() || "U"}</span>
+          }
+        </div>
+
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          style={{display:"none"}}
+          onChange={e=>{
+            const file=e.target.files?.[0];
+            if(file) handleAvatar(file);
+            e.target.value="";
+          }}
+        />
+
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={()=>avatarInputRef.current?.click()}
+          disabled={avatarLoading}
+          style={{marginTop:10,borderRadius:10,padding:"8px 16px",fontSize:12}}
+        >
+          {avatarLoading ? "⏳ Processing..." : avatar ? "📷 Change DP" : "📷 Add Profile Photo"}
+        </button>
+
+        {avatar && !avatarLoading && (
+          <button
+            type="button"
+            onClick={()=>setAvatar(undefined)}
+            style={{marginTop:6,border:"none",background:"none",color:"#f87171",fontSize:11,cursor:"pointer"}}
+          >
+            Remove photo
+          </button>
+        )}
+
+        <div style={{fontSize:11,color:"var(--ct3)",marginTop:6}}>
+          JPG, PNG or WebP · photo will be compressed automatically
+        </div>
+      </div>
+
+      <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Name"/>
+        <input value={mobile} onChange={e=>setMobile(e.target.value)} placeholder="Mobile"/>
+        <select value={ward} onChange={e=>setWard(e.target.value)}>
+          {WARDS.map(w=><option key={w}>{w}</option>)}
+        </select>
+
+        <select value={theme} onChange={e=>setTheme(e.target.value)}>
+          <option value="system">System theme</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+
+        <div style={{display:"flex",gap:10}}>
+          <button className="btn-ghost" onClick={onBack} style={{flex:1,borderRadius:10}}>Cancel</button>
+          <button className="btn-white" onClick={save} disabled={avatarLoading} style={{flex:1,borderRadius:10}}>
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ── Filter Bar ────────────────────────────────────────────────────────────────
+function FilterBar({ filterCat, setFilterCat, filterStatus, setFilterStatus, filterWard, setFilterWard, search, setSearch, sort, setSort }: {
+  filterCat: string; setFilterCat: (v: string) => void; filterStatus: string; setFilterStatus: (v: string) => void;
+  filterWard: string; setFilterWard: (v: string) => void; search: string; setSearch: (v: string) => void; sort: string; setSort: (v: string) => void;
+}) {
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 0" }}>
-      <div className="glass" style={{ borderRadius: 20, padding: "24px", marginBottom: 20, display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-        <div style={{ width: 70, height: 70, borderRadius: "50%", background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontSize: 28, color: "#fff", fontWeight: 800 }}>
-          {user.avatar ? <img src={user.avatar} style={{width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover"}} alt="Avatar" /> : (user.name || "U").slice(0,1).toUpperCase()}
-        </div>
-        <div style={{ flex: 1 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 5px", fontFamily: "'Space Grotesk',sans-serif" }}>{user.name}</h2>
-          <div style={{ color: "var(--ct4)", fontSize: 14 }}>📞 {user.mobile} • 🏠 {user.ward}</div>
-        </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button className="btn-white" onClick={downloadIdCard} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13 }}>💳 ID Card</button>
-          <button className="btn-ghost" onClick={onOpenSettings} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13 }}>⚙️ Settings</button>
-          <button className="btn-danger" onClick={onLogout} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13 }}>Logout</button>
-        </div>
-      </div>
-      <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, marginBottom: 14 }}>My Submitted Issues</h3>
-      <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or ID…" style={{ flex: "1 1 180px", minWidth: 140 }} />
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
-            <option value="All">All Status</option>
-            {Object.keys(STATUS_META).map(s => <option key={s}>{s}</option>)}
-          </select>
-          <select value={sort} onChange={e => setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="priority">By Priority</option>
-          </select>
-        </div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {mine.length === 0 ? <div style={{ textAlign: "center", color: "var(--ct4)", padding: 30 }}>No issues found.</div> : mine.map(p => (
-          <ProblemCard key={p.id} problem={p} isAdmin={false} onUpdate={onUpdate} onDelete={onDelete} />
-        ))}
+    <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or ID…" style={{ flex: "1 1 180px", minWidth: 140 }} />
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
+          <option value="All">All Status</option>
+          {Object.keys(STATUS_META).map(s => <option key={s}>{s}</option>)}
+        </select>
+        <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ flex: "1 1 130px", minWidth: 110 }}>
+          <option value="All">All Categories</option>
+          {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+        </select>
+        <select value={filterWard} onChange={e => setFilterWard(e.target.value)} style={{ flex: "1 1 110px", minWidth: 90 }}>
+          <option value="All">All Wards</option>
+          {WARDS.map(w => <option key={w}>{w}</option>)}
+        </select>
+        <select value={sort} onChange={e => setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="priority">By Priority</option>
+        </select>
       </div>
     </div>
   );
@@ -1767,7 +1124,7 @@ function AdminLogin({ superPassword, userAdminPassword, complaintAdminPassword, 
     <div style={{ maxWidth: 380, margin: "60px auto" }}>
       <div className="glass" style={{ borderRadius: 22, padding: "32px 28px" }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}><LockKeyhole size={40} /></div>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🔐</div>
           <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22 }}>Admin Access</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)", marginTop: 8 }}>ID aur Password daalo</p>
         </div>
@@ -1973,11 +1330,11 @@ function FeedbackSection({ feedbacks, onAdd }: { feedbacks: Feedback[]; onAdd: (
             <div key={f.id} className="glass" style={{ borderRadius:14, padding:"14px 16px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div style={{ width:32, height:32, borderRadius:10, background:"var(--cbg7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}><User size={28} /></div>
+                  <div style={{ width:32, height:32, borderRadius:10, background:"var(--cbg7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>👤</div>
                   <span style={{ fontSize:13, fontWeight:600 }}>{f.name}</span>
                 </div>
                 <div style={{ display:"flex", gap:1 }}>
-                  {Array.from({length:5}).map((_,i)=><Star key={i} size={13} fill={i < f.rating ? "currentColor" : "none"} opacity={i < f.rating ? 1 : 0.2} />)}
+                  {Array.from({length:5}).map((_,i)=><span key={i} style={{ fontSize:13,filter:i<f.rating?"none":"grayscale(1) opacity(0.2)" }}>⭐</span>)}
                 </div>
               </div>
               <p style={{ fontSize:13, color:"var(--ct6)", lineHeight:1.65, margin:0 }}>{f.message}</p>
@@ -2039,15 +1396,15 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
               <div key={n.id} className="glass" style={{ borderRadius: 16, padding: "16px 18px", cursor: "pointer", borderLeft: `3px solid ${m.color}`, transition: "all 0.2s" }}
                 onClick={() => setExpanded(isExp ? null : n.id)}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: m.color }}><UiIcon name={m.icon} size={17} /></div>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>{m.icon}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 4 }}>
                       <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 14 }}>{n.title}</span>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}><UiIcon name={m.icon} size={12} />{m.label}</span>
+                      <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}>{m.icon} {m.label}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}><CalendarDays size={14} /> {n.date} · Posted {fmtDate(n.createdAt)}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}>📅 {n.date} · Posted {fmtDate(n.createdAt)}</div>
                   </div>
-                  <span style={{ color: "var(--ct3)", fontSize: 12, flexShrink: 0, paddingTop: 2 }}>{isExp ? <ChevronUp size={15} /> : <ChevronDown size={15} />}</span>
+                  <span style={{ color: "var(--ct3)", fontSize: 12, flexShrink: 0, paddingTop: 2 }}>{isExp ? "▲" : "▼"}</span>
                 </div>
                 {isExp && (
                   <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
@@ -2055,7 +1412,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
                     {isAdmin && (
                       <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
                         <button className="btn-danger" style={{ borderRadius: 9, padding: "7px 16px", fontSize: 13 }}
-                          onClick={e => { e.stopPropagation(); onDelete(n.id); }}><Trash2 size={14} /> Delete</button>
+                          onClick={e => { e.stopPropagation(); onDelete(n.id); }}>🗑 Delete</button>
                       </div>
                     )}
                   </div>
@@ -2112,7 +1469,7 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
 
       {compact && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}><Camera size={17} /> Village Gallery</h3>
+          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📷 Village Gallery</h3>
           {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
         </div>
       )}
@@ -2149,12 +1506,12 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
 
                 {/* Type badge */}
                 <div style={{ position: "absolute", top: 8, left: 8, fontSize: 11, padding: "3px 8px", borderRadius: 8, background: item.type === "photo" ? "rgba(168,85,247,0.8)" : "rgba(239,68,68,0.8)", color: "#fff", fontWeight: 600, backdropFilter: "blur(4px)" }}>
-                  {item.type === "photo" ? "Photo" : "Video"}
+                  {item.type === "photo" ? "📷 Photo" : "🎬 Video"}
                 </div>
 
                 {isAdmin && (
                   <button className="btn-danger" style={{ position: "absolute", top: 8, right: 8, borderRadius: 8, padding: "4px 10px", fontSize: 11 }}
-                    onClick={e => { e.stopPropagation(); onDelete(item.id); }}><Trash2 size={15} /></button>
+                    onClick={e => { e.stopPropagation(); onDelete(item.id); }}>🗑</button>
                 )}
               </div>
             );
@@ -2247,7 +1604,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
       ) : filtered.length === 0 ? (
         <FadeIn delay={200}>
           <div className="glass" style={{ borderRadius: 20, padding: "40px 32px", textAlign: "center" }}>
-            <Search size={32} style={{ marginBottom: 10 }} />
+            <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
             <div style={{ fontSize: 16, fontWeight: 600 }}>No matching works</div>
             <div style={{ color: "var(--ct4)", fontSize: 13, marginTop: 6 }}>Try adjusting the filters.</div>
           </div>
@@ -2272,11 +1629,11 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
                         <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: "rgba(34,197,94,0.12)", color: "#22c55e", fontWeight: 600 }}>✅ Done</span>
                       </div>
                       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 12, color: "var(--ct4)" }}>
-                        <span><MapPin size={13} /> {a.village}</span>
-                        <span><CalendarDays size={13} /> {a.date}</span>
+                        <span>📍 {a.village}</span>
+                        <span>📅 {a.date}</span>
                       </div>
                     </div>
-                    <div style={{ color: "var(--ct3)", fontSize: 13, flexShrink: 0, paddingTop: 2 }}>{isExp ? <ChevronUp size={15} /> : <ChevronDown size={15} />}</div>
+                    <div style={{ color: "var(--ct3)", fontSize: 13, flexShrink: 0, paddingTop: 2 }}>{isExp ? "▲" : "▼"}</div>
                   </div>
 
                   {/* Expanded */}
@@ -2287,13 +1644,13 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
                         <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
                           <img src={a.photo} alt={a.title} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block", cursor: "zoom-in" }}
                             onClick={e => { e.stopPropagation(); window.open(a.photo, "_blank"); }} />
-                          <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}><Camera size={13} style={{ verticalAlign: "middle" }} /> Click to open full size</div>
+                          <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}>📷 Click to open full size</div>
                         </div>
                       )}
                       {isAdmin && (
                         <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
                           <button className="btn-danger" style={{ borderRadius: 9, padding: "7px 16px", fontSize: 13 }}
-                            onClick={e => { e.stopPropagation(); onDelete(a.id); }}><Trash2 size={14} /> Delete</button>
+                            onClick={e => { e.stopPropagation(); onDelete(a.id); }}>🗑 Delete</button>
                         </div>
                       )}
                     </div>
@@ -2441,7 +1798,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
     <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 32 }}>
       <FadeIn>
         <div style={{ marginBottom: 28 }}>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}><Settings size={21} /> Admin Settings</h2>
+          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>⚙️ Admin Settings</h2>
           <p style={{ fontSize: 13, color: "var(--ct4)" }}>Full control over the portal — only visible to you.</p>
         </div>
       </FadeIn>
@@ -2594,7 +1951,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
 
             {/* Photo upload */}
             <label style={{ cursor: "pointer", border: "1px dashed rgba(34,197,94,0.3)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(34,197,94,0.03)" }}>
-              {achPhotoLoading ? "Compressing…" : achPhoto ? "📷 Photo attached — click to change" : "📷 Add Photo (optional)"}
+              {achPhotoLoading ? "⏳ Compressing…" : achPhoto ? "📷 Photo attached — click to change" : "📷 Add Photo (optional)"}
               <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) handleAchPhoto(e.target.files[0]); }} />
             </label>
             {achPhoto && (
@@ -2623,7 +1980,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {achievements.map(a => (
                 <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <div style={{ width: 30, height: 30, display: "grid", placeItems: "center" }}><UiIcon name={ACH_CAT_ICONS[a.category] ?? "✅"} size={18} /></div>
+                  <div style={{ fontSize: 18 }}>{ACH_CAT_ICONS[a.category] ?? "✅"}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.title}</div>
                     <div style={{ fontSize: 11, color: "var(--ct35)" }}>{a.category} · {a.village} · {a.date}</div>
@@ -2654,7 +2011,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 const m = NOTICE_META[t];
                 return (
                   <button key={t} onClick={() => setNoticeType(t)} style={{ padding: "6px 12px", borderRadius: 9, border: `1px solid ${noticeType === t ? m.color + "88" : "var(--cb10)"}`, background: noticeType === t ? m.bg : "rgba(255,255,255,0.03)", color: noticeType === t ? m.color : "rgba(255,255,255,0.38)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                    <UiIcon name={m.icon} size={12} /> {m.label}
+                    {m.icon} {m.label}
                   </button>
                 );
               })}
@@ -2682,7 +2039,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 const m = NOTICE_META[n.type];
                 return (
                   <div key={n.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderLeft: `3px solid ${m.color}` }}>
-                    <span style={{ fontSize: 18, display: "inline-flex" }}><UiIcon name={m.icon} size={18} /></span>
+                    <span style={{ fontSize: 18 }}>{m.icon}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title}</div>
                       <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.label} · {n.date}</div>
@@ -2708,7 +2065,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
           <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
             {(["photo","video"] as const).map(t => (
               <button key={t} onClick={() => setMediaType(t)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: `1px solid ${mediaType === t ? "rgba(168,85,247,0.5)" : "var(--cb10)"}`, background: mediaType === t ? "rgba(168,85,247,0.15)" : "var(--cbg4)", color: mediaType === t ? "#c084fc" : "var(--ct4)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                {t === "photo" ? "Photo" : "YouTube Video"}
+                {t === "photo" ? "📷 Photo" : "🎬 YouTube Video"}
               </button>
             ))}
           </div>
@@ -2719,7 +2076,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
 
             {mediaType === "photo" ? (<>
               <label style={{ cursor: "pointer", border: "1px dashed rgba(168,85,247,0.35)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(168,85,247,0.04)" }}>
-                {mediaPhotoLoading ? "Compressing…" : mediaPhoto ? "📷 Photo selected — click to change" : "📷 Select Photo"}
+                {mediaPhotoLoading ? "⏳ Compressing…" : mediaPhoto ? "📷 Photo selected — click to change" : "📷 Select Photo"}
                 <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) handleMediaPhoto(e.target.files[0]); }} />
               </label>
               {mediaPhoto && (
@@ -2746,10 +2103,10 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   {m.type === "photo"
                     ? <img src={m.url} alt={m.title} style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
-                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: "rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}><Video size={20} /></div>}
+                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: "rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🎬</div>}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</div>
-                    <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.type === "photo" ? "Photo" : "Video"} · {fmtDate(m.createdAt)}</div>
+                    <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.type === "photo" ? "📷 Photo" : "🎬 Video"} · {fmtDate(m.createdAt)}</div>
                   </div>
                   <button className="btn-danger" style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { onDeleteMedia(m.id); showToast("🗑 Removed from gallery."); }}>Delete</button>
                 </div>
@@ -2775,7 +2132,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontSize:13, fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
                       {f.name}
-                      <span style={{ fontSize:12 }}>{Array.from({length:f.rating}).map((_,i)=><Star key={i} size={13} fill="currentColor" />)}</span>
+                      <span style={{ fontSize:12 }}>{Array.from({length:f.rating}).map((_,i)=><span key={i}>⭐</span>)}</span>
                     </div>
                     <div style={{ fontSize:12, color:"var(--ct45)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{f.message}</div>
                     <div style={{ fontSize:11, color:"var(--cb25)", marginTop:2 }}>{fmtDate(f.createdAt)}</div>
@@ -3023,7 +2380,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   if (!media || media.length === 0) return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}><Camera size={14} /> Village Gallery</h2>
+      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
       <div style={{ borderRadius: 16, background: "var(--cbg5)", height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "var(--ct4)", fontSize: 13 }}>No photos uploaded yet</p>
       </div>
@@ -3035,7 +2392,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}><Camera size={14} /> Village Gallery</h2>
+      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}>📷 Village Gallery</h2>
       <div style={{ 
         display: "flex", gap: 10, perspective: "1000px",
         transform: animating ? "rotateY(90deg)" : "rotateY(0deg)",
@@ -3173,448 +2530,11 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
   );
 }
 
-
-// ── User & Post Search ───────────────────────────────────────────────────────
-function UserSearchPage({
-  users,
-  problems,
-  onOpenPost
-}: {
-  users: AppUser[];
-  problems: Problem[];
-  onOpenPost: (user: AppUser | null, post?: Problem) => void;
-}) {
-  const [term, setTerm] = useState("");
-  const [mode, setMode] = useState<"users" | "posts">("users");
-  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
-
-  const q = term.trim().toLowerCase();
-
-  const matchedUsers = users
-    .filter(u => {
-      if (!q) return true;
-      return (
-        u.name?.toLowerCase().includes(q) ||
-        u.id?.toLowerCase().includes(q) ||
-        u.ward?.toLowerCase().includes(q)
-      );
-    })
-    .slice(0, 30);
-
-  const matchedPosts = problems
-    .filter(p => {
-      const text = [
-        p.title,
-        p.caption || "",
-        p.description,
-        p.name,
-        p.ward,
-        p.category
-      ].join(" ").toLowerCase();
-
-      if (selectedUser) {
-        return (
-          p.authorId === selectedUser.id ||
-          (p.name === selectedUser.name && p.mobile === selectedUser.mobile)
-        );
-      }
-
-      return !q || text.includes(q);
-    })
-    .slice(0, 50);
-
-  const avatar = (u: AppUser | null, size = 48) => (
-    <div
-      style={{
-        width: size,
-        height: size,
-        minWidth: size,
-        borderRadius: "50%",
-        overflow: "hidden",
-        display: "grid",
-        placeItems: "center",
-        background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
-        color: "#fff",
-        fontWeight: 800,
-        fontSize: Math.max(13, size * 0.36),
-        border: "2px solid rgba(124,92,252,.18)"
-      }}
-    >
-      {u?.avatar ? (
-        <img
-          src={u.avatar}
-          alt="Profile"
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-      ) : (
-        (u?.name || "U")
-          .split(" ")
-          .map(x => x[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase()
-      )}
-    </div>
-  );
-
-  return (
-    <div
-      style={{
-        maxWidth: 620,
-        margin: "0 auto",
-        padding: "24px 0 100px"
-      }}
-    >
-      <div style={{ marginBottom: 18 }}>
-        <div
-          style={{
-            fontSize: 11,
-            letterSpacing: ".12em",
-            color: "#8b5cf6",
-            fontWeight: 800
-          }}
-        >
-          DISCOVER
-        </div>
-
-        <h2
-          style={{
-            fontFamily: "'Space Grotesk',sans-serif",
-            fontSize: 28,
-            margin: "4px 0 6px"
-          }}
-        >
-          Search
-        </h2>
-
-        <div style={{ color: "var(--ct4)", fontSize: 13 }}>
-          Villagers aur community posts search karein.
-        </div>
-      </div>
-
-      <div
-        className="glass"
-        style={{
-          padding: 10,
-          borderRadius: 18,
-          marginBottom: 14
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 9
-          }}
-        >
-          <span style={{ fontSize: 20, opacity: .7 }}>⌕</span>
-
-          <input
-            value={term}
-            onChange={e => {
-              setTerm(e.target.value);
-              setSelectedUser(null);
-            }}
-            placeholder="Search user, post, ward..."
-            style={{
-              border: 0,
-              boxShadow: "none",
-              background: "transparent",
-              padding: "9px 4px",
-              margin: 0
-            }}
-            autoFocus
-          />
-
-          {term && (
-            <button
-              type="button"
-              onClick={() => {
-                setTerm("");
-                setSelectedUser(null);
-              }}
-              style={{
-                border: 0,
-                background: "transparent",
-                color: "var(--ct4)",
-                fontSize: 18,
-                cursor: "pointer"
-              }}
-            >
-              ×
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 8,
-          marginBottom: 16
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setMode("users");
-            setSelectedUser(null);
-          }}
-          style={{
-            padding: "10px 12px",
-            borderRadius: 12,
-            border: mode === "users"
-              ? "1px solid rgba(124,92,252,.45)"
-              : "1px solid var(--glass-border)",
-            background: mode === "users"
-              ? "rgba(124,92,252,.12)"
-              : "var(--cbg5)",
-            color: "var(--text-main)",
-            fontWeight: 700,
-            cursor: "pointer"
-          }}
-        >
-          👤 People
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setMode("posts");
-            setSelectedUser(null);
-          }}
-          style={{
-            padding: "10px 12px",
-            borderRadius: 12,
-            border: mode === "posts"
-              ? "1px solid rgba(124,92,252,.45)"
-              : "1px solid var(--glass-border)",
-            background: mode === "posts"
-              ? "rgba(124,92,252,.12)"
-              : "var(--cbg5)",
-            color: "var(--text-main)",
-            fontWeight: 700,
-            cursor: "pointer"
-          }}
-        >
-          📝 Posts
-        </button>
-      </div>
-
-      {selectedUser && (
-        <div
-          className="glass"
-          style={{
-            padding: 12,
-            borderRadius: 16,
-            marginBottom: 14,
-            display: "flex",
-            alignItems: "center",
-            gap: 11
-          }}
-        >
-          {avatar(selectedUser, 42)}
-
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: 13 }}>
-              {selectedUser.name}
-            </div>
-            <div style={{ fontSize: 11, color: "var(--ct4)" }}>
-              {selectedUser.ward || "Village"} · User posts
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setSelectedUser(null)}
-            className="btn-ghost"
-            style={{
-              borderRadius: 9,
-              padding: "6px 10px",
-              fontSize: 11
-            }}
-          >
-            Clear
-          </button>
-        </div>
-      )}
-
-      {mode === "users" ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {matchedUsers.length === 0 ? (
-            <div
-              className="glass"
-              style={{
-                borderRadius: 18,
-                padding: 42,
-                textAlign: "center",
-                color: "var(--ct4)"
-              }}
-            >
-              <div style={{ fontSize: 32, marginBottom: 8 }}>🔎</div>
-              No users found.
-            </div>
-          ) : (
-            matchedUsers.map(u => (
-              <button
-                key={u.id}
-                type="button"
-                onClick={() => {
-                  setSelectedUser(u);
-                  setMode("posts");
-                  setTerm(u.name);
-                  onOpenPost(u);
-                }}
-                className="glass"
-                style={{
-                  width: "100%",
-                  borderRadius: 16,
-                  padding: 12,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  textAlign: "left",
-                  color: "var(--text-main)",
-                  cursor: "pointer",
-                  border: "1px solid var(--glass-border)"
-                }}
-              >
-                {avatar(u, 46)}
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 800, fontSize: 14 }}>
-                    {u.name}
-                  </div>
-                  <div
-                    style={{
-                      color: "var(--ct4)",
-                      fontSize: 11,
-                      marginTop: 3
-                    }}
-                  >
-                    {u.ward || "Village"} · @{u.id}
-                  </div>
-                </div>
-
-                <span
-                  style={{
-                    fontSize: 18,
-                    color: "var(--ct4)"
-                  }}
-                >
-                  ›
-                </span>
-              </button>
-            ))
-          )}
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {matchedPosts.length === 0 ? (
-            <div
-              className="glass"
-              style={{
-                borderRadius: 18,
-                padding: 42,
-                textAlign: "center",
-                color: "var(--ct4)"
-              }}
-            >
-              <div style={{ fontSize: 32, marginBottom: 8 }}>📝</div>
-              No posts found.
-            </div>
-          ) : (
-            matchedPosts.map(p => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => onOpenPost(null, p)}
-                className="glass"
-                style={{
-                  width: "100%",
-                  borderRadius: 16,
-                  padding: 14,
-                  textAlign: "left",
-                  color: "var(--text-main)",
-                  cursor: "pointer",
-                  border: "1px solid var(--glass-border)"
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    marginBottom: 8
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 34,
-                      height: 34,
-                      minWidth: 34,
-                      borderRadius: "50%",
-                      overflow: "hidden",
-                      display: "grid",
-                      placeItems: "center",
-                      background: "linear-gradient(135deg,#7c5cfc,#38d9f5)",
-                      color: "#fff",
-                      fontWeight: 800,
-                      fontSize: 12
-                    }}
-                  >
-                    {(p.name || "U").slice(0, 1).toUpperCase()}
-                  </div>
-
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 800, fontSize: 12 }}>
-                      {p.name}
-                    </div>
-                    <div style={{ color: "var(--ct4)", fontSize: 10 }}>
-                      {p.ward} · {p.category}
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 800,
-                    marginBottom: 5
-                  }}
-                >
-                  {p.title || "Community Post"}
-                </div>
-
-                <div
-                  style={{
-                    color: "var(--ct45)",
-                    fontSize: 12,
-                    lineHeight: 1.5,
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden"
-                  }}
-                >
-                  {p.caption || p.description || "No description"}
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function App() {
   const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search">("home");
+  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings">("home");
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
-  const [publicProfileUser, setPublicProfileUser] = useState<PublicProfileData | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
   const [adminRole, setAdminRole] = useState<AdminRole | null>(() => (localStorage.getItem("adminRole") as AdminRole) || null);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
@@ -3659,21 +2579,7 @@ export default function App() {
     return () => unsubSarpanch();
   }, []);
 
-    // Search users state
-  const [searchUsers, setSearchUsers] = useState<AppUser[]>([]);
-
-  // Load registered users for public search
-  useEffect(() => {
-    const unsubUsers = onSnapshot(collection(db, "users"), (snap) => {
-      const list = snap.docs
-        .map(d => d.data() as AppUser)
-        .filter(u => !!u && !!u.id && !!u.name);
-      setSearchUsers(list);
-    });
-    return () => unsubUsers();
-  }, []);
-
-  // Load problems from Firestore in realtime
+    // Load problems from Firestore in realtime
   useEffect(() => {
     const q = query(collection(db, "problems"), orderBy("submittedAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -3898,11 +2804,11 @@ export default function App() {
   };
 
   const navLinks = [
-    { id: "home" as const, label: "Home", icon: "⌂" },
-    { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
-    { id: "notices" as const, label: "Notices", icon: "📢" },
-    { id: "achievements" as const, label: "Achievements", icon: "🏆" },
-    { id: "profile" as const, label: currentUser ? "Profile" : "Login", icon: currentUser ? "👤" : "🔐" },
+    { id: "home" as const, label: "⌂ Home" },
+    { id: "dashboard" as const, label: "▦ Dashboard" },
+    { id: "notices" as const, label: "📢 Notices" },
+    { id: "achievements" as const, label: "🏆 Achievements" },
+    { id: "profile" as const, label: currentUser ? "👤 Profile" : "🔐 Login" },
   ];
 
   return (
@@ -3954,14 +2860,6 @@ export default function App() {
           </div>
         </div>
       </nav>
-
-      {publicProfileUser && (
-        <PublicUserProfile
-          profile={publicProfileUser}
-          problems={problems}
-          onClose={() => setPublicProfileUser(null)}
-        />
-      )}
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 16px 60px" }}>
 
@@ -4131,13 +3029,7 @@ export default function App() {
 
         {/* ── COMMUNITY HOME / INSTAGRAM-STYLE FEED ───────────────────────── */}
         {page === "home" && (
-          <CommunityFeed
-  problems={problems}
-  user={currentUser}
-  onUpdate={updateProblem as any}
-  onOpenLogin={() => setPage("login")}
-  onOpenUserProfile={setPublicProfileUser}
-/>
+          <CommunityFeed problems={problems} user={currentUser} onUpdate={updateProblem as any} onOpenLogin={() => setPage("login")} />
         )}
 
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
@@ -4147,25 +3039,8 @@ export default function App() {
           </div>
         )}
 
-        {page === "search" && (
-          <FadeIn>
-            <UserSearchPage
-              users={searchUsers}
-              problems={problems}
-              onOpenPost={(selectedUser, post) => {
-                if (post) {
-                  setSearch(post.title || post.name || "");
-                  setPage("board");
-                } else if (selectedUser) {
-                  setPage("search");
-                }
-              }}
-            />
-          </FadeIn>
-        )}
-
         {page === "profile" && (
-          <FadeIn>{currentUser ? <ProfileErrorBoundary><UserProfilePage user={currentUser} problems={problems} onUpdate={updateProblem as any} onDelete={deleteProblem} onLogout={logoutUser} onOpenSettings={() => setPage("user-settings")} /> </ProfileErrorBoundary> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />}</FadeIn>
+          <FadeIn>{currentUser ? <UserProfilePage user={currentUser} problems={problems} onUpdate={updateProblem as any} onDelete={deleteProblem} onLogout={logoutUser} onOpenSettings={() => setPage("user-settings")} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />}</FadeIn>
         )}
 
         {/* ── USER LOGIN ───────────────────────────────────────────────────── */}
@@ -4193,7 +3068,7 @@ export default function App() {
             ) : filtered.length === 0 ? (
               <FadeIn delay={200}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
-                  <Search size={40} style={{ marginBottom: 12 }} />
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
                   <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 600, marginBottom: 8 }}>No issues found</div>
                   <div style={{ color: "var(--ct4)", fontSize: 13 }}>{problems.length === 0 ? "No problems have been submitted yet." : "Try adjusting your filters."}</div>
                 </div>
@@ -4293,19 +3168,6 @@ export default function App() {
           <svg viewBox="0 0 24 24">
             <path d="M3 10.8 12 3l9 7.8v9.2a1 1 0 0 1-1 1h-5.2v-6.5H9.2V21H4a1 1 0 0 1-1-1v-9.2Z" />
           </svg>
-          <span className="mobile-nav-label">Home</span>
-        </button>
-
-        <button
-          className={`mobile-nav-item ${page === "search" ? "active" : ""}`}
-          onClick={() => setPage("search")}
-          aria-label="Search"
-        >
-          <svg viewBox="0 0 24 24">
-            <circle cx="10.8" cy="10.8" r="6.5" />
-            <path d="m16 16 5 5" />
-          </svg>
-          <span className="mobile-nav-label">Search</span>
         </button>
 
         <button
@@ -4337,7 +3199,6 @@ export default function App() {
           </div>
 
           {currentUser && <i className="mobile-profile-dot" />}
-          <span className="mobile-nav-label">Profile</span>
         </button>
 
       </div>

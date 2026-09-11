@@ -1,4 +1,3 @@
-import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
 import { useState, useEffect, useRef } from "react";
@@ -425,10 +424,7 @@ function UiIcon({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function AnimatedHeading({ text }: { text: string }) {
   const [visible, setVisible] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVisible(true), 200); 
-
-
-return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 200); return () => clearTimeout(t); }, []);
   const lines = text.split("\n"); let charIdx = 0;
   return (
     <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.04em" }}>
@@ -1382,364 +1378,212 @@ function CommunityFeed({
   </div>;
 }
 
-
-class ProfileErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error?: Error }
-> {
-  state: { hasError: boolean; error?: Error } = { hasError: false };
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error("PROFILE RUNTIME ERROR:", error);
-    console.error("PROFILE COMPONENT STACK:", info.componentStack);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div style={{
-          minHeight: "100vh",
-          padding: 24,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "sans-serif"
-        }}>
-          <div className="glass" style={{
-            maxWidth: 620,
-            width: "100%",
-            padding: 24,
-            borderRadius: 18
-          }}>
-            <h2 style={{ marginTop: 0 }}>Profile Error</h2>
-            <p style={{ color: "var(--ct4)" }}>
-              Profile page render karte waqt error aaya:
-            </p>
-            <pre style={{
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              padding: 14,
-              borderRadius: 12,
-              background: "var(--bg2, #f3f3f3)",
-              overflowX: "auto"
-            }}>
-              {this.state.error?.message || "Unknown runtime error"}
-            </pre>
-            <button
-              className="btn"
-              onClick={() => window.location.reload()}
-            >
-              Reload Profile
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-
 function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenSettings }: { user: AppUser; problems: Problem[]; onUpdate: (id: string, changes: any) => Promise<void>; onDelete: (id: string) => Promise<void>; onLogout: () => void; onOpenSettings: () => void }) {
-  const [sort, setSort] = useState("newest");
   const mine = problems.filter(p => p.authorId === user.id || (p.mobile === user.mobile && p.name === user.name));
   const downloadIdCard = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1400;
-    canvas.height = 820;
+    const c = document.createElement("canvas"); c.width = 1200; c.height = 720; const x = c.getContext("2d")!;
+    x.fillStyle = "#0d0a1b"; x.fillRect(0,0,c.width,c.height); x.fillStyle = "#7c5cfc"; x.fillRect(0,0,c.width,16); x.fillStyle = "#38d9f5"; x.fillRect(0,c.height-16,c.width,16);
+    x.fillStyle = "#fff"; x.font = "bold 48px Arial"; x.fillText("GRAM SABHA PAHRAJPUR", 70, 110); x.font = "28px Arial"; x.fillStyle = "#bdb7d7"; x.fillText("COMMUNITY USER ID CARD", 72, 155);
+    x.beginPath(); x.arc(150,310,92,0,Math.PI*2); x.fillStyle = "#7c5cfc"; x.fill(); x.fillStyle = "#fff"; x.font = "bold 76px Arial"; x.textAlign="center"; x.fillText(user.name.slice(0,1).toUpperCase(),150,337); x.textAlign="left";
+    x.fillStyle="#fff"; x.font="bold 42px Arial"; x.fillText(user.name,300,270); x.font="28px Arial"; x.fillStyle="#bdb7d7"; x.fillText(`User ID: ${user.id}`,300,320); x.fillText(`Mobile: ${user.mobile}`,300,365); x.fillText(`Ward: ${user.ward}`,300,410); x.fillText(`Member since: ${fmtDate(user.createdAt)}`,300,455);
+    x.fillStyle="#38d9f5"; x.font="bold 24px Arial"; x.fillText("This card identifies the registered community user.",72,610);
+    const a=document.createElement("a"); a.download=`GSP-ID-${user.id}.png`; a.href=c.toDataURL("image/png"); a.click();
+  };
+  return <div style={{ maxWidth: 760, margin: "28px auto 100px" }}>
+    <div className="glass" style={{ borderRadius: 22, padding: 22, marginBottom: 18 }}><div style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}><button
+type="button"
+onClick={onOpenSettings}
+title="Change profile photo"
+style={{
+  width:78,
+  height:78,
+  minWidth:78,
+  borderRadius:"50%",
+  border:"2px solid rgba(255,255,255,.25)",
+  padding:0,
+  background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",
+  display:"grid",
+  placeItems:"center",
+  fontSize:32,
+  fontWeight:800,
+  color:"#fff",
+  overflow:"hidden",
+  cursor:"pointer",
+  position:"relative"
+}}
+>
+{user.avatar ? (
+  <img
+    src={user.avatar}
+    alt="Profile"
+    style={{width:"100%",height:"100%",objectFit:"cover"}}
+  />
+) : (
+  <span>{user.name.slice(0,1).toUpperCase()}</span>
+)}
+<span style={{
+  position:"absolute",
+  right:1,
+  bottom:1,
+  width:25,
+  height:25,
+  borderRadius:"50%",
+  background:"rgba(0,0,0,.75)",
+  display:"grid",
+  placeItems:"center",
+  fontSize:13
+}}>📷</span>
+</button><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}><Phone size={13} /> {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}><Download size={14} /> ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}><Settings size={14} /> Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
+    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}><h3 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:19}}>My Posts ({mine.length})</h3></div>
+    {mine.length===0 ? <div className="glass" style={{borderRadius:18,padding:40,textAlign:"center",color:"var(--ct4)"}}>Aapne abhi koi problem post nahi ki.</div> : mine.map(p => <div key={p.id}><CommunityPostCard problem={p} user={user} onUpdate={onUpdate} onOpenLogin={() => {}} /><div style={{display:"flex",gap:8,marginTop:-10,marginBottom:16}}><button className="btn-ghost" onClick={() => { const title=window.prompt("New title",p.title); if(title) onUpdate(p.id,{title}); }} style={{borderRadius:9,fontSize:12}}><Pencil size={14} /> Edit</button><button className="btn-danger" onClick={() => { if(confirm("Delete this post?")) onDelete(p.id); }} style={{borderRadius:9,fontSize:12,padding:"7px 12px"}}><Trash2 size={14} /> Delete</button></div></div>)}
+  </div>;
+}
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+function UserSettingsPage({ user, onSave, onBack }: { user: AppUser; onSave: (u: AppUser) => Promise<void>; onBack: () => void }) {
+  const [name,setName]=useState(user.name);
+  const [mobile,setMobile]=useState(user.mobile);
+  const [ward,setWard]=useState(user.ward);
+  const [theme,setTheme]=useState(localStorage.getItem("gsp-user-theme") || "system");
+  const [avatar,setAvatar]=useState<string | undefined>(user.avatar);
+  const [avatarLoading,setAvatarLoading]=useState(false);
+  const avatarInputRef=useRef<HTMLInputElement>(null);
 
-    const role = String(
-      (user as any).role ||
-      (user as any).adminRole ||
-      (user as any).post ||
-      ""
-    ).toLowerCase();
-
-    const isAdmin =
-      role.includes("super-admin") ||
-      role.includes("super admin") ||
-      role.includes("user-admin") ||
-      role.includes("user admin") ||
-      role.includes("complaint-admin") ||
-      role.includes("complaint admin") ||
-      role === "admin" ||
-      role === "administrator";
-
-    const roleLabel =
-      role.includes("super")
-        ? "Super Admin"
-        : role.includes("complaint")
-        ? "Complaint Admin"
-        : role.includes("user-admin") || role.includes("user admin")
-        ? "User Admin"
-        : isAdmin
-        ? "Administrator"
-        : String((user as any).post || "Community Member");
-
-    const statusLabel = String((user as any).status || "Active");
-
-    const memberSince = user.createdAt
-      ? fmtDate(user.createdAt)
-      : "Registered Member";
-
-    const bg = isAdmin ? "#17120a" : "#0c0a1b";
-    const accent = isAdmin ? "#d6a84f" : "#7c5cff";
-    const accent2 = isAdmin ? "#f4d27a" : "#38d9f5";
-    const text = "#ffffff";
-    const muted = isAdmin ? "#c9b98e" : "#b8b4d7";
-
-    // Background
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Premium borders
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 8;
-    ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36);
-
-    ctx.strokeStyle = accent2;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(32, 32, canvas.width - 64, canvas.height - 64);
-
-    // Header
-    ctx.fillStyle = accent;
-    ctx.font = "bold 48px Arial";
-    ctx.fillText("GRAM SABHA PAHRAJPUR", 80, 100);
-
-    ctx.fillStyle = muted;
-    ctx.font = "24px Arial";
-    ctx.fillText(
-      isAdmin
-        ? "AUTHORIZED ADMINISTRATOR ID CARD"
-        : "COMMUNITY USER ID CARD",
-      82,
-      142
-    );
-
-    // Admin badge
-    if (isAdmin) {
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.roundRect(1030, 70, 260, 58, 29);
-      ctx.fill();
-
-      ctx.fillStyle = "#17120a";
-      ctx.font = "bold 24px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("ADMINISTRATOR", 1160, 108);
-      ctx.textAlign = "left";
-    }
-
-    // Photo
-    const photoX = 80;
-    const photoY = 205;
-    const photoSize = 270;
-
-    ctx.fillStyle = accent;
-    ctx.beginPath();
-    ctx.roundRect(photoX, photoY, photoSize, photoSize, 32);
-    ctx.fill();
-
-    const drawInitial = () => {
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.roundRect(
-        photoX + 8,
-        photoY + 8,
-        photoSize - 16,
-        photoSize - 16,
-        26
-      );
-      ctx.fill();
-
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 110px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(
-        String(user.name || "U").slice(0, 1).toUpperCase(),
-        photoX + photoSize / 2,
-        photoY + photoSize / 2
-      );
-
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
-
-      drawDetails();
-    };
-
-    const drawDetails = () => {
-      const x = 420;
-
-      ctx.fillStyle = text;
-      ctx.font = "bold 42px Arial";
-      ctx.fillText(
-        String(user.name || "Community Member"),
-        x,
-        235
-      );
-
-      ctx.fillStyle = accent2;
-      ctx.font = "bold 24px Arial";
-      ctx.fillText(roleLabel, x, 278);
-
-      const details = [
-        ["User ID", String(user.id || "-")],
-        ["Ward", String(user.ward || "Not specified")],
-        ["Member Since", memberSince],
-        ["Status", statusLabel],
-        ["Post / Role", roleLabel]
-      ];
-
-      let y = 340;
-
-      details.forEach(([label, value]) => {
-        ctx.fillStyle = muted;
-        ctx.font = "bold 21px Arial";
-        ctx.fillText(label, x, y);
-
-        ctx.fillStyle = text;
-        ctx.font = "24px Arial";
-        ctx.fillText(value, x + 190, y);
-
-        y += 58;
-      });
-
-      // Status
-      const active =
-        statusLabel.toLowerCase() === "active" ||
-        statusLabel.toLowerCase() === "approved";
-
-      ctx.fillStyle = active ? "#34d399" : "#f59e0b";
-      ctx.beginPath();
-      ctx.roundRect(1070, 650, 210, 52, 26);
-      ctx.fill();
-
-      ctx.fillStyle = "#08110d";
-      ctx.font = "bold 22px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(
-        active
-          ? "STATUS: ACTIVE"
-          : `STATUS: ${statusLabel.toUpperCase()}`,
-        1175,
-        683
-      );
-      ctx.textAlign = "left";
-
-      // Footer
-      ctx.fillStyle = accent;
-      ctx.font = "bold 22px Arial";
-      ctx.fillText(
-        isAdmin
-          ? "Authorized administrator of Gram Sabha Pahrajpur."
-          : "This card identifies the registered community user.",
-        80,
-        755
-      );
-
-      ctx.fillStyle = muted;
-      ctx.font = "16px Arial";
-      ctx.fillText(
-        "Gram Sabha Pahrajpur • Community Identity Card",
-        80,
-        785
-      );
-
-      // Download
-      const link = document.createElement("a");
-
-      const safeName = String(user.name || "community-user")
-        .replace(/[^a-z0-9]+/gi, "-")
-        .replace(/^-+|-+$/g, "")
-        .toLowerCase();
-
-      link.download =
-        `${safeName || "community-user"}-id-card.png`;
-
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-
-    if (user.avatar) {
-      const img = new Image();
-
-      img.onload = () => {
-        ctx.save();
-
-        ctx.beginPath();
-        ctx.roundRect(
-          photoX + 8,
-          photoY + 8,
-          photoSize - 16,
-          photoSize - 16,
-          26
-        );
-
-        ctx.clip();
-
-        ctx.drawImage(
-          img,
-          photoX + 8,
-          photoY + 8,
-          photoSize - 16,
-          photoSize - 16
-        );
-
-        ctx.restore();
-
-        drawDetails();
-      };
-
-      img.onerror = drawInitial;
-      img.src = user.avatar;
-    } else {
-      drawInitial();
+  const handleAvatar=async(file: File)=>{
+    if(!file.type.startsWith("image/")) return;
+    setAvatarLoading(true);
+    try{
+      const compressed=await compressImage(file,500,0.65);
+      setAvatar(compressed);
+    }catch(e){
+      console.error(e);
+      alert("Photo upload nahi ho paya.");
+    }finally{
+      setAvatarLoading(false);
     }
   };
+
+  const save=async()=>{
+    const next={...user,name:name.trim(),mobile:mobile.trim(),ward,avatar};
+    await onSave(next);
+    localStorage.setItem("gsp-user-theme",theme);
+    onBack();
+  };
+
+  return <div style={{maxWidth:560,margin:"32px auto 100px"}}>
+    <div className="glass" style={{borderRadius:22,padding:24}}>
+      <h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:24}}><Settings size={20} /> Account Settings</h2>
+      <p style={{fontSize:13,color:"var(--ct4)",margin:"6px 0 20px"}}>Apni profile details aur preference change karein.</p>
+
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginBottom:22}}>
+        <div
+          onClick={()=>avatarInputRef.current?.click()}
+          style={{
+            width:110,
+            height:110,
+            borderRadius:"50%",
+            overflow:"hidden",
+            cursor:"pointer",
+            position:"relative",
+            background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",
+            display:"grid",
+            placeItems:"center",
+            border:"3px solid rgba(255,255,255,0.18)",
+            boxShadow:"0 8px 30px rgba(124,92,252,0.30)"
+          }}
+        >
+          {avatar
+            ? <img src={avatar} alt="Profile" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+            : <span style={{fontSize:42,fontWeight:800,color:"#fff"}}>{name.slice(0,1).toUpperCase() || "U"}</span>
+          }
+        </div>
+
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          style={{display:"none"}}
+          onChange={e=>{
+            const file=e.target.files?.[0];
+            if(file) handleAvatar(file);
+            e.target.value="";
+          }}
+        />
+
+        <button
+          type="button"
+          className="btn-ghost"
+          onClick={()=>avatarInputRef.current?.click()}
+          disabled={avatarLoading}
+          style={{marginTop:10,borderRadius:10,padding:"8px 16px",fontSize:12}}
+        >
+          {avatarLoading ? "⏳ Processing..." : avatar ? "📷 Change DP" : "📷 Add Profile Photo"}
+        </button>
+
+        {avatar && !avatarLoading && (
+          <button
+            type="button"
+            onClick={()=>setAvatar(undefined)}
+            style={{marginTop:6,border:"none",background:"none",color:"#f87171",fontSize:11,cursor:"pointer"}}
+          >
+            Remove photo
+          </button>
+        )}
+
+        <div style={{fontSize:11,color:"var(--ct3)",marginTop:6}}>
+          JPG, PNG or WebP · photo will be compressed automatically
+        </div>
+      </div>
+
+      <div style={{display:"flex",flexDirection:"column",gap:12}}>
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Name"/>
+        <input value={mobile} onChange={e=>setMobile(e.target.value)} placeholder="Mobile"/>
+        <select value={ward} onChange={e=>setWard(e.target.value)}>
+          {WARDS.map(w=><option key={w}>{w}</option>)}
+        </select>
+
+        <select value={theme} onChange={e=>setTheme(e.target.value)}>
+          <option value="system">System theme</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+
+        <div style={{display:"flex",gap:10}}>
+          <button className="btn-ghost" onClick={onBack} style={{flex:1,borderRadius:10}}>Cancel</button>
+          <button className="btn-white" onClick={save} disabled={avatarLoading} style={{flex:1,borderRadius:10}}>
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ── Filter Bar ────────────────────────────────────────────────────────────────
+function FilterBar({ filterCat, setFilterCat, filterStatus, setFilterStatus, filterWard, setFilterWard, search, setSearch, sort, setSort }: {
+  filterCat: string; setFilterCat: (v: string) => void; filterStatus: string; setFilterStatus: (v: string) => void;
+  filterWard: string; setFilterWard: (v: string) => void; search: string; setSearch: (v: string) => void; sort: string; setSort: (v: string) => void;
+}) {
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "20px 0" }}>
-      <div className="glass" style={{ borderRadius: 20, padding: "24px", marginBottom: 20, display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-        <div style={{ width: 70, height: 70, borderRadius: "50%", background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontSize: 28, color: "#fff", fontWeight: 800 }}>
-          {user.avatar ? <img src={user.avatar} style={{width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover"}} alt="Avatar" /> : (user.name || "U").slice(0,1).toUpperCase()}
-        </div>
-        <div style={{ flex: 1 }}>
-          <h2 style={{ fontSize: 24, margin: "0 0 5px", fontFamily: "'Space Grotesk',sans-serif" }}>{user.name}</h2>
-          <div style={{ color: "var(--ct4)", fontSize: 14 }}>📞 {user.mobile} • 🏠 {user.ward}</div>
-        </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button className="btn-white" onClick={downloadIdCard} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13 }}>💳 ID Card</button>
-          <button className="btn-ghost" onClick={onOpenSettings} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13 }}>⚙️ Settings</button>
-          <button className="btn-danger" onClick={onLogout} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13 }}>Logout</button>
-        </div>
-      </div>
-      <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, marginBottom: 14 }}>My Submitted Issues</h3>
-      <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or ID…" style={{ flex: "1 1 180px", minWidth: 140 }} />
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
-            <option value="All">All Status</option>
-            {Object.keys(STATUS_META).map(s => <option key={s}>{s}</option>)}
-          </select>
-          <select value={sort} onChange={e => setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="priority">By Priority</option>
-          </select>
-        </div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {mine.length === 0 ? <div style={{ textAlign: "center", color: "var(--ct4)", padding: 30 }}>No issues found.</div> : mine.map(p => (
-          <ProblemCard key={p.id} problem={p} isAdmin={false} onUpdate={onUpdate} onDelete={onDelete} />
-        ))}
+    <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or ID…" style={{ flex: "1 1 180px", minWidth: 140 }} />
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
+          <option value="All">All Status</option>
+          {Object.keys(STATUS_META).map(s => <option key={s}>{s}</option>)}
+        </select>
+        <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ flex: "1 1 130px", minWidth: 110 }}>
+          <option value="All">All Categories</option>
+          {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+        </select>
+        <select value={filterWard} onChange={e => setFilterWard(e.target.value)} style={{ flex: "1 1 110px", minWidth: 90 }}>
+          <option value="All">All Wards</option>
+          {WARDS.map(w => <option key={w}>{w}</option>)}
+        </select>
+        <select value={sort} onChange={e => setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="priority">By Priority</option>
+        </select>
       </div>
     </div>
   );
@@ -2045,7 +1889,7 @@ function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }:
                       <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 14 }}>{n.title}</span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}><UiIcon name={m.icon} size={12} />{m.label}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}><CalendarDays size={14} /> {n.date} · Posted {fmtDate(n.createdAt)}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}>📅 {n.date} · Posted {fmtDate(n.createdAt)}</div>
                   </div>
                   <span style={{ color: "var(--ct3)", fontSize: 12, flexShrink: 0, paddingTop: 2 }}>{isExp ? <ChevronUp size={15} /> : <ChevronDown size={15} />}</span>
                 </div>
@@ -3023,7 +2867,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   if (!media || media.length === 0) return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}><Camera size={14} /> Village Gallery</h2>
+      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
       <div style={{ borderRadius: 16, background: "var(--cbg5)", height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "var(--ct4)", fontSize: 13 }}>No photos uploaded yet</p>
       </div>
@@ -3035,7 +2879,7 @@ function PhotoCarousel({ media }: { media: any[] }) {
 
   return (
     <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}><Camera size={14} /> Village Gallery</h2>
+      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}>📷 Village Gallery</h2>
       <div style={{ 
         display: "flex", gap: 10, perspective: "1000px",
         transform: animating ? "rotateY(90deg)" : "rotateY(0deg)",
@@ -4165,7 +4009,7 @@ export default function App() {
         )}
 
         {page === "profile" && (
-          <FadeIn>{currentUser ? <ProfileErrorBoundary><UserProfilePage user={currentUser} problems={problems} onUpdate={updateProblem as any} onDelete={deleteProblem} onLogout={logoutUser} onOpenSettings={() => setPage("user-settings")} /> </ProfileErrorBoundary> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />}</FadeIn>
+          <FadeIn>{currentUser ? <UserProfilePage user={currentUser} problems={problems} onUpdate={updateProblem as any} onDelete={deleteProblem} onLogout={logoutUser} onOpenSettings={() => setPage("user-settings")} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />}</FadeIn>
         )}
 
         {/* ── USER LOGIN ───────────────────────────────────────────────────── */}
