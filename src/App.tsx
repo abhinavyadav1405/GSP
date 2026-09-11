@@ -2431,8 +2431,8 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
       {/* ── Change Password ── */}
       <FadeIn delay={80}>
         {card(<>
-          <SectionHead icon="🔑" title="
-              {/* 🛡️ All 3 Admins Management Section */}
+          <SectionHead icon="🔑" title="Manage Admins" />
+{/* 🛡️ All 3 Admins Management Section */}
               <div className="glass" style={{ borderRadius: 20, padding: "24px", marginBottom: 24, border: "2px solid rgba(251,191,36,0.5)" }}>
                           <p style={{ fontSize: 13, color: "var(--ct4)", marginBottom: 16 }}>Teeno admins ki details yahan set karein taaki user profile aur home directory mein unka naam, photo aur contact buttons dikhein.</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -2491,7 +2491,7 @@ function AdminSettings({ problems, achievements, media, notices, feedbacks, admi
                 </div>
               </div>
 
-              Change Super Admin Password" />
+              <SectionHead icon="🔑" title="Change Super Admin Password" />
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <input type="password" placeholder="New password" value={newPw} onChange={e => { setNewPw(e.target.value); setPwErr(""); }} />
             <input type="password" placeholder="Confirm new password" value={confirmPw} onChange={e => { setConfirmPw(e.target.value); setPwErr(""); }} />
