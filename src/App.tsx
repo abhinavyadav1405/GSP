@@ -4296,7 +4296,7 @@ useEffect(() => {
             {/* Made By tag */}
             <div style={{ marginTop: 60, textAlign: "center" }}>
               <span style={{ fontSize: 12, color: "var(--ct4)", letterSpacing: "0.08em", fontWeight: 500 }}>
-                Made with ❤️ by <span style={{ color: "var(--text-main)", fontWeight: 700 }}>Abhinav Yadav</span>
+                Made with ❤️ by <span style={{ color: "var(--text-main)", fontWeight: 700 }}>Infinite Loopers</span>
               </span>
             </div>
           </div>
