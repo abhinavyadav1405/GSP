@@ -11,6 +11,7 @@ import {
   Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown,
   ShieldAlert, Upload, CircleUserRound
 } from "lucide-react";
+import { Leaf } from "lucide-react";
 
 import {
   db,
@@ -3721,6 +3722,8 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
   );
 }
 
+
+function FilterBar(props: any) { return <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><input value={props.search} onChange={e => props.setSearch(e.target.value)} placeholder="Search issues..." style={{ flex: "1 1 180px", minWidth: 140 }} /><select value={props.filterStatus} onChange={e => props.setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="All">All Status</option><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Resolved">Resolved</option></select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(false);
