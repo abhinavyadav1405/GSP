@@ -1280,51 +1280,66 @@ function CommunityPostCard({
   const share = async () => {
     if (!cardRef.current) return;
     setSharing(true);
+    
+    // Original theme save karna
+    const currentTheme = document.body.getAttribute('data-theme');
+    const el = cardRef.current;
+    const origBg = el.style.background;
+    const origBorder = el.style.border;
+
     try {
-      // Load html2canvas dynamically
-      if (!(window as any).html2canvas) {
+      // Modern Ultra-HD library load karna
+      if (!(window as any).htmlToImage) {
         await new Promise((res, rej) => {
           const script = document.createElement("script");
-          script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js";
           script.onload = res;
           script.onerror = rej;
           document.head.appendChild(script);
         });
       }
-      
-      // Generate exact screenshot of the post card
-      const canvas = await (window as any).html2canvas(cardRef.current, { 
-        backgroundColor: "#0f0c1e", // Deep dark background
-        scale: 2, // High resolution
-        useCORS: true, // Allow external profile photos
-        logging: false
+
+      // Capture ke time 1 second ke liye Premium Dark Theme force karna (for best contrast)
+      document.body.setAttribute('data-theme', 'dark');
+      el.style.background = "#0a0814"; 
+      el.style.border = "1px solid rgba(124,92,252,0.4)";
+
+      // Styles apply hone ka thoda wait karna
+      await new Promise(r => setTimeout(r, 100));
+
+      const dataUrl = await (window as any).htmlToImage.toPng(el, {
+        quality: 1.0,
+        pixelRatio: 3, // 3x Ultra-HD Resolution
+        backgroundColor: "#0a0814",
+        style: { transform: 'scale(1)', margin: '0' }
       });
+
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `post-${problem.id}.png`, { type: "image/png" });
+      const text = `${problem.title}\nBy ${problem.name}\nGram Sabha Pahrajpur`;
       
-      canvas.toBlob(async (blob: Blob | null) => {
-        if (!blob) return;
-        const file = new File([blob], `post-${problem.id}.png`, { type: "image/png" });
-        const text = `${problem.title}\nBy ${problem.name}\nGram Sabha Pahrajpur`;
-        
-        // Mobile Native Share (WhatsApp/Instagram)
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ title: problem.title, text: text, files: [file] });
-          } catch (err) { console.log(err); }
-        } else {
-          // Desktop Fallback: Download image
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `post-${problem.id}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-          alert("✅ Post saved as Image! You can now send it on WhatsApp.");
-        }
-      }, "image/png");
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ title: problem.title, text: text, files: [file] }); } 
+        catch (err) { console.log(err); }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `post-${problem.id}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert("✅ HD Post saved! You can now send it on WhatsApp.");
+      }
     } catch (e) {
       console.error(e);
       alert("Sharing failed. Please try again.");
     } finally {
+      // Screenshot ke baad wapas normal theme par aana
+      el.style.background = origBg;
+      el.style.border = origBorder;
+      if (currentTheme) document.body.setAttribute('data-theme', currentTheme);
+      else document.body.removeAttribute('data-theme');
       setSharing(false);
     }
   };
