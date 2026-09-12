@@ -186,10 +186,29 @@ const GLOBAL_STYLE = `
       transition: transform .18s ease;
     }
 
+    .mobile-nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 4px;
+      width: 42px;
+      height: 42px;
+      background: rgba(124,92,252,0.12);
+      border-radius: 50%;
+      z-index: 0;
+      box-shadow: 0 4px 14px rgba(124,92,252,0.3);
+    }
     .mobile-nav-item.active svg {
       fill: none;
-      stroke: #111;
+      stroke: #7c5cfc;
       transform: scale(1.1);
+      position: relative;
+      z-index: 1;
+    }
+    .mobile-nav-item.active .mobile-nav-label {
+      color: #7c5cfc;
+      opacity: 1;
+      position: relative;
+      z-index: 1;
     }
 
     .mobile-nav-item:active svg {
