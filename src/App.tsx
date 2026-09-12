@@ -1308,7 +1308,8 @@ function CommunityPostCard({
         quality: 1.0,
         pixelRatio: 3, // Ultra HD quality
         backgroundColor: bgColor, 
-        style: { transform: 'scale(1)', margin: '0' }
+        style: { transform: 'scale(1)', margin: '0' },
+        skipFonts: true
       });
 
       const response = await fetch(dataUrl);
