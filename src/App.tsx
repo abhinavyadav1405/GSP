@@ -1281,14 +1281,13 @@ function CommunityPostCard({
     if (!cardRef.current) return;
     setSharing(true);
     
-    // Original theme save karna
     const currentTheme = document.body.getAttribute('data-theme');
     const el = cardRef.current;
     const origBg = el.style.background;
     const origBorder = el.style.border;
+    const origColor = el.style.color;
 
     try {
-      // Modern Ultra-HD library load karna
       if (!(window as any).htmlToImage) {
         await new Promise((res, rej) => {
           const script = document.createElement("script");
@@ -1299,17 +1298,17 @@ function CommunityPostCard({
         });
       }
 
-      // Capture ke time 1 second ke liye Premium Dark Theme force karna (for best contrast)
+      // Force Dark Mode colors for screenshot
       document.body.setAttribute('data-theme', 'dark');
       el.style.background = "#0a0814"; 
       el.style.border = "1px solid rgba(124,92,252,0.4)";
+      el.style.color = "#f0eeff"; // Ensure text is bright white
 
-      // Styles apply hone ka thoda wait karna
-      await new Promise(r => setTimeout(r, 100));
+      await new Promise(r => setTimeout(r, 150));
 
       const dataUrl = await (window as any).htmlToImage.toPng(el, {
         quality: 1.0,
-        pixelRatio: 3, // 3x Ultra-HD Resolution
+        pixelRatio: 3, // Ultra HD
         backgroundColor: "#0a0814",
         style: { transform: 'scale(1)', margin: '0' }
       });
@@ -1329,20 +1328,20 @@ function CommunityPostCard({
         a.download = `post-${problem.id}.png`;
         a.click();
         URL.revokeObjectURL(url);
-        alert("✅ HD Post saved! You can now send it on WhatsApp.");
       }
     } catch (e) {
       console.error(e);
       alert("Sharing failed. Please try again.");
     } finally {
-      // Screenshot ke baad wapas normal theme par aana
       el.style.background = origBg;
       el.style.border = origBorder;
+      el.style.color = origColor;
       if (currentTheme) document.body.setAttribute('data-theme', currentTheme);
       else document.body.removeAttribute('data-theme');
       setSharing(false);
     }
   };
+
   return <article ref={cardRef} className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
     <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
       <div
