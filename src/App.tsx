@@ -3835,7 +3835,7 @@ useEffect(() => {
         if (d.adminPassword) setAdminPassword(d.adminPassword);
         if (d.userAdminPassword) setUserAdminPassword(d.userAdminPassword);
         if (d.complaintAdminPassword) setComplaintAdminPassword(d.complaintAdminPassword);
-        if (d.theme) setTheme(d.theme);
+      // if (d.theme) setTheme(d.theme); // Global theme sync removed
         if (d.sarpanchPhoto) setSarpanchPhoto(d.sarpanchPhoto);
       }
     });
@@ -3961,7 +3961,7 @@ useEffect(() => {
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    try { saveSettings({ theme: next }); } catch (_) {}
+    localStorage.setItem("portal_theme", next);
   };
 
   const savePassword = (pw: string) => {
