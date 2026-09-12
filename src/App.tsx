@@ -4446,30 +4446,78 @@ useEffect(() => {
         )}
 
         
-        {/* ── SCHEMES ──────────────────────────────────────────────────────── */}
+                {/* ── SCHEMES ──────────────────────────────────────────────────────── */}
         {page === "schemes" && (
-          <div style={{ paddingTop: 32, maxWidth: 800, margin: "0 auto", paddingBottom: 60 }}>
+          <div style={{ paddingTop: 24, maxWidth: 800, margin: "0 auto", paddingBottom: 80 }}>
             <FadeIn>
               <div style={{ marginBottom: 24, padding: "0 16px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 600 }}>
-                  Sarkari Yojna & Schemes
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 20, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 700 }}>
+                  <Landmark size={14} /> Sarkari Yojna & Schemes
                 </div>
-                <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Village Schemes</h2>
-                <p style={{ fontSize: 13, color: "var(--ct4)" }}>Gaon ke vikas ke liye aayi hui sabhi nayi sarkari yojnayein aur schemes ki jankari.</p>
+                <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8, color: "var(--text-main)" }}>Village Schemes</h2>
+                <p style={{ fontSize: 13, color: "var(--text-main)", opacity: 0.75 }}>Gaon ke vikas ke liye aayi hui sabhi nayi sarkari yojnayein aur schemes ki jankari.</p>
               </div>
+
+              {/* Admin Add Scheme Box */}
+              {user && (String((user as any).role || "").toLowerCase().includes("admin") || String((user as any).adminRole || "").toLowerCase().includes("admin") || (user as any).isSuperAdmin) && (
+                <div className="glass" style={{ borderRadius: 20, padding: "20px", marginBottom: 24, margin: "0 16px 24px 16px", border: "1px solid rgba(34,197,94,0.3)" }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, color: "#22c55e", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span>➕</span> Add New Scheme (Admin)
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <input 
+                      id="newSchemeTitle" 
+                      placeholder="Scheme Title (e.g. PM Awas Yojana)..." 
+                      style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "var(--cbg5)", color: "var(--text-main)", fontSize: 13, outline: "none" }} 
+                    />
+                    <textarea 
+                      id="newSchemeBody" 
+                      placeholder="Scheme details, eligibility, benefits..." 
+                      rows={3}
+                      style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "var(--cbg5)", color: "var(--text-main)", fontSize: 13, outline: "none", resize: "vertical" }} 
+                    />
+                    <button 
+                      className="btn-primary" 
+                      onClick={() => {
+                        const titleEl = document.getElementById("newSchemeTitle") as HTMLInputElement;
+                        const bodyEl = document.getElementById("newSchemeBody") as HTMLTextAreaElement;
+                        if (!titleEl || !bodyEl || !titleEl.value.trim() || !bodyEl.value.trim()) {
+                          alert("Please fill both title and details!");
+                          return;
+                        }
+                        const newNotice = {
+                          id: 'scheme_' + Date.now(),
+                          title: titleEl.value.trim(),
+                          body: bodyEl.value.trim(),
+                          type: 'scheme',
+                          date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+                          createdAt: new Date().toISOString()
+                        };
+                        setNotices(prev => [newNotice, ...prev]);
+                        titleEl.value = "";
+                        bodyEl.value = "";
+                        alert("✅ Scheme published successfully!");
+                      }}
+                      style={{ padding: "10px 16px", borderRadius: 10, background: "#22c55e", color: "#fff", border: "none", fontWeight: 700, cursor: "pointer", fontSize: 13, alignSelf: "flex-start" }}
+                    >
+                      Publish Scheme 🚀
+                    </button>
+                  </div>
+                </div>
+              )}
               
               {notices.filter(n => n.type === "scheme").length === 0 ? (
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", margin: "0 16px" }}>
-                  <div style={{ marginBottom: 16, color: "var(--ct4)" }}><Landmark size={40} strokeWidth={1.5} /></div>
-                  <div style={{ color: "var(--ct4)", fontSize: 13 }}>Abhi tak koi nayi scheme post nahi hui hai.</div>
+                  <div style={{ marginBottom: 16, color: "var(--text-main)", opacity: 0.5 }}><Landmark size={40} strokeWidth={1.5} /></div>
+                  <div style={{ color: "var(--text-main)", fontSize: 14, opacity: 0.7 }}>Abhi tak koi nayi scheme post nahi hui hai.</div>
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "0 16px" }}>
                   {notices.filter(n => n.type === "scheme").sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(n => (
                     <div key={n.id} className="glass" style={{ borderRadius: 16, padding: "18px", borderLeft: "4px solid #22c55e" }}>
                       <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "var(--text-main)" }}>{n.title}</div>
-                      <div style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 12 }}>📅 {n.date}</div>
-                      <p style={{ fontSize: 13, color: "var(--ct65)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{n.body}</p>
+                      <div style={{ fontSize: 12, color: "var(--text-main)", opacity: 0.6, marginBottom: 12 }}>📅 {n.date}</div>
+                      <p style={{ fontSize: 13, color: "var(--text-main)", opacity: 0.85, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{n.body}</p>
                     </div>
                   ))}
                 </div>
@@ -4477,6 +4525,7 @@ useEffect(() => {
             </FadeIn>
           </div>
         )}
+
 
         {/* ── GALLERY ──────────────────────────────────────────────────────── */}
         {page === "gallery" && (
