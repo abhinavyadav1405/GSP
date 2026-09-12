@@ -4457,7 +4457,7 @@ useEffect(() => {
             <FadeIn>
               <div style={{ marginBottom: 28, padding: "0 16px" }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 20, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.3)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 700, letterSpacing: "0.04em" }}>
-                  <Landmark size={15} /> Sarkari Yojna & Welfare Schemes
+                  <Sparkles size={15} /> Sarkari Yojna & Welfare Schemes
                 </div>
                 <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8, color: "var(--text-main)", letterSpacing: "-0.02em" }}>Village Development Schemes</h2>
                 <p style={{ fontSize: 14, color: "var(--ct45)", lineHeight: 1.6 }}>Gram Sabha Pahrajpur ke nagriko ke liye kendra aur rajya sarkar ki sabhi pramukh yojnayein.</p>
@@ -4513,7 +4513,7 @@ useEffect(() => {
               
               {(typeof notices !== "undefined" && notices ? notices : []).filter(n => n.type === "scheme").length === 0 ? (
                 <div className="glass" style={{ borderRadius: 24, padding: "56px 32px", textAlign: "center", margin: "0 16px" }}>
-                  <div style={{ marginBottom: 16, color: "#22c55e", opacity: 0.8 }}><Landmark size={48} strokeWidth={1.5} /></div>
+                  <div style={{ marginBottom: 16, color: "#22c55e", opacity: 0.8 }}><Sparkles size={48} strokeWidth={1.5} /></div>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-main)", marginBottom: 6 }}>No Schemes Active</div>
                   <div style={{ color: "var(--ct4)", fontSize: 13 }}>Abhi tak koi sarkari yojna list nahi ki gayi hai.</div>
                 </div>
