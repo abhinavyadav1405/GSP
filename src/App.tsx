@@ -187,9 +187,9 @@ const GLOBAL_STYLE = `
     }
 
     .mobile-nav-item.active svg {
-      fill: #111;
+      fill: none;
       stroke: #111;
-      transform: scale(1.05);
+      transform: scale(1.1);
     }
 
     .mobile-nav-item:active svg {
