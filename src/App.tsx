@@ -2,15 +2,7 @@ import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
 import { useState, useEffect, useRef } from "react";
-import {
-  Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy,
-  LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle,
-  CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard,
-  Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren,
-  Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat,
-  Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown,
-  ShieldAlert, Upload, CircleUserRound
-, Heart, MessageCircle, Send, Landmark } from "lucide-react";
+import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle, CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard, Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren, Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat, Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown, ShieldAlert, Upload, CircleUserRound, Heart, MessageCircle, Send, Landmark } from "lucide-react";
 import { Leaf } from "lucide-react";
 
 import {
@@ -3931,7 +3923,7 @@ useEffect(() => {
     try { setDoc(doc(db, "settings", "notices"), { list: list }); } catch (_) {}
   };
   const addNotice    = (n: Notice) => saveNotices([n, ...notices]);
-  const deleteNotice = (id: string) => saveNotices(notices.filter(n => n.id !== id));
+  const deleteNotice = (id: string) => saveNotices((typeof notices !== "undefined" && notices ? notices : []).filter(n => n.id !== id));
 
   const saveFeedbacks  = (list: Feedback[]) => { setFeedbacks(list); try { setDoc(doc(db, "settings", "feedback"), { list: list }); } catch (_) {} };
   const addFeedback    = (f: Feedback) => saveFeedbacks([f, ...feedbacks]);
@@ -4506,14 +4498,14 @@ useEffect(() => {
                 </div>
               )}
               
-              {notices.filter(n => n.type === "scheme").length === 0 ? (
+              {(typeof notices !== "undefined" && notices ? notices : []).filter(n => n.type === "scheme").length === 0 ? (
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", margin: "0 16px" }}>
                   <div style={{ marginBottom: 16, color: "var(--text-main)", opacity: 0.5 }}><Landmark size={40} strokeWidth={1.5} /></div>
                   <div style={{ color: "var(--text-main)", fontSize: 14, opacity: 0.7 }}>Abhi tak koi nayi scheme post nahi hui hai.</div>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 14, padding: "0 16px" }}>
-                  {notices.filter(n => n.type === "scheme").sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(n => (
+                  {(typeof notices !== "undefined" && notices ? notices : []).filter(n => n.type === "scheme").sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(n => (
                     <div key={n.id} className="glass" style={{ borderRadius: 16, padding: "18px", borderLeft: "4px solid #22c55e" }}>
                       <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "var(--text-main)" }}>{n.title}</div>
                       <div style={{ fontSize: 12, color: "var(--text-main)", opacity: 0.6, marginBottom: 12 }}>📅 {n.date}</div>
