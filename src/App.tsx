@@ -1314,6 +1314,11 @@ function CommunityPostCard({
       <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}><Badge text={problem.category} color={CAT_COLORS[problem.category] || "#aaa"} /><Badge text={problem.priority} color={PRIORITY_META[problem.priority]?.color || "#aaa"} /></div>
       <div style={{ fontSize: 15, fontWeight: 700 }}>{problem.title}</div>
       <div style={{ color: "var(--ct65)", fontSize: 13, lineHeight: 1.6, marginTop: 5 }}>{problem.caption || problem.description}</div>
+      {problem.photo && (
+        <div style={{ marginTop: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(0,0,0,0.2)" }}>
+          <img src={problem.photo} alt="Problem attached" style={{ width: "100%", maxHeight: 400, objectFit: "cover", display: "block", cursor: "zoom-in" }} onClick={() => window.open(problem.photo, "_blank")} />
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, borderTop: "1px solid var(--cbg7)", paddingTop: 10 }}>
         <button className="btn-ghost" onClick={() => doAuth(() => toggleArray("likes"))} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>{liked ? "❤️" : "🤍"} <span style={{ fontSize: 12 }}>{likes.length}</span></button>
         <button className="btn-ghost" onClick={() => setShowComments(v => !v)} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>💬 <span style={{ fontSize: 12 }}>{comments.length}</span></button>
