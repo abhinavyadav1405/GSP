@@ -20,7 +20,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/logo.png" />
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script></head>
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script>
+    <style id="GLOBAL_TEXT_FIX">
+      /* Light Mode Text Fix */
+      input, textarea, select {
+        color: #111 !important;
+        background-color: rgba(0,0,0,0.03) !important;
+        border: 1px solid rgba(0,0,0,0.2) !important;
+      }
+      /* Dark Mode Text Fix */
+      [data-theme='dark'] input, [data-theme='dark'] textarea, [data-theme='dark'] select {
+        color: #ffffff !important;
+        background-color: rgba(255,255,255,0.08) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
+      }
+    </style>
+    </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
