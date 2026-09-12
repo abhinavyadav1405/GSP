@@ -4453,33 +4453,32 @@ useEffect(() => {
         
                 {/* ── SCHEMES ──────────────────────────────────────────────────────── */}
         {page === "schemes" && (
-          <div style={{ paddingTop: 28, maxWidth: 840, margin: "0 auto", paddingBottom: 90 }}>
+          <div style={{ paddingTop: 32, maxWidth: 880, margin: "0 auto", paddingBottom: 100 }}>
             <FadeIn>
-              <div style={{ marginBottom: 28, padding: "0 16px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 20, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.3)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 700, letterSpacing: "0.04em" }}>
-                  <Sparkles size={15} /> Sarkari Yojna & Welfare Schemes
+              <div style={{ marginBottom: 32, padding: "0 16px", textAlign: "center" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 18px", borderRadius: 30, background: "linear-gradient(135deg, rgba(34,197,94,0.18), rgba(16,185,129,0.08))", border: "1px solid rgba(34,197,94,0.35)", fontSize: 13, color: "#22c55e", marginBottom: 16, fontWeight: 700, letterSpacing: "0.05em", boxShadow: "0 4px 20px rgba(34,197,94,0.15)" }}>
+                  <Landmark size={16} /> Sarkari Yojna & Welfare Portal
                 </div>
-                <h2 style={{ fontSize: 32, fontWeight: 800, marginBottom: 8, color: "var(--text-main)", letterSpacing: "-0.02em" }}>Village Development Schemes</h2>
-                <p style={{ fontSize: 14, color: "var(--ct45)", lineHeight: 1.6 }}>Gram Sabha Pahrajpur ke nagriko ke liye kendra aur rajya sarkar ki sabhi pramukh yojnayein.</p>
+                <h2 style={{ fontSize: "clamp(28px, 5vw, 38px)", fontWeight: 800, marginBottom: 10, color: "var(--text-main)", letterSpacing: "-0.02em" }}>Government Schemes & Benefits</h2>
+                <p style={{ fontSize: 15, color: "var(--ct65)", maxWidth: 600, margin: "0 auto", lineHeight: 1.6 }}>Gram Sabha Pahrajpur ke sabhi nagriko ke liye kendra aur rajya sarkar ki kalyankari yojnayein aur unki poori jankari.</p>
               </div>
 
-              {/* Admin Add Scheme Box */}
               {isAdmin && (
-                <div className="glass" style={{ borderRadius: 22, padding: "24px", marginBottom: 28, margin: "0 16px 28px 16px", border: "1px solid rgba(34,197,94,0.35)", background: "var(--cbg8)" }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, color: "#22c55e", display: "flex", alignItems: "center", gap: 8 }}>
-                    <span>➕</span> Publish New Government Scheme
+                <div className="glass" style={{ borderRadius: 24, padding: "28px", marginBottom: 32, margin: "0 16px 32px 16px", border: "1px solid rgba(34,197,94,0.4)", background: "linear-gradient(145deg, var(--cbg8), rgba(34,197,94,0.04))", boxShadow: "0 12px 32px rgba(0,0,0,0.1)" }}>
+                  <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 18, color: "#22c55e", display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 20 }}>✨</span> Publish New Government Scheme (Admin)
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                     <input 
                       id="newSchemeTitle" 
-                      placeholder="Scheme Name (e.g. PM Kisan Samman Nidhi)..." 
-                      style={{ padding: "12px 16px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.18)", background: "var(--input-bg)", color: "var(--input-color)", fontSize: 14, outline: "none" }} 
+                      placeholder="Scheme Name (e.g. PM Awas Yojana, Kisan Samman Nidhi)..." 
+                      style={{ padding: "14px 18px", borderRadius: 14, border: "1px solid rgba(34,197,94,0.3)", background: "var(--input-bg)", color: "var(--input-color)", fontSize: 14, outline: "none", fontWeight: 500 }} 
                     />
                     <textarea 
                       id="newSchemeBody" 
-                      placeholder="Enter scheme guidelines, eligibility criteria, required documents, and benefits..." 
+                      placeholder="Enter eligibility criteria, required documents, benefits, and application steps..." 
                       rows={4}
-                      style={{ padding: "12px 16px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.18)", background: "var(--input-bg)", color: "var(--input-color)", fontSize: 14, outline: "none", resize: "vertical" }} 
+                      style={{ padding: "14px 18px", borderRadius: 14, border: "1px solid rgba(34,197,94,0.3)", background: "var(--input-bg)", color: "var(--input-color)", fontSize: 14, outline: "none", resize: "vertical", lineHeight: 1.6 }} 
                     />
                     <button 
                       className="btn-white" 
@@ -4503,7 +4502,7 @@ useEffect(() => {
                         bodyEl.value = "";
                         alert("✅ Scheme published successfully!");
                       }}
-                      style={{ padding: "12px 24px", borderRadius: 12, background: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)", color: "#fff", border: "none", fontWeight: 700, cursor: "pointer", fontSize: 14, alignSelf: "flex-start", boxShadow: "0 4px 16px rgba(34,197,94,0.3)" }}
+                      style={{ padding: "14px 28px", borderRadius: 14, background: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)", color: "#fff", border: "none", fontWeight: 700, cursor: "pointer", fontSize: 14, alignSelf: "flex-start", boxShadow: "0 6px 20px rgba(34,197,94,0.35)" }}
                     >
                       Publish Scheme 🚀
                     </button>
@@ -4512,23 +4511,23 @@ useEffect(() => {
               )}
               
               {(typeof notices !== "undefined" && notices ? notices : []).filter(n => n.type === "scheme").length === 0 ? (
-                <div className="glass" style={{ borderRadius: 24, padding: "56px 32px", textAlign: "center", margin: "0 16px" }}>
-                  <div style={{ marginBottom: 16, color: "#22c55e", opacity: 0.8 }}><Sparkles size={48} strokeWidth={1.5} /></div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-main)", marginBottom: 6 }}>No Schemes Active</div>
-                  <div style={{ color: "var(--ct4)", fontSize: 13 }}>Abhi tak koi sarkari yojna list nahi ki gayi hai.</div>
+                <div className="glass" style={{ borderRadius: 28, padding: "64px 32px", textAlign: "center", margin: "0 16px", border: "1px dashed rgba(34,197,94,0.3)" }}>
+                  <div style={{ marginBottom: 18, color: "#22c55e", opacity: 0.85 }}><Landmark size={56} strokeWidth={1.5} /></div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-main)", marginBottom: 8 }}>No Active Schemes Yet</div>
+                  <div style={{ color: "var(--ct45)", fontSize: 14, maxWidth: 400, margin: "0 auto" }}>Abhi tak koi sarkari yojna list nahi ki gayi hai.</div>
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "0 16px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, padding: "0 16px" }}>
                   {(typeof notices !== "undefined" && notices ? notices : []).filter(n => n.type === "scheme").sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(n => (
-                    <div key={n.id} className="glass" style={{ borderRadius: 20, padding: "22px 24px", borderLeft: "4px solid #22c55e", boxShadow: "0 8px 24px rgba(0,0,0,0.06)" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-main)", letterSpacing: "-0.01em" }}>{n.title}</div>
-                        <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 20, background: "rgba(34,197,94,0.15)", color: "#22c55e", whiteSpace: "nowrap" }}>🏛 Active Yojna</span>
+                    <div key={n.id} className="glass" style={{ borderRadius: 24, padding: "26px 28px", borderLeft: "5px solid #22c55e", boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 12, flexWrap: "wrap" }}>
+                        <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-main)", letterSpacing: "-0.01em", lineHeight: 1.3 }}>{n.title}</div>
+                        <span style={{ fontSize: 12, fontWeight: 700, padding: "6px 14px", borderRadius: 30, background: "rgba(34,197,94,0.18)", color: "#22c55e", whiteSpace: "nowrap", border: "1px solid rgba(34,197,94,0.3)" }}>🏛 Verified Scheme</span>
                       </div>
-                      <div style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
-                        <CalendarDays size={13} /> Published on {n.date}
+                      <div style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 16, display: "flex", alignItems: "center", gap: 6, fontWeight: 500 }}>
+                        <CalendarDays size={14} /> Published on {n.date}
                       </div>
-                      <p style={{ fontSize: 14, color: "var(--ct65)", lineHeight: 1.75, whiteSpace: "pre-wrap", background: "var(--cbg4)", padding: "14px 16px", borderRadius: 14, border: "1px solid var(--cbg8)" }}>{n.body}</p>
+                      <p style={{ fontSize: 14.5, color: "var(--ct65)", lineHeight: 1.8, whiteSpace: "pre-wrap", background: "var(--cbg5)", padding: "18px 20px", borderRadius: 16, border: "1px solid var(--cbg12)" }}>{n.body}</p>
                     </div>
                   ))}
                 </div>
@@ -4537,9 +4536,7 @@ useEffect(() => {
           </div>
         )}
 
-
-        {/* ── GALLERY ──────────────────────────────────────────────────────── */}
-        {page === "gallery" && (
+{page === "gallery" && (
           <div style={{ paddingTop: 32, maxWidth: 960, margin: "0 auto" }}>
             <FadeIn>
               <GalleryPage media={media} isAdmin={isAdmin} onDelete={deleteMedia} />
