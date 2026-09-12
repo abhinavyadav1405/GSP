@@ -10,7 +10,7 @@ import {
   Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat,
   Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown,
   ShieldAlert, Upload, CircleUserRound
-, Heart, MessageCircle, Send } from "lucide-react";
+, Heart, MessageCircle, Send, Landmark } from "lucide-react";
 import { Leaf } from "lucide-react";
 
 import {
@@ -3728,7 +3728,7 @@ function FilterBar(props: any) { return <div className="glass" style={{ borderRa
 export default function App() {
   const [showSplash, setShowSplash] = useState(false);
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search">("dashboard");
+  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes">("dashboard");
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
   const [publicProfileUser, setPublicProfileUser] = useState<PublicProfileData | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
@@ -4029,6 +4029,7 @@ useEffect(() => {
   };
 
   const navLinks = [
+    { id: "schemes" as const, label: "Schemes", icon: "🏛" },
     { id: "home" as const, label: "Home", icon: "⌂" },
     { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
     { id: "notices" as const, label: "Notices", icon: "📢" },
@@ -4444,6 +4445,39 @@ useEffect(() => {
           </div>
         )}
 
+        
+        {/* ── SCHEMES ──────────────────────────────────────────────────────── */}
+        {page === "schemes" && (
+          <div style={{ paddingTop: 32, maxWidth: 800, margin: "0 auto", paddingBottom: 60 }}>
+            <FadeIn>
+              <div style={{ marginBottom: 24, padding: "0 16px" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 600 }}>
+                  🏛 Sarkari Yojna & Schemes
+                </div>
+                <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Village Schemes</h2>
+                <p style={{ fontSize: 13, color: "var(--ct4)" }}>Gaon ke vikas ke liye aayi hui sabhi nayi sarkari yojnayein aur schemes ki jankari.</p>
+              </div>
+              
+              {notices.filter(n => n.type === "scheme").length === 0 ? (
+                <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", margin: "0 16px" }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>🏛</div>
+                  <div style={{ color: "var(--ct4)", fontSize: 13 }}>Abhi tak koi nayi scheme post nahi hui hai.</div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: "0 16px" }}>
+                  {notices.filter(n => n.type === "scheme").sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(n => (
+                    <div key={n.id} className="glass" style={{ borderRadius: 16, padding: "18px", borderLeft: "4px solid #22c55e" }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6, color: "var(--text-main)" }}>{n.title}</div>
+                      <div style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 12 }}>📅 {n.date}</div>
+                      <p style={{ fontSize: 13, color: "var(--ct65)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{n.body}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </FadeIn>
+          </div>
+        )}
+
         {/* ── GALLERY ──────────────────────────────────────────────────────── */}
         {page === "gallery" && (
           <div style={{ paddingTop: 32, maxWidth: 960, margin: "0 auto" }}>
@@ -4524,6 +4558,10 @@ useEffect(() => {
         <button className={`mobile-nav-item ${page === "search" ? "active" : ""}`} onClick={() => setPage("search")}>
           <Search size={26} strokeWidth={page === "search" ? 2.5 : 2} />
           <span className="mobile-nav-label">Search</span>
+        </button>
+        <button className={`mobile-nav-item ${page === "schemes" ? "active" : ""}`} onClick={() => setPage("schemes")}>
+          <Landmark size={26} strokeWidth={page === "schemes" ? 2.5 : 2} />
+          <span className="mobile-nav-label">Schemes</span>
         </button>
         <button className={`mobile-nav-item mobile-profile-item ${page === "profile" ? "active" : ""}`} onClick={() => currentUser ? setPage("profile") : setPage("login")}>
           <div className="mobile-profile-avatar">
