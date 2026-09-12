@@ -10,7 +10,7 @@ import {
   Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat,
   Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown,
   ShieldAlert, Upload, CircleUserRound
-} from "lucide-react";
+, Heart, MessageCircle, Send } from "lucide-react";
 import { Leaf } from "lucide-react";
 
 import {
@@ -1370,9 +1370,9 @@ function CommunityPostCard({
         </div>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, borderTop: "1px solid var(--cbg7)", paddingTop: 10 }}>
-        <button className="btn-ghost" onClick={() => doAuth(() => toggleArray("likes"))} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>{liked ? "❤️" : "🤍"} <span style={{ fontSize: 12 }}>{likes.length}</span></button>
-        <button className="btn-ghost" onClick={() => setShowComments(v => !v)} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>💬 <span style={{ fontSize: 12 }}>{comments.length}</span></button>
-        <button className="btn-ghost" onClick={share} disabled={sharing} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>{sharing ? "⏳" : "↗️"}</button>
+        <button className="btn-ghost" onClick={() => doAuth(() => toggleArray("likes"))} style={{ border: "none", borderRadius: 10, padding: "6px 8px", display: "flex", alignItems: "center", gap: 6, color: "var(--text-main)", background: "transparent" }}><Heart size={22} fill={liked ? "#ef4444" : "none"} color={liked ? "#ef4444" : "currentColor"} style={{ transition: "transform 0.2s", transform: liked ? "scale(1.15)" : "scale(1)" }} /> <span style={{ fontSize: 13, fontWeight: 600 }}>{likes.length > 0 ? likes.length : ""}</span></button>
+        <button className="btn-ghost" onClick={() => setShowComments(v => !v)} style={{ border: "none", borderRadius: 10, padding: "6px 8px", display: "flex", alignItems: "center", gap: 6, color: "var(--text-main)", background: "transparent" }}><MessageCircle size={22} color="currentColor" /> <span style={{ fontSize: 13, fontWeight: 600 }}>{comments.length > 0 ? comments.length : ""}</span></button>
+        <button className="btn-ghost" onClick={share} disabled={sharing} style={{ border: "none", borderRadius: 10, padding: "6px 8px", display: "flex", alignItems: "center", gap: 6, color: "var(--text-main)", background: "transparent" }}>{sharing ? <Clock3 size={22} /> : <Send size={22} color="currentColor" />}</button>
         <button onClick={() => doAuth(() => toggleArray("supporters"))} style={{ marginLeft: "auto", borderRadius: 999, padding: "8px 14px", border: `1px solid ${supported ? "rgba(74,222,128,.5)" : "var(--btn-ghost-border)"}`, background: supported ? "rgba(74,222,128,.12)" : "var(--btn-ghost-bg)", color: supported ? "#4ade80" : "var(--btn-ghost-color)", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>{supported ? "✓ Supporting" : "+ Support"} · {supporters.length}</button>
       </div>
       {showComments && <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--cbg7)" }}>
