@@ -2481,7 +2481,23 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
                           <input placeholder="Email" value={adminDetails[key]?.email || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], email: e.target.value}})} />
                           <input placeholder="WhatsApp" value={adminDetails[key]?.whatsapp || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], whatsapp: e.target.value}})} />
                           <input placeholder="Instagram" value={adminDetails[key]?.instagram || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], instagram: e.target.value}})} />
-                          <input placeholder="Photo URL" value={adminDetails[key]?.photo || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], photo: e.target.value}})} />
+                          <label style={{ padding: "8px 12px", borderRadius: 8, background: "var(--cbg5)", border: "1px solid rgba(255,255,255,0.15)", color: "inherit", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 13, gap: 8 }}>
+  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: adminDetails[key]?.photo ? "#4ade80" : "inherit", fontWeight: adminDetails[key]?.photo ? 600 : 400 }}>
+    {adminDetails[key]?.photo ? "✅ Photo Selected" : "📷 Upload Photo"}
+  </span>
+  {adminDetails[key]?.photo && (
+    <img src={adminDetails[key].photo} alt="preview" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} />
+  )}
+  <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const b64 = await compressImage(file, 200, 0.5);
+        setAdminDetails(prev => ({...prev, [key]: {...prev[key], photo: b64}}));
+      } catch(err) { console.error(err); }
+    }
+  }} />
+</label>
                         </div>
                       </div>
                     );
@@ -2511,7 +2527,23 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
                           <input placeholder="Email" value={adminDetails[key]?.email || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], email: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
                           <input placeholder="WhatsApp" value={adminDetails[key]?.whatsapp || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], whatsapp: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
                           <input placeholder="Instagram" value={adminDetails[key]?.instagram || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], instagram: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
-                          <input placeholder="Photo URL" value={adminDetails[key]?.photo || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], photo: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
+                          <label style={{ padding: "8px 12px", borderRadius: 8, background: "var(--cbg5)", border: "1px solid rgba(255,255,255,0.15)", color: "inherit", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 13, gap: 8 }}>
+  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: adminDetails[key]?.photo ? "#4ade80" : "inherit", fontWeight: adminDetails[key]?.photo ? 600 : 400 }}>
+    {adminDetails[key]?.photo ? "✅ Photo Selected" : "📷 Upload Photo"}
+  </span>
+  {adminDetails[key]?.photo && (
+    <img src={adminDetails[key].photo} alt="preview" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} />
+  )}
+  <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const b64 = await compressImage(file, 200, 0.5);
+        setAdminDetails(prev => ({...prev, [key]: {...prev[key], photo: b64}}));
+      } catch(err) { console.error(err); }
+    }
+  }} />
+</label>
                         </div>
                       </div>
                     );
