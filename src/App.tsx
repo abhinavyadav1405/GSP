@@ -1274,13 +1274,61 @@ function CommunityPostCard({
     await onUpdate(problem.id, { comments: arrayUnion(c) });
     setComment(""); setShowComments(true);
   };
+  const cardRef = useRef<HTMLElement>(null);
+  const [sharing, setSharing] = useState(false);
+  
   const share = async () => {
-    const text = `${problem.title}\n${problem.caption || problem.description}\n#${problem.id}`;
-    try { await navigator.clipboard?.writeText(text); } catch {}
-    if (navigator.share) { try { await navigator.share({ title: problem.title, text }); } catch {} }
-    else { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank"); }
+    if (!cardRef.current) return;
+    setSharing(true);
+    try {
+      // Load html2canvas dynamically
+      if (!(window as any).html2canvas) {
+        await new Promise((res, rej) => {
+          const script = document.createElement("script");
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
+          script.onload = res;
+          script.onerror = rej;
+          document.head.appendChild(script);
+        });
+      }
+      
+      // Generate exact screenshot of the post card
+      const canvas = await (window as any).html2canvas(cardRef.current, { 
+        backgroundColor: "#0f0c1e", // Deep dark background
+        scale: 2, // High resolution
+        useCORS: true, // Allow external profile photos
+        logging: false
+      });
+      
+      canvas.toBlob(async (blob: Blob | null) => {
+        if (!blob) return;
+        const file = new File([blob], `post-${problem.id}.png`, { type: "image/png" });
+        const text = `${problem.title}\nBy ${problem.name}\nGram Sabha Pahrajpur`;
+        
+        // Mobile Native Share (WhatsApp/Instagram)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ title: problem.title, text: text, files: [file] });
+          } catch (err) { console.log(err); }
+        } else {
+          // Desktop Fallback: Download image
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `post-${problem.id}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          alert("✅ Post saved as Image! You can now send it on WhatsApp.");
+        }
+      }, "image/png");
+    } catch (e) {
+      console.error(e);
+      alert("Sharing failed. Please try again.");
+    } finally {
+      setSharing(false);
+    }
   };
-  return <article className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
+  return <article ref={cardRef} className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
     <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
       <div
         title={problem.authorAvatar ? "Profile Photo" : "Profile"}
@@ -1322,7 +1370,7 @@ function CommunityPostCard({
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, borderTop: "1px solid var(--cbg7)", paddingTop: 10 }}>
         <button className="btn-ghost" onClick={() => doAuth(() => toggleArray("likes"))} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>{liked ? "❤️" : "🤍"} <span style={{ fontSize: 12 }}>{likes.length}</span></button>
         <button className="btn-ghost" onClick={() => setShowComments(v => !v)} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>💬 <span style={{ fontSize: 12 }}>{comments.length}</span></button>
-        <button className="btn-ghost" onClick={share} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>↗️</button>
+        <button className="btn-ghost" onClick={share} disabled={sharing} style={{ border: "none", borderRadius: 10, padding: "7px 9px", fontSize: 18 }}>{sharing ? "⏳" : "↗️"}</button>
         <button onClick={() => doAuth(() => toggleArray("supporters"))} style={{ marginLeft: "auto", borderRadius: 999, padding: "8px 14px", border: `1px solid ${supported ? "rgba(74,222,128,.5)" : "var(--btn-ghost-border)"}`, background: supported ? "rgba(74,222,128,.12)" : "var(--btn-ghost-bg)", color: supported ? "#4ade80" : "var(--btn-ghost-color)", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>{supported ? "✓ Supporting" : "+ Support"} · {supporters.length}</button>
       </div>
       {showComments && <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--cbg7)" }}>
