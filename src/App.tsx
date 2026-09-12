@@ -478,6 +478,19 @@ function Toast({ msg, onClose }: { msg: string; onClose: () => void }) {
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="glass" style={{ borderRadius: 16, padding: "20px 24px", flex: 1, minWidth: 120 }}>
+        <style dangerouslySetInnerHTML={{__html: `
+      input, textarea, select {
+        color: var(--text-main) !important;
+        -webkit-text-fill-color: var(--text-main) !important;
+        background-color: var(--cbg5) !important;
+        border: 1px solid rgba(127,127,127,0.3) !important;
+      }
+      input::placeholder, textarea::placeholder {
+        color: var(--text-main) !important;
+        -webkit-text-fill-color: var(--text-main) !important;
+        opacity: 0.5 !important;
+      }
+    `}} />
                 <div style={{ fontSize: 28, fontWeight: 800, color }}>{value}</div>
                 <div style={{ fontSize: 13, color: "var(--ct5)", marginTop: 4 }}>{label}</div>
     </div>
