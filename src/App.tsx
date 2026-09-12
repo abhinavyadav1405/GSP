@@ -4098,7 +4098,7 @@ useEffect(() => {
         />
       )}
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 16px 60px" }}>
+      <div style={{ maxWidth: 1440, width: "100%", margin: "0 auto", padding: "0 24px 60px" }}>
 
         {/* ── HOME ─────────────────────────────────────────────────────────── */}
         {page === "dashboard" && (
