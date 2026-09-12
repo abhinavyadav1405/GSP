@@ -1480,259 +1480,152 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
 
   const downloadIdCard = () => {
     const canvas = document.createElement("canvas");
-    canvas.width = 1400;
-    canvas.height = 820;
-
+    canvas.width = 1100;
+    canvas.height = 640;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const role = String(
-      (user as any).role ||
-      (user as any).adminRole ||
-      (user as any).post ||
-      ""
-    ).toLowerCase();
+    const role = String((user as any).role || (user as any).adminRole || (user as any).post || "").toLowerCase();
+    const isAdmin = role.includes("super") || role.includes("admin") || role === "administrator";
+    const roleLabel = role.includes("super") ? "Super Admin" : role.includes("complaint") ? "Complaint Admin" : role.includes("user-admin") ? "User Admin" : isAdmin ? "Administrator" : String((user as any).post || "Community Member");
+    const statusLabel = String((user as any).status || "Active").toUpperCase();
+    const memberSince = user.createdAt ? fmtDate(user.createdAt) : "Registered Member";
 
-    const isAdmin =
-      role.includes("super-admin") ||
-      role.includes("super admin") ||
-      role.includes("user-admin") ||
-      role.includes("user admin") ||
-      role.includes("complaint-admin") ||
-      role.includes("complaint admin") ||
-      role === "admin" ||
-      role === "administrator";
-
-    const roleLabel =
-      role.includes("super")
-        ? "Super Admin"
-        : role.includes("complaint")
-        ? "Complaint Admin"
-        : role.includes("user-admin") || role.includes("user admin")
-        ? "User Admin"
-        : isAdmin
-        ? "Administrator"
-        : String((user as any).post || "Community Member");
-
-    const statusLabel = String((user as any).status || "Active");
-
-    const memberSince = user.createdAt
-      ? fmtDate(user.createdAt)
-      : "Registered Member";
-
-    const bg = isAdmin ? "#17120a" : "#0c0a1b";
-    const accent = isAdmin ? "#d6a84f" : "#7c5cff";
-    const accent2 = isAdmin ? "#f4d27a" : "#38d9f5";
-    const text = "#ffffff";
-    const muted = isAdmin ? "#c9b98e" : "#b8b4d7";
-
-    // Background
-    ctx.fillStyle = bg;
+    // 1. Premium Blue Gradient Background
+    const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    if (isAdmin) {
+      grad.addColorStop(0, "#1e3a8a"); // Darker blue for admin
+      grad.addColorStop(1, "#0f172a");
+    } else {
+      grad.addColorStop(0, "#2563eb"); // Bright modern blue
+      grad.addColorStop(1, "#1d4ed8");
+    }
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Premium borders
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 8;
-    ctx.strokeRect(18, 18, canvas.width - 36, canvas.height - 36);
+    // 2. Subtle Glow Accent (Top Right)
+    const glow = ctx.createRadialGradient(canvas.width, 0, 0, canvas.width, 0, 600);
+    glow.addColorStop(0, "rgba(255,255,255,0.15)");
+    glow.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = accent2;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(32, 32, canvas.width - 64, canvas.height - 64);
+    // 3. Header Text
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 20px 'Plus Jakarta Sans', Arial, sans-serif";
+    ctx.fillText((isAdmin ? "ADMIN ID" : "COMMUNITY ID").toUpperCase(), 60, 70);
 
-    // Header
-    ctx.fillStyle = accent;
-    ctx.font = "bold 48px Arial";
-    ctx.fillText("GRAM SABHA PAHRAJPUR", 80, 100);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.font = "bold 18px 'Plus Jakarta Sans', Arial, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText("GRAM SABHA PAHRAJPUR", canvas.width - 60, 70);
+    ctx.textAlign = "left";
 
-    ctx.fillStyle = muted;
-    ctx.font = "24px Arial";
-    ctx.fillText(
-      isAdmin
-        ? "AUTHORIZED ADMINISTRATOR ID CARD"
-        : "COMMUNITY USER ID CARD",
-      82,
-      142
-    );
-
-    // Admin badge
-    if (isAdmin) {
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.roundRect(1030, 70, 260, 58, 29);
-      ctx.fill();
-
-      ctx.fillStyle = "#17120a";
-      ctx.font = "bold 24px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText("ADMINISTRATOR", 1160, 108);
-      ctx.textAlign = "left";
-    }
-
-    // Photo
-    const photoX = 80;
-    const photoY = 205;
-    const photoSize = 270;
-
-    ctx.fillStyle = accent;
-    ctx.beginPath();
-    ctx.roundRect(photoX, photoY, photoSize, photoSize, 32);
-    ctx.fill();
-
-    const drawInitial = () => {
-      ctx.fillStyle = accent;
-      ctx.beginPath();
-      ctx.roundRect(
-        photoX + 8,
-        photoY + 8,
-        photoSize - 16,
-        photoSize - 16,
-        26
-      );
-      ctx.fill();
-
+    const drawContent = () => {
+      // 4. Main Name & Role Subtitle
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 110px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(
-        String(user.name || "U").slice(0, 1).toUpperCase(),
-        photoX + photoSize / 2,
-        photoY + photoSize / 2
-      );
+      ctx.font = "bold 54px 'Plus Jakarta Sans', Arial, sans-serif";
+      ctx.fillText(String(user.name || "Community Member"), 350, 190);
 
-      ctx.textAlign = "left";
-      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = isAdmin ? "#fcd34d" : "#93c5fd"; // Gold for admin, cyan for user
+      ctx.font = "24px 'Plus Jakarta Sans', Arial, sans-serif";
+      ctx.fillText(roleLabel, 350, 235);
 
-      drawDetails();
-    };
-
-    const drawDetails = () => {
-      const x = 420;
-
-      ctx.fillStyle = text;
-      ctx.font = "bold 42px Arial";
-      ctx.fillText(
-        String(user.name || "Community Member"),
-        x,
-        235
-      );
-
-      ctx.fillStyle = accent2;
-      ctx.font = "bold 24px Arial";
-      ctx.fillText(roleLabel, x, 278);
-
+      // 5. Detailed Info Grid (Purane card jaisi details)
       const details = [
         ["User ID", String(user.id || "-")],
         ["Ward", String(user.ward || "Not specified")],
-        ["Member Since", memberSince],
-        ["Status", statusLabel],
-        ["Post / Role", roleLabel]
+        ["Mobile No.", String(user.mobile || "-")],
+        ["Member Since", memberSince]
       ];
 
-      let y = 340;
+      let startY = 320;
+      details.forEach(([label, val]) => {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+        ctx.font = "20px 'Plus Jakarta Sans', Arial, sans-serif";
+        ctx.fillText(label, 350, startY);
 
-      details.forEach(([label, value]) => {
-        ctx.fillStyle = muted;
-        ctx.font = "bold 21px Arial";
-        ctx.fillText(label, x, y);
-
-        ctx.fillStyle = text;
-        ctx.font = "24px Arial";
-        ctx.fillText(value, x + 190, y);
-
-        y += 58;
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 22px 'Plus Jakarta Sans', Arial, sans-serif";
+        ctx.fillText(val, 550, startY);
+        startY += 48;
       });
 
-      // Status
-      const active =
-        statusLabel.toLowerCase() === "active" ||
-        statusLabel.toLowerCase() === "approved";
-
-      ctx.fillStyle = active ? "#34d399" : "#f59e0b";
+      // 6. Bottom Separator Line
       ctx.beginPath();
-      ctx.roundRect(1070, 650, 210, 52, 26);
-      ctx.fill();
+      ctx.moveTo(60, 530);
+      ctx.lineTo(canvas.width - 60, 530);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
 
-      ctx.fillStyle = "#08110d";
-      ctx.font = "bold 22px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(
-        active
-          ? "STATUS: ACTIVE"
-          : `STATUS: ${statusLabel.toUpperCase()}`,
-        1175,
-        683
-      );
+      // 7. Footer Status
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "18px 'Plus Jakarta Sans', Arial, sans-serif";
+      ctx.fillText("STATUS:", 60, 580);
+
+      const isActive = statusLabel === "ACTIVE" || statusLabel === "APPROVED";
+      ctx.fillStyle = isActive ? "#4ade80" : "#f87171";
+      ctx.font = "bold 18px 'Plus Jakarta Sans', Arial, sans-serif";
+      ctx.fillText(statusLabel, 145, 580);
+
+      // 8. Footer Download Text
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.textAlign = "right";
+      ctx.fillText("DIGITAL IDENTITY CARD", canvas.width - 60, 580);
       ctx.textAlign = "left";
 
-      // Footer
-      ctx.fillStyle = accent;
-      ctx.font = "bold 22px Arial";
-      ctx.fillText(
-        isAdmin
-          ? "Authorized administrator of Gram Sabha Pahrajpur."
-          : "This card identifies the registered community user.",
-        80,
-        755
-      );
-
-      ctx.fillStyle = muted;
-      ctx.font = "16px Arial";
-      ctx.fillText(
-        "Gram Sabha Pahrajpur • Community Identity Card",
-        80,
-        785
-      );
-
-      // Download
+      // Final Download Trigger
       const link = document.createElement("a");
-
-      const safeName = String(user.name || "community-user")
-        .replace(/[^a-z0-9]+/gi, "-")
-        .replace(/^-+|-+$/g, "")
-        .toLowerCase();
-
-      link.download =
-        `${safeName || "community-user"}-id-card.png`;
-
+      const safeName = String(user.name || "user").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+      link.download = `${safeName}-id-card.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     };
 
+    // 9. Photo Logic with Rounded Borders
+    const photoX = 60, photoY = 130, pSize = 240, radius = 24;
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.beginPath();
+    ctx.roundRect(photoX, photoY, pSize, pSize, radius);
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+    ctx.stroke();
+
     if (user.avatar) {
       const img = new Image();
-
+      img.crossOrigin = "anonymous";
       img.onload = () => {
         ctx.save();
-
         ctx.beginPath();
-        ctx.roundRect(
-          photoX + 8,
-          photoY + 8,
-          photoSize - 16,
-          photoSize - 16,
-          26
-        );
-
+        ctx.roundRect(photoX, photoY, pSize, pSize, radius);
         ctx.clip();
-
-        ctx.drawImage(
-          img,
-          photoX + 8,
-          photoY + 8,
-          photoSize - 16,
-          photoSize - 16
-        );
-
+        ctx.drawImage(img, photoX, photoY, pSize, pSize);
         ctx.restore();
-
-        drawDetails();
+        drawContent();
       };
-
-      img.onerror = drawInitial;
+      img.onerror = () => {
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 90px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(user.name || "U").slice(0, 1).toUpperCase(), photoX + pSize / 2, photoY + pSize / 2);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+        drawContent();
+      };
       img.src = user.avatar;
     } else {
-      drawInitial();
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 90px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(String(user.name || "U").slice(0, 1).toUpperCase(), photoX + pSize / 2, photoY + pSize / 2);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      drawContent();
     }
   };
 
