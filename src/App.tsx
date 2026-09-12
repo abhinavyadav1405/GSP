@@ -1281,11 +1281,7 @@ function CommunityPostCard({
     if (!cardRef.current) return;
     setSharing(true);
     
-    const currentTheme = document.body.getAttribute('data-theme');
     const el = cardRef.current;
-    const origBg = el.style.background;
-    const origBorder = el.style.border;
-    const origColor = el.style.color;
 
     try {
       if (!(window as any).htmlToImage) {
@@ -1298,18 +1294,15 @@ function CommunityPostCard({
         });
       }
 
-      // Force Dark Mode colors for screenshot
-      document.body.setAttribute('data-theme', 'dark');
-      el.style.background = "#0a0814"; 
-      el.style.border = "1px solid rgba(124,92,252,0.4)";
-      el.style.color = "#f0eeff"; // Ensure text is bright white
-
       await new Promise(r => setTimeout(r, 150));
+      
+      // Screen ka current background color nikal kar image me daalna taaki glass effect perfect aaye
+      const bgColor = window.getComputedStyle(document.body).backgroundColor;
 
       const dataUrl = await (window as any).htmlToImage.toPng(el, {
         quality: 1.0,
-        pixelRatio: 3, // Ultra HD
-        backgroundColor: "#0a0814",
+        pixelRatio: 3, // Ultra HD quality
+        backgroundColor: bgColor, 
         style: { transform: 'scale(1)', margin: '0' }
       });
 
@@ -1333,11 +1326,6 @@ function CommunityPostCard({
       console.error(e);
       alert("Sharing failed. Please try again.");
     } finally {
-      el.style.background = origBg;
-      el.style.border = origBorder;
-      el.style.color = origColor;
-      if (currentTheme) document.body.setAttribute('data-theme', currentTheme);
-      else document.body.removeAttribute('data-theme');
       setSharing(false);
     }
   };
