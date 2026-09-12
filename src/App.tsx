@@ -4452,7 +4452,7 @@ useEffect(() => {
             <FadeIn>
               <div style={{ marginBottom: 24, padding: "0 16px" }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 600 }}>
-                  🏛 Sarkari Yojna & Schemes
+                  Sarkari Yojna & Schemes
                 </div>
                 <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Village Schemes</h2>
                 <p style={{ fontSize: 13, color: "var(--ct4)" }}>Gaon ke vikas ke liye aayi hui sabhi nayi sarkari yojnayein aur schemes ki jankari.</p>
@@ -4460,7 +4460,7 @@ useEffect(() => {
               
               {notices.filter(n => n.type === "scheme").length === 0 ? (
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", margin: "0 16px" }}>
-                  <div style={{ fontSize: 40, marginBottom: 12 }}>🏛</div>
+                  <div style={{ marginBottom: 16, color: "var(--ct4)" }}><Landmark size={40} strokeWidth={1.5} /></div>
                   <div style={{ color: "var(--ct4)", fontSize: 13 }}>Abhi tak koi nayi scheme post nahi hui hai.</div>
                 </div>
               ) : (
