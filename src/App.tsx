@@ -4354,6 +4354,7 @@ useEffect(() => {
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#fbbf24", background: "rgba(251,191,36,0.12)", padding: "3px 10px", borderRadius: 20, marginBottom: 6 }}>
                     ⭐ Verified Administrator
                   </div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "var(--text-main)", marginTop: 6, marginBottom: 2 }}>{adminDetails?.[adminRole === "super" ? "super" : adminRole === "user-admin" ? "userAdmin" : "complaintAdmin"]?.name || sarpanchName || "Administrator"}</div>
                             <div style={{ color: "var(--ct4)", fontSize: 13, marginTop: 4 }}>
                     Role: <span style={{ color: "var(--text-main)", fontWeight: 600 }}>{adminRole === "super" ? "Super Admin" : adminRole === "user-admin" ? "User Admin" : "Complaint Admin"}</span>
                   </div>
