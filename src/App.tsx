@@ -4147,7 +4147,7 @@ useEffect(() => {
                 </div>
 
                 {/* RIGHT — 3D Orb */}
-                <div className="hero-orb-col" style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:16,flexShrink:0 }}>
+                <div className="hero-orb-col" style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:16,flexShrink:0, transform: "translateX(-80px)" }}>
                   <FadeIn delay={350}>
                     <div style={{ position:"relative",width:270,height:270 }}>
                       <div style={{ position:"absolute",inset:-40,borderRadius:"50%",background:"radial-gradient(ellipse,rgba(124,92,252,0.22) 0%,transparent 70%)",animation:"pulseGlow 3s ease-in-out infinite",pointerEvents:"none" }}/>
