@@ -2586,7 +2586,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Village Name (Hindi/English)</label>
           <input 
             type="text" 
-            value={villageName || ""} 
+            value={typeof villageName !== "undefined" ? villageName : ""} 
             onChange={(e) => setVillageName(e.target.value)}
             placeholder="Enter village name"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
@@ -2610,7 +2610,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Address</label>
           <input 
             type="text" 
-            value={address || ""} 
+            value={typeof address !== "undefined" ? address : ""} 
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Enter full address"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
@@ -2631,7 +2631,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>WhatsApp Number (10 digits)</label>
           <input 
             type="text" 
-            value={whatsapp || ""} 
+            value={typeof whatsapp !== "undefined" ? whatsapp : ""} 
             onChange={(e) => setWhatsapp(e.target.value)}
             placeholder="9793537265"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
@@ -2643,7 +2643,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Instagram Username (without @)</label>
           <input 
             type="text" 
-            value={instagram || ""} 
+            value={typeof instagram !== "undefined" ? instagram : ""} 
             onChange={(e) => setInstagram(e.target.value)}
             placeholder="username"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
