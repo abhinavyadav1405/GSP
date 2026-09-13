@@ -558,7 +558,6 @@ function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: 
       </div>
       <div style={{ padding: "12px 16px 16px" }}>
         <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}><Badge text={problem.category} color={CAT_COLORS[problem.category] || "#aaa"} /><Badge text={problem.priority} color={PRIORITY_META[prob
-cat << 'EOF' >> src/App.tsx
 lem.priority]?.color || "#aaa"} /></div>
       <div style={{ fontSize: 15, fontWeight: 700 }}>{problem.title}</div>
       <div style={{ color: "var(--ct65)", fontSize: 13, lineHeight: 1.6, marginTop: 5 }}>{problem.caption || problem.description}</div>
