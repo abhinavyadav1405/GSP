@@ -2575,108 +2575,94 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           {card(<>
           <SectionHead icon="🏘" title="Village & Sarpanch Info" />
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>Village Name (Hindi/English)</label>
-              <input value={village} onChange={e => setVillage(e.target.value)} placeholder={villageName || "Enter village name"} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>Sarpanch Name</label>
-              <input value={sarpanch} onChange={e => setSarpanch(e.target.value)} placeholder={sarpanchName || "Enter sarpanch name"} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>Sarpanch Address</label>
-              <input value={addr} onChange={e => setAddr(e.target.value)} placeholder={sarpanchAddress || "Enter full address"} />
-            </div>
-            <button className="btn-white" onClick={() => { onSaveInfo(village, sarpanch); onSaveSarpanchAddress(addr); showToast("✅ Village info updated."); }} style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }}>
-              Save Info →
-            </button>
+            
+      {/* Unified Sarpanch & Village Details Section */}
+      <div style={{ background: "var(--glass-bg)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--glass-border)", borderRadius: 24, padding: "24px 20px", marginBottom: 24, boxShadow: "var(--glass-shadow)" }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch & Village Details</h3>
+        <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 20 }}>Manage village info, sarpanch profile, photo, and social links in one place.</p>
+
+        {/* Village Name */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Village Name (Hindi/English)</label>
+          <input 
+            type="text" 
+            value={villageName || ""} 
+            onChange={(e) => setVillageName(e.target.value)}
+            placeholder="Enter village name"
+            style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
+          />
+        </div>
+
+        {/* Sarpanch Name */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Name</label>
+          <input 
+            type="text" 
+            value={settings?.pradhanName || settings?.name || ""} 
+            onChange={(e) => setSettings({...settings, pradhanName: e.target.value})}
+            placeholder="Enter Sarpanch Name"
+            style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
+          />
+        </div>
+
+        {/* Sarpanch Address */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Address</label>
+          <input 
+            type="text" 
+            value={address || ""} 
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="Enter full address"
+            style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
+          />
+        </div>
+
+        {/* Profile Photo */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Profile Photo (max 2 MB)</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {sarpanchPhoto && <img src={sarpanchPhoto} alt="preview" style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }} />}
+            <input type="file" accept="image/*" onChange={(e) => handleSarpanchPhoto && handleSarpanchPhoto(e)} style={{ fontSize: 13 }} />
           </div>
-        </>)}
-      </FadeIn>
+        </div>
 
-      {/* ── Sarpanch Photo + Social ── */}
-      <FadeIn delay={200}>
-        {card(<>
-          <SectionHead icon="📱" title="Sarpanch Photo & Contact Links" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 16, lineHeight: 1.6 }}>
-            These appear on the home page Sarpanch card. Photo max 2 MB.
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {/* WhatsApp Number */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>WhatsApp Number (10 digits)</label>
+          <input 
+            type="text" 
+            value={whatsapp || ""} 
+            onChange={(e) => setWhatsapp(e.target.value)}
+            placeholder="9793537265"
+            style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
+          />
+        </div>
 
-            {/* Photo upload */}
-            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <div style={{ width: 72, height: 72, borderRadius: 16, overflow: "hidden", flexShrink: 0, border: "2px solid rgba(34,197,94,0.3)", background: "linear-gradient(135deg,#16a34a,#166534)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {photoPreview
-                  ? <img src={photoPreview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  : <span style={{ fontSize: 32 }}>👩</span>}
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500, display: "block", marginBottom: 8 }}>Sarpanch Profile Photo</label>
-                <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 18px", borderRadius: 10, background: "var(--cbg7)", border: "1px solid rgba(255,255,255,0.15)", fontSize: 13, fontWeight: 600, cursor: "pointer", color: "var(--text-main)" }}>
-                  📷 Choose Photo
-                  <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: "none" }} />
-                </label>
-                {photoPreview && (
-                  <button onClick={() => { setPhotoPreview(""); onSaveSarpanchPhoto(""); showToast("🗑 Photo removed."); }}
-                    style={{ marginLeft: 10, fontSize: 12, color: "#f87171", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
-                    Remove
-                  </button>
-                )}
-              </div>
-            </div>
+        {/* Instagram Username */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Instagram Username (without @)</label>
+          <input 
+            type="text" 
+            value={instagram || ""} 
+            onChange={(e) => setInstagram(e.target.value)}
+            placeholder="username"
+            style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
+          />
+        </div>
 
-            <div style={{ height: 1, background: "var(--cbg6)" }} />
+        {/* Single Unified Save Button */}
+        <button 
+          onClick={async () => {
+            if (typeof handleSaveAllInfo === 'function') await handleSaveAllInfo();
+            else if (typeof handleSaveInfo === 'function') await handleSaveInfo();
+            alert("✅ Sarpanch & Village details saved successfully!");
+          }}
+          style={{ width: "100%", padding: "12px", borderRadius: 12, fontWeight: 600, background: "var(--accent, #6366f1)", color: "#fff", border: "none", cursor: "pointer" }}
+        >
+          Save All Details →
+        </button>
+      </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>WhatsApp Number (10 digits)</label>
-              <input value={wa} onChange={e => setWa(e.target.value)} placeholder="9876543210" maxLength={15} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>Instagram Username (without @)</label>
-              <input value={ig} onChange={e => setIg(e.target.value)} placeholder="priyanka_sarpanch" maxLength={40} />
-            </div>
-            <button className="btn-white" onClick={() => { onSaveSocial(wa, ig); showToast("✅ Contact links saved."); }} style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }}>
-              Save Contact Links →
-            </button>
-          </div>
-        </>)}
-      </FadeIn>
-
-      {/* ── Export ── */}
-      <FadeIn delay={240}>
-        {card(<>
-          <SectionHead icon="📊" title="Export Data" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 14, lineHeight: 1.6 }}>
-            Download all {problems.length} reported issues as a CSV file. Opens in Excel, Google Sheets, etc.
-          </p>
-          <button className="btn-ghost" onClick={exportCSV} style={{ borderRadius: 10, padding: "11px 0", width: "100%", fontSize: 14, fontWeight: 600 }}>
-            ⬇️ Download CSV ({problems.length} issues)
-          </button>
-        </>)}
-      </FadeIn>
-
-      {/* ── Achievements Manager ── */}
-      <FadeIn delay={300}>
-        {card(<>
-          <SectionHead icon="🏆" title="Achievements & Completed Works" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 18, lineHeight: 1.6 }}>
-            Add completed development works and achievements visible to all villagers.
-          </p>
-
-          {/* Add form */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "16px", background: "rgba(34,197,94,0.05)", borderRadius: 14, border: "1px solid rgba(34,197,94,0.15)", marginBottom: 18 }}>
-            <div style={{ fontSize: 12, color: "#22c55e", fontWeight: 600, marginBottom: 4 }}>+ Add New Achievement</div>
-            <input placeholder="Work Title *" value={achForm.title} onChange={e => setAF("title", e.target.value)} maxLength={120} />
-            <textarea rows={3} placeholder="Description — what was done, cost, benefit…" value={achForm.description} onChange={e => setAF("description", e.target.value)} maxLength={600} />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-              <select value={achForm.category} onChange={e => setAF("category", e.target.value)}>
-                {ACH_CATEGORIES.map(c => <option key={c}>{c}</option>)}
-              </select>
-              <select value={achForm.village} onChange={e => setAF("village", e.target.value)}>
-                {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
-              </select>
-              <input type="date" value={achForm.date} onChange={e => setAF("date", e.target.value)} />
-            </div>
 
             {/* Photo upload */}
             <label style={{ cursor: "pointer", border: "1px dashed rgba(34,197,94,0.3)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(34,197,94,0.03)" }}>
