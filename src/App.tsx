@@ -3740,7 +3740,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 
 
 function FilterBar(props: any) {
-
+}
 export default function App() {
   const [settings] = React.useState({ pradhanName: "" });
   const [showSplash, setShowSplash] = useState(false);
