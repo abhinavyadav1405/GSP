@@ -1,12 +1,15 @@
+import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
 import { useState, useEffect, useRef } from "react";
+import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle, CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard, Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren, Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat, Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown, ShieldAlert, Upload, CircleUserRound, Heart, MessageCircle, Send, Landmark } from "lucide-react";
+import { Leaf } from "lucide-react";
+
 import {
   db,
   collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
-
 
 const GLOBAL_STYLE = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
@@ -20,7 +23,7 @@ const GLOBAL_STYLE = `
   .ab2 { width: 50vw; height: 50vw; max-width: 580px; background: radial-gradient(circle, rgba(255,220,0,0.7) 0%, transparent 100%); top: 30%; right: -12%; animation: blob2 10s ease-in-out infinite; }
   .ab3 { width: 42vw; height: 42vw; max-width: 520px; background: radial-gradient(circle, rgba(50,205,50,0.65) 0%, transparent 100%); bottom: -10%; left: 30%; animation: blob3 12s ease-in-out infinite; }
   .ab4 { width: 32vw; height: 32vw; max-width: 400px; background: radial-gradient(circle, rgba(100,149,255,0.65) 0%, transparent 100%); top: 10%; right: 25%; animation: blob1 9s ease-in-out infinite reverse; }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; background: #f0eeff; color: #1a1040; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f0eeff; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; background: #f0eeff; color: #1a1040; }
   :root {
     --bg-page:#0a0814;--bg2:#0f0c1e;--text-main:#f0eeff;
     --ct65:rgba(240,238,255,0.65);--ct6:rgba(240,238,255,0.60);--ct5:rgba(240,238,255,0.50);
@@ -84,6 +87,29 @@ const GLOBAL_STYLE = `
   @media(max-width:768px){.hero-split{flex-direction:column!important;}.hero-orb-col{display:none!important;}.hero-ctas{justify-content:center!important;}.hero-left{text-align:center;align-items:center!important;}.feat-grid{grid-template-columns:1fr 1fr!important;}}
 @media(max-width:576px){.mobile-topbar{padding:12px 14px;}.mobile-side-panel{width:240px;}.mobile-menu-indicator{top:82px;left:10px;padding:10px 12px;font-size:13px;}}
 .mobile-shell{display:none;}
+  .mobile-bottom-nav { display: none; }
+  @media (max-width: 768px) {
+    .mobile-bottom-nav {
+      position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 68px;
+      display: flex; align-items: center; justify-content: space-around; padding: 6px 18px;
+      background: rgba(255,255,255,0.96); border-top: 1px solid rgba(0,0,0,0.08);
+      backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); z-index: 9990;
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.08); padding-bottom: calc(6px + env(safe-area-inset-bottom));
+    }
+    .icon-inline { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .mobile-nav-label { display: block; font-size: 9px; line-height: 1; margin-top: 3px; font-weight: 700; opacity: .58; letter-spacing: .01em; }
+    .mobile-nav-item.active .mobile-nav-label { opacity: 1; }
+    .mobile-nav-item { position: relative; width: 54px; height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .mobile-nav-item svg { width: 29px; height: 29px; fill: none; stroke: #111; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s ease; }
+    .mobile-nav-item.active::before { content: ''; position: absolute; top: 4px; width: 42px; height: 42px; background: rgba(124,92,252,0.12); border-radius: 50%; z-index: 0; box-shadow: 0 4px 14px rgba(124,92,252,0.3); }
+    .mobile-nav-item.active svg { fill: none; stroke: #7c5cfc; transform: scale(1.1); position: relative; z-index: 1; }
+    .mobile-nav-item.active .mobile-nav-label { color: #7c5cfc; opacity: 1; position: relative; z-index: 1; }
+    .mobile-post-button { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 0; background: #111; color: white; cursor: pointer; box-shadow: 0 5px 18px rgba(0,0,0,.22); transition: transform .18s ease; }
+    .mobile-profile-avatar { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #111; border: 2px solid #111; font-size: 12px; font-weight: 700; color: white; }
+    .mobile-profile-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mobile-profile-dot { position: absolute; right: 5px; bottom: 7px; width: 11px; height: 11px; background: #ff3040; border: 2px solid white; border-radius: 50%; }
+    body { padding-bottom: 72px; }
+  }
 `;
 
 const uuid = () => Math.random().toString(36).slice(2, 10).toUpperCase();
@@ -110,50 +136,18 @@ const CAT_COLORS: Record<string, string> = {
 };
 
 interface LatLng { lat: number; lng: number; }
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  village: string;
-  date: string;
-  photo?: string;
-}
-interface MediaItem {
-  id: string;
-  type: "photo" | "video";
-  title: string;
-  caption?: string;
-  url: string;
-  createdAt: string;
-}
-interface Notice {
-  id: string;
-  title: string;
-  body: string;
-  type: "urgent" | "meeting" | "scheme" | "event" | "general";
-  date: string;
-  createdAt: string;
-}
-interface Feedback {
-  id: string;
-  name: string;
-  message: string;
-  rating: number;
-  createdAt: string;
-}
-interface CommentItem { id: string; userId: string; userName: string; text: string; createdAt: string; }
+interface Achievement { id: string; title: string; description: string; category: string; village: string; date: string; photo?: string; }
+interface MediaItem { id: string; type: "photo" | "video"; title: string; caption?: string; url: string; createdAt: string; }
+interface Notice { id: string; title: string; body: string; type: "urgent" | "meeting" | "scheme" | "event" | "general"; date: string; createdAt: string; }
+interface Feedback { id: string; name: string; message: string; rating: number; createdAt: string; }
+interface CommentItem { id: string; userId: string; userName: string; userAvatar?: string; text: string; createdAt: string; }
 interface Problem {
   id: string; name: string; mobile: string; ward: string;
   category: string; title: string; description: string; caption?: string;
   priority: string; status: string; submittedAt: string;
-  adminNotes: string; photo?: string;
-  locationText?: string;
-  locationCoords?: LatLng;
-  authorId?: string;
-  supporters?: string[];
-  likes?: string[];
-  comments?: CommentItem[];
+  adminNotes: string; photo?: string; locationText?: string;
+  locationCoords?: LatLng; authorId?: string; authorAvatar?: string;
+  supporters?: string[]; likes?: string[]; comments?: CommentItem[];
 }
 
 const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =>
@@ -176,27 +170,22 @@ const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =
     reader.readAsDataURL(file);
   });
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function AnimatedHeading({ text }: { text: string }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVisible(true), 200); return () => clearTimeout(t); }, []);
-  const lines = text.split("\n"); let charIdx = 0;
-  return (
-    <h1 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 300, lineHeight: 1.1, letterSpacing: "-0.04em" }}>
-      {lines.map((line, li) => (
-        <div key={li} style={{ display: "block" }}>
-          {line.split("").map((ch) => {
-            const delay = 200 + charIdx++ * 28;
-            return (
-              <span key={delay} style={{ display: "inline-block", opacity: visible ? 1 : 0, transform: visible ? "translateX(0)" : "translateX(-16px)", transition: `opacity 500ms ease ${delay}ms, transform 500ms ease ${delay}ms`, whiteSpace: ch === " " ? "pre" : "normal" }}>
-                {ch === " " ? "\u00A0" : ch}
-              </span>
-            );
-          })}
-        </div>
-      ))}
-    </h1>
-  );
+function UiIcon({ name, size = 18, strokeWidth = 2, className }: { name: string; size?: number; strokeWidth?: number; className?: string; }) {
+  const props = { size, strokeWidth, className };
+  const icons: Record<string, React.ReactNode> = {
+    "📷": <Camera {...props} />, "🖼️": <ImageIcon {...props} />, "🎬": <Video {...props} />, "🗑": <Trash2 {...props} />,
+    "👤": <User {...props} />, "📢": <Megaphone {...props} />, "🏆": <Trophy {...props} />, "🔐": <LockKeyhole {...props} />,
+    "🔍": <Search {...props} />, "📞": <Phone {...props} />, "⬇️": <Download {...props} />, "⚙️": <Settings {...props} />,
+    "✏️": <Pencil {...props} />, "⚠️": <AlertTriangle {...props} />, "🚨": <Siren {...props} />, "📅": <CalendarDays {...props} />,
+    "📍": <MapPin {...props} />, "🗺": <Map {...props} />, "📋": <Clipboard {...props} />, "📌": <Pin {...props} />,
+    "📝": <FileText {...props} />, "🎤": <Mic {...props} />, "⭐": <Star {...props} />, "⏳": <Clock3 {...props} />,
+    "🔄": <RefreshCw {...props} />, "❌": <XCircle {...props} />, "✅": <CheckCircle2 {...props} />, "🏛": <Building2 {...props} />,
+    "🎉": <PartyPopper {...props} />, "💧": <Droplets {...props} />, "⚡": <Zap {...props} />, "🏥": <Hospital {...props} />,
+    "🌊": <Waves {...props} />, "🏗": <HardHat {...props} />, "🛣": <Map {...props} />, "⌂": <Home {...props} />,
+    "▦": <LayoutDashboard {...props} />, "＋": <Plus {...props} />, "➕": <Plus {...props} />, "🔎": <Search {...props} />,
+    "🛡": <ShieldAlert {...props} />, "📤": <Upload {...props} />, "◉": <CircleUserRound {...props} />
+  };
+  return icons[name] ?? null;
 }
 
 function FadeIn({ delay = 0, children, style = {} }: { delay?: number; children: React.ReactNode; style?: React.CSSProperties }) {
@@ -211,42 +200,35 @@ function Badge({ text, color, bg }: { text: string; color: string; bg?: string }
 
 function Toast({ msg, onClose }: { msg: string; onClose: () => void }) {
   useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
-  return <div className="glass" style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9999, padding: "14px 20px", borderRadius: 14, maxWidth: 320, fontSize: 14, lineHeight: 1.5, animation: "fadeUp 0.3s ease" }}>{msg}</div>;
+  return <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,0.8)", color: "#fff", padding: "10px 20px", borderRadius: 20, zIndex: 10000, fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>{msg}</div>;
 }
 
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="glass" style={{ borderRadius: 16, padding: "20px 24px", flex: 1, minWidth: 120 }}>
-      <div style={{ fontSize: 32, fontWeight: 700, color, fontFamily: "'Space Grotesk',sans-serif" }}>{value}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color }}>{value}</div>
       <div style={{ fontSize: 13, color: "var(--ct5)", marginTop: 4 }}>{label}</div>
     </div>
   );
 }
 
-// ── Section heading for settings ──────────────────────────────────────────────
 function SectionHead({ icon, title }: { icon: string; title: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-      <span style={{ fontSize: 20 }}>{icon}</span>
-      <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 17 }}>{title}</h3>
+      <span style={{ width: 22, height: 22, display: "grid", placeItems: "center" }}><UiIcon name={icon} size={19} /></span>
     </div>
   );
 }
 
-// ── Photo Upload ──────────────────────────────────────────────────────────────
 function PhotoUpload({ photo, onPhoto }: { photo: string | null; onPhoto: (b64: string | null) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
   const [compressing, setCompressing] = useState(false);
-
   const process = async (file: File) => {
     if (!file.type.startsWith("image/")) return;
     setCompressing(true);
     try { onPhoto(await compressImage(file)); } catch (_) {}
     setCompressing(false);
   };
-  const onDrop = (e: React.DragEvent) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) process(f); };
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {photo ? (
@@ -255,21 +237,15 @@ function PhotoUpload({ photo, onPhoto }: { photo: string | null; onPhoto: (b64: 
           <button onClick={() => onPhoto(null)} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.7)", border: "none", color: "#fff", borderRadius: 8, padding: "4px 10px", fontSize: 12, cursor: "pointer" }}>✕ Remove</button>
         </div>
       ) : (
-        <div onDragOver={e => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={onDrop} onClick={() => inputRef.current?.click()}
-          style={{ border: `2px dashed ${dragging ? "var(--ct4)" : "rgba(255,255,255,0.14)"}`, borderRadius: 12, padding: "28px 20px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", background: dragging ? "var(--cbg4)" : "transparent" }}>
-          {compressing ? <div style={{ fontSize: 13, color: "var(--ct4)" }}>Compressing…</div> : (
-            <><div style={{ fontSize: 28, marginBottom: 8 }}>📷</div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--ct6)" }}>Click or drag a photo here</div><div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 8 }}><button type="button" onClick={() => { const el = document.createElement("input"); el.type = "file"; el.accept = "image/*"; el.capture = "environment"; el.onchange = (e) => { const f = (e.target as HTMLInputElement).files?.[0]; if (f) process(f); }; el.click(); }} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>📷 Camera</button><button type="button" onClick={() => inputRef.current?.click()} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "var(--ct4)", color: "var(--cbg)", fontSize: 12, cursor: "pointer" }}>🖼️ Gallery</button></div>
-            <div style={{ fontSize: 11, color: "var(--ct3)", marginTop: 4 }}>JPG, PNG, WebP · auto-compressed</div></>
-          )}
+        <div onClick={() => inputRef.current?.click()} style={{ border: "2px dashed rgba(255,255,255,0.14)", borderRadius: 12, padding: "28px 20px", textAlign: "center", cursor: "pointer" }}>
+          {compressing ? <div>Compressing…</div> : <><Camera size={28} style={{ marginBottom: 8 }} /><div>Click or drag a photo here</div></>}
         </div>
       )}
-      <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) process(f); e.target.value = ""; }} />
+      <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) process(f); }} />
     </div>
   );
 }
 
-// ── Problem Card ──────────────────────────────────────────────────────────────
 function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
   problem: Problem; isAdmin: boolean;
   onUpdate: (id: string, changes: Partial<Problem>) => void;
@@ -301,7 +277,6 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
     <div className="glass" style={{ borderRadius: 18, padding: "18px 20px", transition: "transform 0.2s" }}
       onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
       onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}>
-
       <div style={{ cursor: "pointer" }} onClick={() => setExpanded(!expanded)}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
           <div>
@@ -309,7 +284,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
             <div style={{ fontWeight: 600, fontSize: 15, lineHeight: 1.3 }}>{problem.title}</div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {problem.photo && <span style={{ fontSize: 14 }} title="Has photo">📷</span>}
+            {problem.photo && <span style={{ fontSize: 14 }} title="Has photo"><Camera size={14} /></span>}
             <Badge text={sm.label} color={sm.color} bg={sm.bg} />
           </div>
         </div>
@@ -323,62 +298,28 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
           <span>{fmtDate(problem.submittedAt)}</span>
         </div>
       </div>
-
       {expanded && (
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
           <div style={{ fontSize: 13, color: "var(--ct65)", lineHeight: 1.7 }}>{problem.description}</div>
-
-          {/* Location text */}
           {problem.locationText && (
             <div style={{ marginTop: 12, display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", background: "rgba(59,130,246,0.06)", borderRadius: 10, border: "1px solid rgba(59,130,246,0.15)" }}>
-              <span style={{ fontSize: 16 }}>📍</span>
+              <span style={{ fontSize: 16 }}><MapPin size={16} /></span>
               <div>
                 <div style={{ fontSize: 11, color: "var(--ct4)", marginBottom: 2 }}>Location / Landmark</div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)" }}>{problem.locationText}</div>
               </div>
             </div>
           )}
-
-          {/* Map pin */}
-          {problem.locationCoords && (
-            <a
-              href={`https://www.openstreetmap.org/?mlat=${problem.locationCoords.lat}&mlon=${problem.locationCoords.lng}#map=17/${problem.locationCoords.lat}/${problem.locationCoords.lng}`}
-              target="_blank" rel="noreferrer"
-              onClick={e => e.stopPropagation()}
-              style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "rgba(34,197,94,0.06)", borderRadius: 10, border: "1px solid rgba(34,197,94,0.18)", textDecoration: "none" }}>
-              <span style={{ fontSize: 16 }}>🗺</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, color: "var(--ct4)", marginBottom: 2 }}>Map Location</div>
-                <div style={{ fontSize: 12, color: "#22c55e" }}>{problem.locationCoords.lat.toFixed(5)}, {problem.locationCoords.lng.toFixed(5)}</div>
-              </div>
-              <span style={{ fontSize: 11, color: "var(--ct35)" }}>Open in Maps →</span>
-            </a>
-          )}
-
           {problem.photo && (
             <div style={{ marginTop: 14, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.10)" }}>
               <img src={problem.photo} alt="Problem photo" style={{ width: "100%", maxHeight: 320, objectFit: "cover", display: "block", cursor: "zoom-in" }}
                 onClick={e => { e.stopPropagation(); window.open(problem.photo, "_blank"); }} />
-              <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}>📷 Photo attached · click to open full size</div>
+              <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}><Camera size={13} style={{ verticalAlign: "middle" }} /> Photo attached</div>
             </div>
           )}
-
-          {problem.adminNotes && (
-            <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(59,130,246,0.08)", borderRadius: 10, fontSize: 13, color: "var(--ct6)", borderLeft: "2px solid #3b82f6" }}>
-              <span style={{ color: "#3b82f6", fontWeight: 600 }}>Admin Note: </span>{problem.adminNotes}
-            </div>
-          )}
-
-          {/* WhatsApp Share */}
-          <button onClick={shareOnWhatsApp}
-            style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center", padding: "10px 0", borderRadius: 10, border: "none", background: "rgba(37,211,102,0.12)", color: "#25d366", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans',sans-serif", transition: "background 0.2s" }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(37,211,102,0.22)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(37,211,102,0.12)")}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <button onClick={shareOnWhatsApp} style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center", padding: "10px 0", borderRadius: 10, border: "none", background: "rgba(37,211,102,0.12)", color: "#25d366", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
             Share on WhatsApp
           </button>
-
-          {/* Admin Controls */}
           {isAdmin && (
             <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -389,21 +330,13 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
                   💾 Save Changes
                 </button>
               </div>
-              <textarea rows={2} placeholder="Add admin note visible to public…" value={notes} onChange={e => setNotes(e.target.value)} />
-
-              {/* Delete */}
+              <textarea rows={2} placeholder="Add admin note..." value={notes} onChange={e => setNotes(e.target.value)} />
               {!confirmDel ? (
-                <button className="btn-danger" style={{ borderRadius: 10, padding: "8px 0", fontSize: 13 }} onClick={e => { e.stopPropagation(); setConfirmDel(true); }}>
-                  🗑 Delete This Issue
-                </button>
+                <button className="btn-danger" style={{ borderRadius: 10, padding: "8px 0", fontSize: 13 }} onClick={e => { e.stopPropagation(); setConfirmDel(true); }}>🗑 Delete</button>
               ) : (
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button className="btn-danger" style={{ borderRadius: 10, padding: "8px 0", fontSize: 13, flex: 1 }} onClick={e => { e.stopPropagation(); onDelete?.(problem.id); }}>
-                    Confirm Delete
-                  </button>
-                  <button className="btn-ghost" style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13 }} onClick={e => { e.stopPropagation(); setConfirmDel(false); }}>
-                    Cancel
-                  </button>
+                  <button className="btn-danger" style={{ borderRadius: 10, padding: "8px 0", fontSize: 13, flex: 1 }} onClick={e => { e.stopPropagation(); onDelete?.(problem.id); }}>Confirm Delete</button>
+                  <button className="btn-ghost" style={{ borderRadius: 10, padding: "8px 14px", fontSize: 13 }} onClick={e => { e.stopPropagation(); setConfirmDel(false); }}>Cancel</button>
                 </div>
               )}
             </div>
@@ -414,7 +347,6 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
   );
 }
 
-// ── Location Picker (no external library) ────────────────────────────────────
 const DEFAULT_CENTER: LatLng = { lat: 26.42, lng: 82.68 };
 
 function LocationPicker({ coords, onCoords }: { coords: LatLng | null; onCoords: (c: LatLng | null) => void }) {
@@ -425,7 +357,7 @@ function LocationPicker({ coords, onCoords }: { coords: LatLng | null; onCoords:
   const [manualLng, setManualLng] = useState(coords ? String(coords.lng) : "");
 
   const useGPS = () => {
-if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
+    if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
     setGpsLoading(true); setGpsErr(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -435,7 +367,7 @@ if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
         setManualLng(String(latlng.lng));
         setGpsLoading(false);
       },
-      () => { setGpsErr("GPS failed. Enter coordinates manually."); setGpsLoading(false); }
+      () => { setGpsErr("GPS failed."); setGpsLoading(false); }
     );
   };
 
@@ -453,107 +385,47 @@ if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <button type="button" onClick={() => setOpen(!open)} className="btn-ghost"
-        style={{ borderRadius: 12, padding: "10px 0", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+      <button type="button" onClick={() => setOpen(!open)} className="btn-ghost" style={{ borderRadius: 12, padding: "10px 0", fontSize: 13, fontWeight: 600 }}>
         🗺 {coords ? `📍 Location Set (${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)})` : "Set Location (optional)"}
       </button>
-
       {open && (
         <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.15)" }}>
           <div style={{ background: "rgba(0,0,0,0.5)", padding: "10px 14px", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-            <button type="button" onClick={useGPS} className="btn-ghost" style={{ borderRadius: 8, padding: "6px 12px", fontSize: 12 }}>
-              {gpsLoading ? "Locating…" : "📡 Use My GPS"}
-            </button>
-            <span style={{ fontSize: 11, color: "var(--ct4)" }}>or enter manually:</span>
-            <input value={manualLat} onChange={e => setManualLat(e.target.value)} placeholder="Latitude" style={{ width: 100, fontSize: 12, padding: "5px 8px" }} />
-            <input value={manualLng} onChange={e => setManualLng(e.target.value)} placeholder="Longitude" style={{ width: 100, fontSize: 12, padding: "5px 8px" }} />
+            <button type="button" onClick={useGPS} className="btn-ghost" style={{ borderRadius: 8, padding: "6px 12px", fontSize: 12 }}>{gpsLoading ? "Locating…" : "📡 Use My GPS"}</button>
+            <input value={manualLat} onChange={e => setManualLat(e.target.value)} placeholder="Lat" style={{ width: 80, fontSize: 12, padding: "5px 8px" }} />
+            <input value={manualLng} onChange={e => setManualLng(e.target.value)} placeholder="Lng" style={{ width: 80, fontSize: 12, padding: "5px 8px" }} />
             <button type="button" onClick={applyManual} className="btn-ghost" style={{ borderRadius: 8, padding: "6px 12px", fontSize: 12 }}>Set</button>
-            {coords && <button type="button" onClick={() => { onCoords(null); setManualLat(""); setManualLng(""); }} style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12 }}>✕ Clear</button>}
             <button type="button" onClick={() => setOpen(false)} style={{ background: "none", border: "none", color: "var(--ct4)", cursor: "pointer", marginLeft: "auto" }}>✕</button>
           </div>
           {gpsErr && <div style={{ background: "rgba(239,68,68,0.1)", padding: "8px 14px", fontSize: 12, color: "#f87171" }}>{gpsErr}</div>}
-          <iframe src={mapSrc} title="Location Map" style={{ width: "100%", height: 260, border: "none", display: "block" }} loading="lazy" />
-          <div style={{ padding: "6px 12px", background: "rgba(0,0,0,0.4)", fontSize: 11, color: "var(--ct3)" }}>
-            Map preview · Use GPS or enter coordinates above
-          </div>
+          <iframe src={mapSrc} title="Map" style={{ width: "100%", height: 260, border: "none", display: "block" }} loading="lazy" />
         </div>
       )}
     </div>
   );
 }
 
-// ── Submit Form ───────────────────────────────────────────────────────────────
-function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "Priyanka Yadav", sarpanchPhoto = "", currentUser }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null }) {
+function SubmitForm({ onSubmit, onSubmitted, currentUser }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; currentUser?: AppUser | null }) {
   const [caption, setCaption] = useState("");
   const [form, setForm] = useState({ name: currentUser?.name || "", mobile: currentUser?.mobile || "", ward: currentUser?.ward || WARDS[0], category: CATEGORIES[0], title: "", description: "", priority: "Medium" });
-  const [photo, setPhoto]               = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
   const [locationText, setLocationText] = useState("");
   const [locationCoords, setLocationCoords] = useState<LatLng | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const recognitionRef = useRef<any>(null);
   
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
-
-  // 🎤 Voice-to-Text for description
-  const startVoiceRecording = () => {
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("🎤 Speech recognition not supported on your device");
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = "hi-IN";
-    recognitionRef.current.continuous = true;
-    recognitionRef.current.interimResults = false;
-
-    recognitionRef.current.onstart = () => setIsRecording(true);
-
-    recognitionRef.current.onresult = (event: any) => {
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          const transcript = event.results[i][0].transcript;
-          set("description", form.description + (form.description ? " " : "") + transcript);
-        }
-      }
-    };
-
-    recognitionRef.current.onend = () => setIsRecording(false);
-    recognitionRef.current.onerror = () => setIsRecording(false);
-
-    recognitionRef.current.start();
-  };
-
-  const stopVoiceRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-    }
-  };
 
   const handle = async () => {
     if (!form.name || !form.mobile || !form.title || !form.description) { alert("Please fill all required fields."); return; }
     setLoading(true);
     const problem: Problem = {
-      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: "Pending", adminNotes: "", caption: caption.trim() || undefined, authorId: currentUser?.id, supporters: [], likes: [], comments: [],
-      photo: photo || undefined,
-      locationText: locationText || undefined,
-      locationCoords: locationCoords || undefined,
+      ...form, id: uuid(), submittedAt: new Date().toISOString(), status: "Pending", adminNotes: "", caption: caption.trim() || undefined, authorId: currentUser?.id, authorAvatar: currentUser?.avatar, supporters: [], likes: [], comments: [],
+      photo: photo || undefined, locationText: locationText || undefined, locationCoords: locationCoords || undefined,
     };
     try {
       await onSubmit(problem);
-      setForm({ name: "", mobile: "", ward: WARDS[0], category: CATEGORIES[0], title: "", description: "", priority: "Medium" });
-      setCaption("");
-      setPhoto(null);
-      setLocationText("");
-      setLocationCoords(null);
       onSubmitted?.();
-    } catch (_) {
-      // submission failure is already handled by onSubmit
-    } finally {
-      setLoading(false);
-    }
+    } catch (_) {} finally { setLoading(false); }
   };
 
   const field = (label: string, children: React.ReactNode) => (
@@ -564,9 +436,8 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "Priyanka Yadav", sa
   );
 
   return (
-      <>
     <div className="glass" style={{ borderRadius: 22, padding: "28px 24px", maxWidth: 560, margin: "0 auto" }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22, marginBottom: 24 }}>Submit a Problem</h2>
+      <h2 style={{ fontSize: 22, marginBottom: 20 }}>Submit a Problem</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {field("Your Name *", <input value={form.name} onChange={e => set("name", e.target.value)} placeholder="Full name" />)}
@@ -576,75 +447,18 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "Priyanka Yadav", sa
           {field("Ward / Area", <select value={form.ward} onChange={e => set("ward", e.target.value)}>{WARDS.map(w => <option key={w}>{w}</option>)}</select>)}
           {field("Category", <select value={form.category} onChange={e => set("category", e.target.value)}>{CATEGORIES.map(c => <option key={c}>{c}</option>)}</select>)}
         </div>
-        {field("Problem Title *", <input value={form.title} onChange={e => set("title", e.target.value)} placeholder="Short, clear title (max 100 chars)" maxLength={100} />)}
-        {field("Caption (Instagram-style)", <textarea rows={2} value={caption} onChange={e => setCaption(e.target.value)} placeholder="Write a short caption for your post…" maxLength={220} />)}
-        {field("Description * (Use voice or type)", (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <textarea rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the problem in detail..." maxLength={500} style={{ flex: 1 }} />
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 2 }}>
-                <button
-                  type="button"
-                  onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 9,
-                    border: "none",
-                    background: isRecording ? "rgba(248,113,113,0.2)" : "rgba(59,130,246,0.15)",
-                    color: isRecording ? "#f87171" : "#3b82f6",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={isRecording ? "Stop recording" : "Start voice input"}
-                >
-                  {isRecording ? "⏹ Stop" : "🎤 Voice"}
-                </button>
-              </div>
-            </div>
-            {isRecording && <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600 }}>🎤 Listening...</div>}
-          </div>
-        ))}
+        {field("Problem Title *", <input value={form.title} onChange={e => set("title", e.target.value)} placeholder="Short title" maxLength={100} />)}
+        {field("Caption", <textarea rows={2} value={caption} onChange={e => setCaption(e.target.value)} placeholder="Short caption" maxLength={220} />)}
+        {field("Description *", <textarea rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Detailed description..." maxLength={500} />)}
         {field("Photo (optional)", <PhotoUpload photo={photo} onPhoto={setPhoto} />)}
-        {field("Location / Landmark (optional)", (
-          <input
-            value={locationText}
-            onChange={e => setLocationText(e.target.value)}
-            placeholder="e.g. Near Panchayat Bhawan, Ward 3 main road…"
-            maxLength={200}
-          />
-        ))}
-        {field("Pin on Map (optional)", <LocationPicker coords={locationCoords} onCoords={setLocationCoords} />)}
-        {field("Priority", (
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            {["Low","Medium","High","Urgent"].map(p => (
-              <label key={p} style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13, padding: "7px 14px", borderRadius: 10, border: `1px solid ${form.priority === p ? "var(--ct35)" : "var(--cb10)"}`, background: form.priority === p ? "var(--cbg8)" : "transparent", color: form.priority === p ? PRIORITY_META[p].color : "var(--ct5)", transition: "all 0.2s" }}>
-                <input type="radio" value={p} checked={form.priority === p} onChange={() => set("priority", p)} style={{ width: "auto", display: "none" }} />
-                {PRIORITY_META[p].label}
-              </label>
-            ))}
-          </div>
-        ))}
-        <button className="btn-white" onClick={handle} disabled={loading} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15, fontWeight: 600, marginTop: 4 }}>
+        {field("Location (optional)", <input value={locationText} onChange={e => setLocationText(e.target.value)} placeholder="Landmark..." maxLength={200} />)}
+        {field("Pin on Map", <LocationPicker coords={locationCoords} onCoords={setLocationCoords} />)}
+        <button className="btn-white" onClick={handle} disabled={loading} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15, fontWeight: 600 }}>
           {loading ? "Submitting…" : "Submit Problem →"}
         </button>
       </div>
     </div>
-
-      </>
   );
-}
-
-
-// ── User Authentication ─────────────────────────────────────────────────────
-type AppUser = { id: string; name: string; mobile: string; ward: string; createdAt: string; avatar?: string };
-
-async function hashPassword(value: string) {
-  const data = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
@@ -660,14 +474,12 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
   const submit = async () => {
     setErr("");
     if (!id.trim() || !password) { setErr("ID aur password required hai."); return; }
-    if (mode === "register" && (!name.trim() || !mobile.trim())) { setErr("Name aur mobile required hai."); return; }
-    if (mode === "register" && mobile.replace(/\D/g, "").length < 10) { setErr("Valid 10-digit mobile number daalo."); return; }
     setBusy(true);
     try {
       const userRef = doc(db, "users", id.trim().toLowerCase());
       if (mode === "login") {
         const snap = await getDoc(userRef);
-        if (!snap.exists()) { setErr("User ID nahi mila. Pehle account create karo."); return; }
+        if (!snap.exists()) { setErr("User ID nahi mila."); return; }
         const data = snap.data() as any;
         const hash = await hashPassword(password);
         if (data.passwordHash !== hash) { setErr("Galat password."); return; }
@@ -675,47 +487,36 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
         localStorage.setItem("gsp-user", JSON.stringify(user));
         onLogin(user);
       } else {
-        const existing = await getDoc(userRef);
-        if (existing.exists()) { setErr("Ye User ID already registered hai."); return; }
         const user: AppUser = { id: id.trim().toLowerCase(), name: name.trim(), mobile: mobile.trim(), ward, createdAt: new Date().toISOString() };
         await setDoc(userRef, { ...user, passwordHash: await hashPassword(password) });
         localStorage.setItem("gsp-user", JSON.stringify(user));
         onLogin(user);
       }
-    } catch (e) {
-      console.error(e);
-      setErr("Connection error. Firebase settings/check karke dobara try karo.");
-    } finally { setBusy(false); }
+    } catch (e) { setErr("Connection error."); } finally { setBusy(false); }
   };
 
-  return <div style={{ maxWidth: 440, margin: "55px auto 90px" }}>
-    <div className="glass" style={{ borderRadius: 24, padding: "30px 26px" }}>
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ width: 64, height: 64, margin: "0 auto 14px", borderRadius: 18, background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontSize: 28, boxShadow: "0 12px 30px rgba(124,92,252,.25)" }}>👤</div>
-        <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26 }}>{mode === "login" ? "User Login" : "Create Account"}</h2>
-        <p style={{ color: "var(--ct4)", fontSize: 13, marginTop: 6 }}>Community problems & profile ke liye login karein</p>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
-        {(["login", "register"] as const).map(m => <button key={m} className={mode === m ? "btn-white" : "btn-ghost"} onClick={() => { setMode(m); setErr(""); }} style={{ flex: 1, borderRadius: 10, padding: "10px 8px", fontSize: 13 }}>{m === "login" ? "Login" : "Register"}</button>)}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {mode === "register" && <>
-          <input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} />
-          <input placeholder="Mobile number" value={mobile} onChange={e => setMobile(e.target.value)} type="tel" maxLength={15} />
-          <select value={ward} onChange={e => setWard(e.target.value)}>{WARDS.map(w => <option key={w}>{w}</option>)}</select>
-        </>}
-        <input placeholder="User ID" value={id} onChange={e => setId(e.target.value)} autoCapitalize="none" />
-        <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()} />
-        {err && <div style={{ color: "#f87171", fontSize: 13 }}>{err}</div>}
-        <button className="btn-white" onClick={submit} disabled={busy} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15 }}>{busy ? "Please wait…" : mode === "login" ? "Login →" : "Create Account →"}</button>
+  return (
+    <div style={{ maxWidth: 440, margin: "55px auto 90px" }}>
+      <div className="glass" style={{ borderRadius: 24, padding: "30px 26px" }}>
+        <h2 style={{ fontSize: 24, marginBottom: 16 }}>{mode === "login" ? "User Login" : "Create Account"}</h2>
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <button className={mode === "login" ? "btn-white" : "btn-ghost"} onClick={() => setMode("login")} style={{ flex: 1, padding: 8, borderRadius: 8 }}>Login</button>
+          <button className={mode === "register" ? "btn-white" : "btn-ghost"} onClick={() => setMode("register")} style={{ flex: 1, padding: 8, borderRadius: 8 }}>Register</button>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {mode === "register" && <>
+            <input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} />
+            <input placeholder="Mobile number" value={mobile} onChange={e => setMobile(e.target.value)} type="tel" />
+            <select value={ward} onChange={e => setWard(e.target.value)}>{WARDS.map(w => <option key={w}>{w}</option>)}</select>
+          </>}
+          <input placeholder="User ID" value={id} onChange={e => setId(e.target.value)} />
+          <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+          {err && <div style={{ color: "#f87171", fontSize: 13 }}>{err}</div>}
+          <button className="btn-white" onClick={submit} disabled={busy} style={{ padding: 12, borderRadius: 10 }}>{busy ? "Please wait…" : "Continue →"}</button>
+        </div>
       </div>
     </div>
-  </div>;
-}
-
-function requireUser(user: AppUser | null, action: () => void, showToast: (m: string) => void) {
-  if (!user) { showToast("🔐 Is feature ke liye pehle User Login karo."); return; }
-  action();
+  );
 }
 
 function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: Problem; user: AppUser | null; onUpdate: (id: string, changes: any) => Promise<void> | void; onOpenLogin: () => void }) {
@@ -727,34 +528,38 @@ function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: 
   const liked = !!user && likes.includes(user.id);
   const supported = !!user && supporters.includes(user.id);
   const doAuth = (fn: () => void) => { if (!user) { onOpenLogin(); return; } fn(); };
+  
   const toggleArray = async (field: "likes" | "supporters") => {
     if (!user) { onOpenLogin(); return; }
     const arr = field === "likes" ? likes : supporters;
     const has = arr.includes(user.id);
     await onUpdate(problem.id, { [field]: has ? arrayRemove(user.id) : arrayUnion(user.id) });
   };
+
   const addComment = async () => {
     if (!user) { onOpenLogin(); return; }
     if (!comment.trim()) return;
-    const c: CommentItem = { id: uuid(), userId: user.id, userName: user.name, text: comment.trim(), createdAt: new Date().toISOString() };
+    const c: CommentItem = { id: uuid(), userId: user.id, userName: user.name, userAvatar: user.avatar, text: comment.trim(), createdAt: new Date().toISOString() };
     await onUpdate(problem.id, { comments: arrayUnion(c) });
     setComment(""); setShowComments(true);
   };
-  const share = async () => {
-    const text = `${problem.title}\n${problem.caption || problem.description}\n#${problem.id}`;
-    try { await navigator.clipboard?.writeText(text); } catch {}
-    if (navigator.share) { try { await navigator.share({ title: problem.title, text }); } catch {} }
-    else { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank"); }
-  };
-  return <article className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
-    <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontWeight: 800, color: "#fff" }}>{(problem.name || "U").slice(0,1).toUpperCase()}</div>
-      <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 700, fontSize: 13 }}>{problem.name}</div><div style={{ color: "var(--ct4)", fontSize: 11 }}>{problem.ward} · {fmtDate(problem.submittedAt)}</div></div>
-      <Badge text={STATUS_META[problem.status]?.label || problem.status} color={STATUS_META[problem.status]?.color || "#aaa"} />
-    </div>
-    {problem.photo ? <img src={problem.photo} alt={problem.title} style={{ width: "100%", maxHeight: 520, objectFit: "cover", display: "block" }} /> : <div style={{ minHeight: 180, padding: 24, display: "grid", placeItems: "center", background: "linear-gradient(135deg,rgba(124,92,252,.12),rgba(56,217,245,.06))" }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 42 }}>📢</div><div style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 20, marginTop: 8 }}>{problem.title}</div></div></div>}
-    <div style={{ padding: "12px 16px 16px" }}>
-      <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}><Badge text={problem.category} color={CAT_COLORS[problem.category] || "#aaa"} /><Badge text={problem.priority} color={PRIORITY_META[problem.priority]?.color || "#aaa"} /></div>
+
+  return (
+    <article className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
+      <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center", fontWeight: 800, color: "#fff", overflow: "hidden" }}>
+          {problem.authorAvatar ? <img src={problem.authorAvatar} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (problem.name || "U").slice(0,1).toUpperCase()}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 700, fontSize: 13 }}>{problem.name}</div>
+          <div style={{ color: "var(--ct4)", fontSize: 11 }}>{problem.ward} · {fmtDate(problem.submittedAt)}</div>
+        </div>
+        <Badge text={STATUS_META[problem.status]?.label || problem.status} color={STATUS_META[problem.status]?.color || "#aaa"} />
+      </div>
+      <div style={{ padding: "12px 16px 16px" }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}><Badge text={problem.category} color={CAT_COLORS[problem.category] || "#aaa"} /><Badge text={problem.priority} color={PRIORITY_META[prob
+cat << 'EOF' >> src/App.tsx
+lem.priority]?.color || "#aaa"} /></div>
       <div style={{ fontSize: 15, fontWeight: 700 }}>{problem.title}</div>
       <div style={{ color: "var(--ct65)", fontSize: 13, lineHeight: 1.6, marginTop: 5 }}>{problem.caption || problem.description}</div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14, borderTop: "1px solid var(--cbg7)", paddingTop: 10 }}>
@@ -769,2180 +574,4 @@ function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: 
       </div>}
     </div>
   </article>;
-}
-
-function CommunityFeed({ problems, user, onUpdate, onOpenLogin }: { problems: Problem[]; user: AppUser | null; onUpdate: (id: string, changes: any) => Promise<void> | void; onOpenLogin: () => void }) {
-  const [queryText, setQueryText] = useState("");
-  const posts = problems.filter(p => !queryText || `${p.title} ${p.caption || ""} ${p.name}`.toLowerCase().includes(queryText.toLowerCase()));
-  return <div style={{ maxWidth: 620, margin: "0 auto", padding: "28px 0 90px" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}><div><div style={{ fontSize: 11, letterSpacing: ".12em", color: "#b57bee", fontWeight: 700 }}>COMMUNITY FEED</div><h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 28, marginTop: 4 }}>Village Problems</h2></div><button className="btn-ghost" onClick={onOpenLogin} style={{ borderRadius: 10, padding: "8px 12px" }}>{user ? "👤 " + user.name : "Login"}</button></div>
-    <input value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search posts…" style={{ marginBottom: 16 }} />
-    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} />)}
-  </div>;
-}
-
-function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenSettings }: { user: AppUser; problems: Problem[]; onUpdate: (id: string, changes: any) => Promise<void>; onDelete: (id: string) => Promise<void>; onLogout: () => void; onOpenSettings: () => void }) {
-  const mine = problems.filter(p => p.authorId === user.id || (p.mobile === user.mobile && p.name === user.name));
-  const downloadIdCard = () => {
-    const c = document.createElement("canvas"); c.width = 1200; c.height = 720; const x = c.getContext("2d")!;
-    x.fillStyle = "#0d0a1b"; x.fillRect(0,0,c.width,c.height); x.fillStyle = "#7c5cfc"; x.fillRect(0,0,c.width,16); x.fillStyle = "#38d9f5"; x.fillRect(0,c.height-16,c.width,16);
-    x.fillStyle = "#fff"; x.font = "bold 48px Arial"; x.fillText("GRAM SABHA PAHRAJPUR", 70, 110); x.font = "28px Arial"; x.fillStyle = "#bdb7d7"; x.fillText("COMMUNITY USER ID CARD", 72, 155);
-    x.beginPath(); x.arc(150,310,92,0,Math.PI*2); x.fillStyle = "#7c5cfc"; x.fill(); x.fillStyle = "#fff"; x.font = "bold 76px Arial"; x.textAlign="center"; x.fillText(user.name.slice(0,1).toUpperCase(),150,337); x.textAlign="left";
-    x.fillStyle="#fff"; x.font="bold 42px Arial"; x.fillText(user.name,300,270); x.font="28px Arial"; x.fillStyle="#bdb7d7"; x.fillText(`User ID: ${user.id}`,300,320); x.fillText(`Mobile: ${user.mobile}`,300,365); x.fillText(`Ward: ${user.ward}`,300,410); x.fillText(`Member since: ${fmtDate(user.createdAt)}`,300,455);
-    x.fillStyle="#38d9f5"; x.font="bold 24px Arial"; x.fillText("This card identifies the registered community user.",72,610);
-    const a=document.createElement("a"); a.download=`GSP-ID-${user.id}.png`; a.href=c.toDataURL("image/png"); a.click();
-  };
-  return <div style={{ maxWidth: 760, margin: "28px auto 100px" }}>
-    <div className="glass" style={{ borderRadius: 22, padding: 22, marginBottom: 18 }}><div style={{ display:"flex", gap:16, alignItems:"center", flexWrap:"wrap" }}><div style={{ width:78,height:78,borderRadius:"50%",background:"linear-gradient(135deg,#7c5cfc,#38d9f5)",display:"grid",placeItems:"center",fontSize:32,fontWeight:800 }}>{user.name.slice(0,1).toUpperCase()}</div><div style={{ flex:1 }}><h2 style={{ fontFamily:"'Space Grotesk',sans-serif",fontSize:25 }}>{user.name}</h2><div style={{ color:"var(--ct4)",fontSize:13,marginTop:5 }}>@{user.id} · {user.ward}</div><div style={{ color:"var(--ct4)",fontSize:12,marginTop:4 }}>📞 {user.mobile}</div></div><div style={{ display:"flex",gap:8,flexWrap:"wrap" }}><button className="btn-white" onClick={downloadIdCard} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⬇️ ID Card</button><button className="btn-ghost" onClick={onOpenSettings} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>⚙️ Settings</button><button className="btn-danger" onClick={onLogout} style={{borderRadius:10,padding:"9px 13px",fontSize:12}}>Logout</button></div></div></div>
-    <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12 }}><h3 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:19}}>My Posts ({mine.length})</h3></div>
-    {mine.length===0 ? <div className="glass" style={{borderRadius:18,padding:40,textAlign:"center",color:"var(--ct4)"}}>Aapne abhi koi problem post nahi ki.</div> : mine.map(p => <div key={p.id}><CommunityPostCard problem={p} user={user} onUpdate={onUpdate} onOpenLogin={() => {}} /><div style={{display:"flex",gap:8,marginTop:-10,marginBottom:16}}><button className="btn-ghost" onClick={() => { const title=window.prompt("New title",p.title); if(title) onUpdate(p.id,{title}); }} style={{borderRadius:9,fontSize:12}}>✏️ Edit</button><button className="btn-danger" onClick={() => { if(confirm("Delete this post?")) onDelete(p.id); }} style={{borderRadius:9,fontSize:12,padding:"7px 12px"}}>🗑 Delete</button></div></div>)}
-  </div>;
-}
-
-function UserSettingsPage({ user, onSave, onBack }: { user: AppUser; onSave: (u: AppUser) => Promise<void>; onBack: () => void }) {
-  const [name,setName]=useState(user.name); const [mobile,setMobile]=useState(user.mobile); const [ward,setWard]=useState(user.ward); const [theme,setTheme]=useState(localStorage.getItem("gsp-user-theme") || "system");
-  const save=async()=>{const next={...user,name:name.trim(),mobile:mobile.trim(),ward}; await onSave(next); localStorage.setItem("gsp-user-theme",theme); onBack();};
-  return <div style={{maxWidth:560,margin:"32px auto 100px"}}><div className="glass" style={{borderRadius:22,padding:24}}><h2 style={{fontFamily:"'Space Grotesk',sans-serif",fontSize:24}}>⚙️ Account Settings</h2><p style={{fontSize:13,color:"var(--ct4)",margin:"6px 0 20px"}}>Apni profile details aur preference change karein.</p><div style={{display:"flex",flexDirection:"column",gap:12}}><input value={name} onChange={e=>setName(e.target.value)} placeholder="Name"/><input value={mobile} onChange={e=>setMobile(e.target.value)} placeholder="Mobile"/><select value={ward} onChange={e=>setWard(e.target.value)}>{WARDS.map(w=><option key={w}>{w}</option>)}</select><select value={theme} onChange={e=>setTheme(e.target.value)}><option value="system">System theme</option><option value="light">Light</option><option value="dark">Dark</option></select><div style={{display:"flex",gap:10}}><button className="btn-ghost" onClick={onBack} style={{flex:1,borderRadius:10}}>Cancel</button><button className="btn-white" onClick={save} style={{flex:1,borderRadius:10}}>Save Settings</button></div></div></div></div>;
-}
-
-// ── Filter Bar ────────────────────────────────────────────────────────────────
-function FilterBar({ filterCat, setFilterCat, filterStatus, setFilterStatus, filterWard, setFilterWard, search, setSearch, sort, setSort }: {
-  filterCat: string; setFilterCat: (v: string) => void; filterStatus: string; setFilterStatus: (v: string) => void;
-  filterWard: string; setFilterWard: (v: string) => void; search: string; setSearch: (v: string) => void; sort: string; setSort: (v: string) => void;
-}) {
-  return (
-    <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or ID…" style={{ flex: "1 1 180px", minWidth: 140 }} />
-        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
-          <option value="All">All Status</option>
-          {Object.keys(STATUS_META).map(s => <option key={s}>{s}</option>)}
-        </select>
-        <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ flex: "1 1 130px", minWidth: 110 }}>
-          <option value="All">All Categories</option>
-          {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-        </select>
-        <select value={filterWard} onChange={e => setFilterWard(e.target.value)} style={{ flex: "1 1 110px", minWidth: 90 }}>
-          <option value="All">All Wards</option>
-          {WARDS.map(w => <option key={w}>{w}</option>)}
-        </select>
-        <select value={sort} onChange={e => setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="priority">By Priority</option>
-        </select>
-      </div>
-    </div>
-  );
-}
-
-// ── Admin Login ───────────────────────────────────────────────────────────────
-type AdminRole = "super" | "user-admin" | "complaint-admin";
-
-function AdminLogin({ superPassword, userAdminPassword, complaintAdminPassword, onLogin }: {
-  superPassword: string; userAdminPassword: string; complaintAdminPassword: string;
-  onLogin: (role: AdminRole) => void;
-}) {
-  const ADMIN_ID = "abhinavyadav1405";
-  const [id, setId] = useState("");
-  const [pw, setPw] = useState("");
-  const [err, setErr] = useState("");
-  const attempt = () => {
-    if (id !== ADMIN_ID) { setErr("Galat Admin ID!"); return; }
-    if (pw === superPassword)            { setErr(""); onLogin("super"); return; }
-    if (pw === userAdminPassword)        { setErr(""); onLogin("user-admin"); return; }
-    if (pw === complaintAdminPassword)   { setErr(""); onLogin("complaint-admin"); return; }
-    setErr("Galat Password!");
-  };
-  return (
-    <div style={{ maxWidth: 380, margin: "60px auto" }}>
-      <div className="glass" style={{ borderRadius: 22, padding: "32px 28px" }}>
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>🔐</div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 22 }}>Admin Access</h2>
-          <p style={{ fontSize: 13, color: "var(--ct4)", marginTop: 8 }}>ID aur Password daalo</p>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <input placeholder="Admin ID" value={id} onChange={e => { setId(e.target.value); setErr(""); }} />
-          <input type="password" placeholder="Password" value={pw} onChange={e => { setPw(e.target.value); setErr(""); }} onKeyDown={e => e.key === "Enter" && attempt()} />
-          {err && <div style={{ fontSize: 13, color: "#ef4444", textAlign: "center" }}>{err}</div>}
-          <button className="btn-white" onClick={attempt} style={{ borderRadius: 12, padding: "12px 0", fontSize: 15, fontWeight: 600 }}>Login →</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Manage Users (User-Admin panel) ────────────────────────────────────────────
-interface BlockedUser { mobile: string; name: string; reason: string; blockedAt: string; }
-
-function ManageUsers({ problems, blockedUsers, onBlock, onUnblock, onDeleteUser, showToast }: {
-  problems: Problem[]; blockedUsers: BlockedUser[];
-  onBlock: (mobile: string, name: string) => void;
-  onUnblock: (mobile: string) => void;
-  onDeleteUser: (mobile: string, name: string) => void;
-  showToast: (m: string) => void;
-}) {
-  const [search, setSearch] = useState("");
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
-
-  // Group complaints by mobile number → one row per unique user
-  const usersMap: Record<string, { name: string; mobile: string; count: number; lastDate: string }> = {};
-  problems.forEach(p => {
-    if (!p.mobile) return;
-    if (!usersMap[p.mobile]) usersMap[p.mobile] = { name: p.name, mobile: p.mobile, count: 0, lastDate: p.submittedAt };
-    usersMap[p.mobile].count += 1;
-    if (p.submittedAt > usersMap[p.mobile].lastDate) usersMap[p.mobile].lastDate = p.submittedAt;
-  });
-  const isBlocked = (mobile: string) => blockedUsers.some(b => b.mobile === mobile);
-
-  let users = Object.values(usersMap);
-  if (search.trim()) {
-    const s = search.trim().toLowerCase();
-    users = users.filter(u => u.name.toLowerCase().includes(s) || u.mobile.includes(s));
-  }
-  users.sort((a, b) => (a.name > b.name ? 1 : -1));
-
-  return (
-    <div style={{ maxWidth: 800, margin: "0 auto", paddingTop: 32 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>👥 Manage Users</h2>
-      <p style={{ fontSize: 13, color: "var(--ct4)", marginBottom: 20 }}>Complaint submit karne wale users ki list. Fake user ko block ya delete karein.</p>
-
-      <input placeholder="Naam ya mobile se search karein…" value={search} onChange={e => setSearch(e.target.value)} style={{ marginBottom: 20 }} />
-
-      {users.length === 0 && <div style={{ color: "var(--ct4)", fontSize: 13 }}>Abhi tak koi user nahi mila.</div>}
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {users.map(u => {
-          const blocked = isBlocked(u.mobile);
-          return (
-            <div key={u.mobile} className="glass" style={{ borderRadius: 16, padding: "16px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{u.name} {blocked && <Badge text="🚫 Blocked" color="#f87171" />}</div>
-                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 4 }}>📞 {u.mobile} · {u.count} complaint{u.count > 1 ? "s" : ""} · Last: {fmtDate(u.lastDate)}</div>
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                {blocked ? (
-                  <button className="btn-ghost" onClick={() => { onUnblock(u.mobile); showToast(`✅ ${u.name} unblock ho gaya`); }} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Unblock</button>
-                ) : (
-                  <button className="btn-ghost" onClick={() => { onBlock(u.mobile, u.name); showToast(`🚫 ${u.name} block ho gaya`); }} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Block</button>
-                )}
-                {confirmDel === u.mobile ? (
-                  <>
-                    <button className="btn-danger" onClick={() => { onDeleteUser(u.mobile, u.name); setConfirmDel(null); }} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Pakka Delete?</button>
-                    <button className="btn-ghost" onClick={() => setConfirmDel(null)} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Cancel</button>
-                  </>
-                ) : (
-                  <button className="btn-danger" onClick={() => setConfirmDel(u.mobile)} style={{ borderRadius: 10, padding: "8px 14px", fontSize: 12 }}>Delete</button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {blockedUsers.length > 0 && (
-        <div style={{ marginTop: 32 }}>
-          <SectionHead icon="🚫" title="Blocked Numbers" />
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {blockedUsers.map(b => (
-              <div key={b.mobile} className="glass" style={{ borderRadius: 12, padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13 }}>
-                <span>{b.name} · 📞 {b.mobile} · {b.reason}</span>
-                <button className="btn-ghost" onClick={() => onUnblock(b.mobile)} style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12 }}>Unblock</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Category Grid ─────────────────────────────────────────────────────────────
-function CategoryGrid({ problems, onNavigate }: { problems: Problem[]; onNavigate: () => void }) {
-  const counts = CATEGORIES.reduce((acc, cat) => { acc[cat] = problems.filter(p => p.category === cat).length; return acc; }, {} as Record<string, number>);
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))", gap: 12 }}>
-      {CATEGORIES.map(cat => (
-        <div key={cat} className="glass" onClick={onNavigate} style={{ borderRadius: 14, padding: 16, cursor: "pointer", transition: "transform 0.2s" }}
-          onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-3px)")}
-          onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}>
-          <div style={{ width: 8, height: 8, borderRadius: 4, background: CAT_COLORS[cat] || "#6b7280", marginBottom: 10 }} />
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{cat}</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: CAT_COLORS[cat] || "#6b7280", fontFamily: "'Space Grotesk',sans-serif" }}>{counts[cat]}</div>
-          <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 2 }}>issues</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── Sarpanch Profile Card ─────────────────────────────────────────────────────
-function SarpanchCard({ sarpanchName, photo, whatsapp, instagram, address }: { sarpanchName: string; photo: string; whatsapp: string; instagram: string; address: string }) {
-  return (
-    <div className="glass" style={{ borderRadius: 22, padding: "20px 22px", overflow: "hidden", position: "relative" }}>
-      <div style={{ position: "absolute", top: -30, right: -30, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap", position: "relative" }}>
-        {/* Photo / Avatar */}
-        <div style={{ width: 84, height: 84, borderRadius: 20, flexShrink: 0, overflow: "hidden", boxShadow: "0 4px 20px rgba(22,163,74,0.35)", border: "2px solid rgba(34,197,94,0.3)", background: "linear-gradient(135deg,#16a34a,#166534)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {photo
-            ? <img src={photo} alt="Sarpanch" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ fontSize: 40 }}></span>}
-        </div>
-        <div style={{ flex: 1, minWidth: 150 }}>
-          <div style={{ fontSize: 10, color: "#22c55e", fontWeight: 700, letterSpacing: "0.12em", marginBottom: 5 }}>GRAM PRADHAN · SARPANCH</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 20, marginBottom: 4 }}>{sarpanchName}</div>
-          <div style={{ fontSize: 12, color: "var(--ct4)", lineHeight: 1.5 }}>{address}</div>
-        </div>
-        {/* Contact Buttons */}
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {whatsapp && (
-            <a href={`https://wa.me/91${whatsapp.replace(/\D/g,"")}`} target="_blank" rel="noreferrer"
-              style={{ display:"flex",alignItems:"center",gap:8,padding:"10px 18px",borderRadius:13,background:"rgba(37,211,102,0.1)",border:"1px solid rgba(37,211,102,0.3)",color:"#25d366",textDecoration:"none",fontWeight:600,fontSize:13 }}>
-              💬 WhatsApp
-            </a>
-          )}
-          {instagram && (
-            <a href={`https://instagram.com/${instagram.replace("@","")}`} target="_blank" rel="noreferrer"
-              style={{ display:"flex",alignItems:"center",gap:8,padding:"10px 18px",borderRadius:13,background:"rgba(225,48,108,0.1)",border:"1px solid rgba(225,48,108,0.3)",color:"#e1306c",textDecoration:"none",fontWeight:600,fontSize:13 }}>
-              📸 Instagram
-            </a>
-          )}
-          {!whatsapp && !instagram && (
-            <div style={{ fontSize: 12, color: "var(--ct3)", fontStyle: "italic" }}>Add contact links in Settings</div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Feedback Section ───────────────────────────────────────────────────────────
-function FeedbackSection({ feedbacks, onAdd }: { feedbacks: Feedback[]; onAdd: (f: Feedback) => void }) {
-  const [name, setName]       = useState("");
-  const [message, setMessage] = useState("");
-  const [rating, setRating]   = useState(5);
-  const [hovered, setHovered] = useState(0);
-  const [submitted, setSubmitted] = useState(false);
-
-  const submit = () => {
-    if (!name.trim() || !message.trim()) return;
-    onAdd({ id: uuid(), name: name.trim(), message: message.trim(), rating, createdAt: new Date().toISOString() });
-    setName(""); setMessage(""); setRating(5); setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
-  };
-
-  const recent    = [...feedbacks].sort((a,b) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).slice(0,5);
-  const avgRating = feedbacks.length ? (feedbacks.reduce((s,f)=>s+f.rating,0)/feedbacks.length).toFixed(1) : null;
-
-  return (
-    <div>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-        <h3 style={{ fontFamily:"'Sora',sans-serif", fontWeight:600, fontSize:18, color:"var(--text-main)" }}>💬 Public Feedback</h3>
-        {avgRating && <div style={{ fontSize:13, color:"#f59e0b", fontWeight:600 }}>⭐ {avgRating} avg · {feedbacks.length} review{feedbacks.length!==1?"s":""}</div>}
-      </div>
-
-      <div className="glass" style={{ borderRadius:18, padding:"20px 22px", marginBottom:14 }}>
-        <div style={{ fontSize:13, color:"var(--ct45)", marginBottom:14 }}>Rate village works & share your suggestions</div>
-        <div style={{ display:"flex", gap:4, marginBottom:14, alignItems:"center" }}>
-          {[1,2,3,4,5].map(s => (
-            <span key={s} onClick={()=>setRating(s)} onMouseEnter={()=>setHovered(s)} onMouseLeave={()=>setHovered(0)}
-              style={{ fontSize:28, cursor:"pointer", filter:s<=(hovered||rating)?"none":"grayscale(1) opacity(0.25)", transition:"all 0.15s" }}>⭐</span>
-          ))}
-          <span style={{ fontSize:12, color:"rgba(255,255,255,0.38)", marginLeft:10 }}>{["","Poor","Fair","Good","Very Good","Excellent"][hovered||rating]}</span>
-        </div>
-        <input placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} maxLength={60} style={{ marginBottom:10 }} />
-        <textarea rows={3} placeholder="Your feedback, suggestions or appreciation…" value={message} onChange={e=>setMessage(e.target.value)} maxLength={400} style={{ marginBottom:12 }} />
-        {submitted
-          ? <div style={{ padding:"11px",borderRadius:10,background:"rgba(34,197,94,0.12)",border:"1px solid rgba(34,197,94,0.25)",color:"#22c55e",fontSize:13,textAlign:"center",fontWeight:600 }}>✅ Thank you for your feedback!</div>
-          : <button className="btn-white" onClick={submit} disabled={!name.trim()||!message.trim()} style={{ width:"100%",borderRadius:10,padding:"11px 0",fontSize:14,fontWeight:600 }}>Submit Feedback →</button>}
-      </div>
-
-      {recent.length > 0 && (
-        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-          {recent.map(f => (
-            <div key={f.id} className="glass" style={{ borderRadius:14, padding:"14px 16px" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div style={{ width:32, height:32, borderRadius:10, background:"var(--cbg7)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:14 }}>👤</div>
-                  <span style={{ fontSize:13, fontWeight:600 }}>{f.name}</span>
-                </div>
-                <div style={{ display:"flex", gap:1 }}>
-                  {Array.from({length:5}).map((_,i)=><span key={i} style={{ fontSize:13,filter:i<f.rating?"none":"grayscale(1) opacity(0.2)" }}>⭐</span>)}
-                </div>
-              </div>
-              <p style={{ fontSize:13, color:"var(--ct6)", lineHeight:1.65, margin:0 }}>{f.message}</p>
-              <div style={{ fontSize:11, color:"rgba(255,255,255,0.22)", marginTop:6 }}>{fmtDate(f.createdAt)}</div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Notices Page ──────────────────────────────────────────────────────────────
-const NOTICE_META: Record<string, { color: string; bg: string; icon: string; label: string }> = {
-  urgent:  { color: "#ef4444", bg: "rgba(239,68,68,0.12)",   icon: "🚨", label: "Urgent" },
-  meeting: { color: "#3b82f6", bg: "rgba(59,130,246,0.12)",  icon: "📅", label: "Meeting" },
-  scheme:  { color: "#22c55e", bg: "rgba(34,197,94,0.12)",   icon: "🏛", label: "Scheme" },
-  event:   { color: "#f59e0b", bg: "rgba(245,158,11,0.12)",  icon: "🎉", label: "Event" },
-  general: { color: "#a855f7", bg: "rgba(168,85,247,0.12)",  icon: "📢", label: "General" },
-};
-
-function NoticesPage({ notices, isAdmin, onDelete, compact = false, onViewAll }: {
-  notices: Notice[]; isAdmin: boolean; onDelete: (id: string) => void;
-  compact?: boolean; onViewAll?: () => void;
-}) {
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const sorted = [...notices].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const items = compact ? sorted.slice(0, 4) : sorted;
-
-  return (
-    <div>
-      {compact ? (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📢 Notices & Announcements</h3>
-          {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
-        </div>
-      ) : (
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", fontSize: 12, color: "#f59e0b", marginBottom: 16, fontWeight: 600 }}>
-            📢 Official Notices
-          </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Notices & Announcements</h2>
-          <p style={{ fontSize: 13, color: "var(--ct4)" }}>Official announcements from Sarpanch Priyanka Yadav — Gram Sabha Pahrajpur</p>
-        </div>
-      )}
-
-      {notices.length === 0 ? (
-        <div className="glass" style={{ borderRadius: 20, padding: compact ? "28px 24px" : "48px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: compact ? 15 : 19, fontWeight: 600, marginBottom: 8 }}>No notices yet</div>
-          <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Notices to post your first announcement." : "Official notices from the Sarpanch will appear here."}</div>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {items.map(n => {
-            const m = NOTICE_META[n.type];
-            const isExp = expanded === n.id;
-            return (
-              <div key={n.id} className="glass" style={{ borderRadius: 16, padding: "16px 18px", cursor: "pointer", borderLeft: `3px solid ${m.color}`, transition: "all 0.2s" }}
-                onClick={() => setExpanded(isExp ? null : n.id)}>
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>{m.icon}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 14 }}>{n.title}</span>
-                      <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: m.bg, color: m.color, fontWeight: 600 }}>{m.icon} {m.label}</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)" }}>📅 {n.date} · Posted {fmtDate(n.createdAt)}</div>
-                  </div>
-                  <span style={{ color: "var(--ct3)", fontSize: 12, flexShrink: 0, paddingTop: 2 }}>{isExp ? "▲" : "▼"}</span>
-                </div>
-                {isExp && (
-                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-                    <p style={{ fontSize: 13, color: "var(--ct65)", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>{n.body}</p>
-                    {isAdmin && (
-                      <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-                        <button className="btn-danger" style={{ borderRadius: 9, padding: "7px 16px", fontSize: 13 }}
-                          onClick={e => { e.stopPropagation(); onDelete(n.id); }}>🗑 Delete</button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {compact && notices.length > 4 && onViewAll && (
-        <div style={{ textAlign: "center", marginTop: 14 }}>
-          <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 12, padding: "10px 28px", fontSize: 14 }}>View All {notices.length} Notices →</button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Gallery Page ──────────────────────────────────────────────────────────────
-function getYoutubeId(url: string): string | null {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
-  return m ? m[1] : null;
-}
-
-function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
-  media: MediaItem[]; isAdmin: boolean; onDelete: (id: string) => void;
-  compact?: boolean; onViewAll?: () => void;
-}) {
-  const [lightbox, setLightbox] = useState<MediaItem | null>(null);
-  const items = compact ? media.slice(0, 6) : media;
-
-  return (
-    <div>
-      {/* Lightbox */}
-      {lightbox && lightbox.type === "photo" && (
-        <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(8px)" }}>
-          <div onClick={e => e.stopPropagation()} style={{ maxWidth: 900, width: "100%", position: "relative" }}>
-            <img src={lightbox.url} alt={lightbox.title} style={{ width: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 16, display: "block" }} />
-            {lightbox.caption && <p style={{ textAlign: "center", marginTop: 12, color: "rgba(255,255,255,0.55)", fontSize: 14 }}>{lightbox.caption}</p>}
-            <button onClick={() => setLightbox(null)} style={{ position: "absolute", top: -12, right: -12, width: 36, height: 36, borderRadius: "50%", background: "var(--cb10)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-          </div>
-        </div>
-      )}
-
-      {!compact && (
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.25)", fontSize: 12, color: "#a855f7", marginBottom: 16, fontWeight: 600 }}>
-            📷 Village Gallery
-          </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Photos & Videos</h2>
-          <p style={{ fontSize: 13, color: "var(--ct4)" }}>Precious moments, places, and milestones of Gram Sabha Pahrajpur</p>
-        </div>
-      )}
-
-      {compact && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>📷 Village Gallery</h3>
-          {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
-        </div>
-      )}
-
-      {media.length === 0 ? (
-        <div className="glass" style={{ borderRadius: 20, padding: compact ? "32px 24px" : "48px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 42, marginBottom: 12 }}>🖼</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: compact ? 16 : 20, fontWeight: 600, marginBottom: 8 }}>No photos or videos yet</div>
-          <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Gallery to add your first photo or video." : "Village photos and videos will appear here soon."}</div>
-        </div>
-      ) : (
-        <div style={{ columns: compact ? "2" : "3", columnGap: 12, columnFill: "balance" }}>
-          {items.map(item => {
-            const ytId = item.type === "video" ? getYoutubeId(item.url) : null;
-            return (
-              <div key={item.id} style={{ breakInside: "avoid", marginBottom: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", position: "relative", cursor: item.type === "photo" ? "zoom-in" : "default" }}
-                onClick={() => item.type === "photo" && setLightbox(item)}>
-                {item.type === "photo" ? (
-                  <img src={item.url} alt={item.title} style={{ width: "100%", display: "block", objectFit: "cover" }} />
-                ) : ytId ? (
-                  <div style={{ position: "relative", paddingBottom: "56.25%", background: "#000" }}>
-                    <iframe src={`https://www.youtube.com/embed/${ytId}`} title={item.title}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }} allowFullScreen />
-                  </div>
-                ) : (
-                  <div style={{ padding: "16px", textAlign: "center", color: "var(--ct4)", fontSize: 13 }}>⚠️ Invalid video URL</div>
-                )}
-
-                {/* Overlay label */}
-                <div style={{ padding: "10px 12px", background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-main)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.title}</div>
-                  {item.caption && <div style={{ fontSize: 11, color: "var(--ct45)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.caption}</div>}
-                </div>
-
-                {/* Type badge */}
-                <div style={{ position: "absolute", top: 8, left: 8, fontSize: 11, padding: "3px 8px", borderRadius: 8, background: item.type === "photo" ? "rgba(168,85,247,0.8)" : "rgba(239,68,68,0.8)", color: "#fff", fontWeight: 600, backdropFilter: "blur(4px)" }}>
-                  {item.type === "photo" ? "📷 Photo" : "🎬 Video"}
-                </div>
-
-                {isAdmin && (
-                  <button className="btn-danger" style={{ position: "absolute", top: 8, right: 8, borderRadius: 8, padding: "4px 10px", fontSize: 11 }}
-                    onClick={e => { e.stopPropagation(); onDelete(item.id); }}>🗑</button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {compact && media.length > 6 && onViewAll && (
-        <div style={{ textAlign: "center", marginTop: 16 }}>
-          <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 12, padding: "10px 28px", fontSize: 14 }}>View All {media.length} Items →</button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Achievements Page (Public) ────────────────────────────────────────────────
-const ACH_CATEGORIES = ["Road / Path","Water Supply","Electricity","Sanitation","Education","Health","Drainage","Infrastructure","Other"];
-const ACH_CAT_ICONS: Record<string,string> = {
-  "Road / Path":"🛣","Water Supply":"💧","Electricity":"⚡","Sanitation":"🧹",
-  "Education":"📚","Health":"🏥","Drainage":"🌊","Infrastructure":"🏗","Other":"✅",
-};
-const ACH_CAT_COLORS: Record<string,string> = {
-  "Road / Path":"#a855f7","Water Supply":"#3b82f6","Electricity":"#f59e0b","Sanitation":"#10b981",
-  "Education":"#ec4899","Health":"#ef4444","Drainage":"#06b6d4","Infrastructure":"#f97316","Other":"#6b7280",
-};
-
-function AchievementsPage({ achievements, isAdmin, onDelete }: {
-  achievements: Achievement[]; isAdmin: boolean; onDelete: (id: string) => void;
-}) {
-  const [filterCat, setFilterCat] = useState("All");
-  const [filterVillage, setFilterVillage] = useState("All");
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const filtered = achievements.filter(a =>
-    (filterCat === "All" || a.category === filterCat) &&
-    (filterVillage === "All" || a.village === filterVillage)
-  );
-
-  return (
-    <div style={{ paddingTop: 32, maxWidth: 800, margin: "0 auto" }}>
-      <FadeIn>
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)", fontSize: 12, color: "#22c55e", marginBottom: 16, fontWeight: 600 }}>
-            🏆 Development Works
-          </div>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 28, marginBottom: 8 }}>Completed Achievements</h2>
-          <p style={{ fontSize: 13, color: "var(--ct4)" }}>Works and developments completed under the leadership of Sarpanch Priyanka Yadav</p>
-        </div>
-      </FadeIn>
-
-      {/* Stats strip */}
-      <FadeIn delay={80}>
-        <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-          {[
-            { label: "Total Works", value: achievements.length, color: "#22c55e" },
-            { label: "Villages Covered", value: [...new Set(achievements.map(a => a.village))].length, color: "#3b82f6" },
-            { label: "Categories", value: [...new Set(achievements.map(a => a.category))].length, color: "#f59e0b" },
-          ].map(s => (
-            <div key={s.label} className="glass" style={{ borderRadius: 14, padding: "14px 20px", flex: 1, minWidth: 120 }}>
-              <div style={{ fontSize: 22, fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, color: s.color }}>{s.value}</div>
-              <div style={{ fontSize: 11, color: "var(--ct4)", marginTop: 3 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </FadeIn>
-
-      {/* Filters */}
-      <FadeIn delay={120}>
-        <div className="glass" style={{ borderRadius: 14, padding: "14px 16px", marginBottom: 20, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ width: "auto", fontSize: 13, padding: "7px 12px" }}>
-            <option value="All">All Categories</option>
-            {ACH_CATEGORIES.map(c => <option key={c}>{c}</option>)}
-          </select>
-          <select value={filterVillage} onChange={e => setFilterVillage(e.target.value)} style={{ width: "auto", fontSize: 13, padding: "7px 12px" }}>
-            <option value="All">All Villages</option>
-            {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
-          </select>
-          <span style={{ fontSize: 12, color: "var(--ct35)", marginLeft: "auto" }}>{filtered.length} work{filtered.length !== 1 ? "s" : ""}</span>
-        </div>
-      </FadeIn>
-
-      {achievements.length === 0 ? (
-        <FadeIn delay={200}>
-          <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
-            <div style={{ fontSize: 44, marginBottom: 14 }}>🏆</div>
-            <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No achievements yet</div>
-            <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Achievements to add your first completed work." : "Completed works will be listed here soon."}</div>
-          </div>
-        </FadeIn>
-      ) : filtered.length === 0 ? (
-        <FadeIn delay={200}>
-          <div className="glass" style={{ borderRadius: 20, padding: "40px 32px", textAlign: "center" }}>
-            <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
-            <div style={{ fontSize: 16, fontWeight: 600 }}>No matching works</div>
-            <div style={{ color: "var(--ct4)", fontSize: 13, marginTop: 6 }}>Try adjusting the filters.</div>
-          </div>
-        </FadeIn>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {filtered.map((a, i) => {
-            const color = ACH_CAT_COLORS[a.category] ?? "#6b7280";
-            const icon  = ACH_CAT_ICONS[a.category]  ?? "✅";
-            const isExp = expanded === a.id;
-            return (
-              <FadeIn key={a.id} delay={i * 40}>
-                <div className="glass" style={{ borderRadius: 18, padding: "18px 20px", cursor: "pointer", border: `1px solid ${isExp ? color + "55" : "var(--cbg8)"}`, transition: "all 0.25s" }}
-                  onClick={() => setExpanded(isExp ? null : a.id)}>
-                  {/* Header row */}
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 12, background: color + "22", border: `1px solid ${color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{icon}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-                        <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 15 }}>{a.title}</span>
-                        <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: color + "22", color, fontWeight: 600 }}>{a.category}</span>
-                        <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 8, background: "rgba(34,197,94,0.12)", color: "#22c55e", fontWeight: 600 }}>✅ Done</span>
-                      </div>
-                      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 12, color: "var(--ct4)" }}>
-                        <span>📍 {a.village}</span>
-                        <span>📅 {a.date}</span>
-                      </div>
-                    </div>
-                    <div style={{ color: "var(--ct3)", fontSize: 13, flexShrink: 0, paddingTop: 2 }}>{isExp ? "▲" : "▼"}</div>
-                  </div>
-
-                  {/* Expanded */}
-                  {isExp && (
-                    <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                      <p style={{ fontSize: 13, color: "var(--ct65)", lineHeight: 1.7, marginBottom: a.photo ? 14 : 0 }}>{a.description}</p>
-                      {a.photo && (
-                        <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
-                          <img src={a.photo} alt={a.title} style={{ width: "100%", maxHeight: 300, objectFit: "cover", display: "block", cursor: "zoom-in" }}
-                            onClick={e => { e.stopPropagation(); window.open(a.photo, "_blank"); }} />
-                          <div style={{ padding: "6px 12px", fontSize: 11, color: "var(--ct3)", background: "rgba(0,0,0,0.3)" }}>📷 Click to open full size</div>
-                        </div>
-                      )}
-                      {isAdmin && (
-                        <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
-                          <button className="btn-danger" style={{ borderRadius: 9, padding: "7px 16px", fontSize: 13 }}
-                            onClick={e => { e.stopPropagation(); onDelete(a.id); }}>🗑 Delete</button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </FadeIn>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Admin Settings Panel ──────────────────────────────────────────────────────
-function AdminSettings({ problems, achievements, media, notices, feedbacks, adminPassword, userAdminPassword, complaintAdminPassword, villageName, sarpanchName, sarpanchPhoto, sarpanchAddress, whatsapp, instagram, onSavePassword, onSaveUserAdminPassword, onSaveComplaintAdminPassword, onSaveInfo, onSaveSocial, onSaveSarpanchPhoto, onSaveSarpanchAddress, onClearResolved, onClearAll, onAddAchievement, onDeleteAchievement, onAddMedia, onDeleteMedia, onAddNotice, onDeleteNotice, onDeleteFeedback, showToast }: {
-  problems: Problem[]; achievements: Achievement[]; media: MediaItem[]; notices: Notice[]; feedbacks: Feedback[]; adminPassword: string; userAdminPassword: string; complaintAdminPassword: string; villageName: string; sarpanchName: string; sarpanchPhoto: string; sarpanchAddress: string; whatsapp: string; instagram: string;
-  onSavePassword: (p: string) => void; onSaveUserAdminPassword: (p: string) => void; onSaveComplaintAdminPassword: (p: string) => void; onSaveInfo: (v: string, s: string) => void; onSaveSocial: (w: string, i: string) => void; onSaveSarpanchPhoto: (p: string) => void; onSaveSarpanchAddress: (a: string) => void;
-  onClearResolved: () => void; onClearAll: () => void;
-  onAddAchievement: (a: Achievement) => void; onDeleteAchievement: (id: string) => void;
-  onAddMedia: (m: MediaItem) => void; onDeleteMedia: (id: string) => void;
-  onAddNotice: (n: Notice) => void; onDeleteNotice: (id: string) => void;
-  onDeleteFeedback: (id: string) => void;
-  showToast: (m: string) => void;
-}) {
-  const [newPw, setNewPw]       = useState("");
-  const [confirmPw, setConfirmPw] = useState("");
-  const [pwErr, setPwErr]       = useState("");
-  const [newUserAdminPw, setNewUserAdminPw] = useState("");
-  const [newComplaintAdminPw, setNewComplaintAdminPw] = useState("");
-  const [village, setVillage]   = useState(villageName);
-  const [sarpanch, setSarpanch] = useState(sarpanchName);
-  const [addr, setAddr]         = useState(sarpanchAddress);
-  const [confirmClear, setConfirmClear] = useState<"resolved" | "all" | null>(null);
-  const [wa, setWa]     = useState(whatsapp);
-  const [ig, setIg]     = useState(instagram);
-  const [photoPreview, setPhotoPreview] = useState(sarpanchPhoto);
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { showToast("⚠️ Photo must be under 2 MB."); return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const b64 = reader.result as string;
-      setPhotoPreview(b64);
-      onSaveSarpanchPhoto(b64);
-      showToast("✅ Profile photo saved.");
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const blankAch = () => ({ title: "", description: "", category: ACH_CATEGORIES[0], village: "Pahrajpur", date: new Date().toISOString().slice(0,10) });
-  const [achForm, setAchForm] = useState(blankAch());
-  const [achPhoto, setAchPhoto] = useState<string | undefined>(undefined);
-  const [achPhotoLoading, setAchPhotoLoading] = useState(false);
-  const setAF = (k: string, v: string) => setAchForm(f => ({ ...f, [k]: v }));
-
-  const handleAchPhoto = async (file: File) => {
-    setAchPhotoLoading(true);
-    try { setAchPhoto(await compressImage(file)); } catch (_) {}
-    setAchPhotoLoading(false);
-  };
-
-  // Notices state
-  const NOTICE_TYPES = ["urgent","meeting","scheme","event","general"] as const;
-  const [noticeTitle, setNoticeTitle] = useState("");
-  const [noticeBody, setNoticeBody]   = useState("");
-  const [noticeType, setNoticeType]   = useState<Notice["type"]>("general");
-  const [noticeDate, setNoticeDate]   = useState(new Date().toISOString().slice(0,10));
-
-  const submitNotice = () => {
-    if (!noticeTitle.trim()) { showToast("⚠️ Title is required."); return; }
-    if (!noticeBody.trim())  { showToast("⚠️ Notice content is required."); return; }
-    onAddNotice({ id: uuid(), title: noticeTitle.trim(), body: noticeBody.trim(), type: noticeType, date: noticeDate, createdAt: new Date().toISOString() });
-    setNoticeTitle(""); setNoticeBody(""); setNoticeType("general"); setNoticeDate(new Date().toISOString().slice(0,10));
-    showToast("✅ Notice posted!");
-  };
-
-  // Media state
-  const [mediaType, setMediaType] = useState<"photo" | "video">("photo");
-  const [mediaTitle, setMediaTitle] = useState("");
-  const [mediaCaption, setMediaCaption] = useState("");
-  const [mediaVideoUrl, setMediaVideoUrl] = useState("");
-  const [mediaPhoto, setMediaPhoto] = useState<string | undefined>(undefined);
-  const [mediaPhotoLoading, setMediaPhotoLoading] = useState(false);
-
-  const handleMediaPhoto = async (file: File) => {
-    setMediaPhotoLoading(true);
-    try { setMediaPhoto(await compressImage(file)); } catch (_) {}
-    setMediaPhotoLoading(false);
-  };
-
-  const submitMedia = () => {
-    if (!mediaTitle.trim()) { showToast("⚠️ Title is required."); return; }
-    if (mediaType === "photo" && !mediaPhoto) { showToast("⚠️ Please select a photo."); return; }
-    if (mediaType === "video" && !mediaVideoUrl.trim()) { showToast("⚠️ Please enter a YouTube URL."); return; }
-    if (mediaType === "video" && !getYoutubeId(mediaVideoUrl)) { showToast("⚠️ Invalid YouTube URL. Use a youtube.com or youtu.be link."); return; }
-    onAddMedia({ id: uuid(), type: mediaType, title: mediaTitle.trim(), caption: mediaCaption.trim() || undefined, url: mediaType === "photo" ? mediaPhoto! : mediaVideoUrl.trim(), createdAt: new Date().toISOString() });
-    setMediaTitle(""); setMediaCaption(""); setMediaVideoUrl(""); setMediaPhoto(undefined);
-    showToast("✅ Added to gallery!");
-  };
-
-  const savePassword = () => {
-    if (newPw.length < 4) { setPwErr("Password must be at least 4 characters."); return; }
-    if (newPw !== confirmPw) { setPwErr("Passwords do not match."); return; }
-    onSavePassword(newPw);
-    setNewPw(""); setConfirmPw(""); setPwErr("");
-    showToast("✅ Super admin password updated successfully.");
-  };
-
-  const saveUserAdminPw = () => {
-    if (newUserAdminPw.length < 4) { showToast("⚠️ Password must be at least 4 characters."); return; }
-    onSaveUserAdminPassword(newUserAdminPw);
-    setNewUserAdminPw("");
-    showToast("✅ User-Admin password updated successfully.");
-  };
-
-  const saveComplaintAdminPw = () => {
-    if (newComplaintAdminPw.length < 4) { showToast("⚠️ Password must be at least 4 characters."); return; }
-    onSaveComplaintAdminPassword(newComplaintAdminPw);
-    setNewComplaintAdminPw("");
-    showToast("✅ Complaint-Admin password updated successfully.");
-  };
-
-  const exportCSV = () => {
-    const headers = ["ID","Title","Category","Ward","Priority","Status","Name","Mobile","Date","Description","Admin Notes"];
-    const rows = problems.map(p => [
-      p.id, `"${p.title}"`, p.category, p.ward, p.priority, p.status,
-      p.name, p.mobile, fmtDate(p.submittedAt), `"${p.description}"`, `"${p.adminNotes}"`
-    ]);
-    const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "gram-sabha-pahrajpur-issues.csv"; a.click();
-    URL.revokeObjectURL(url);
-    showToast("✅ CSV exported successfully.");
-  };
-
-  const card = (children: React.ReactNode) => (
-    <div className="glass" style={{ borderRadius: 18, padding: "24px 22px", marginBottom: 16 }}>{children}</div>
-  );
-
-  return (
-    <div style={{ maxWidth: 640, margin: "0 auto", paddingTop: 32 }}>
-      <FadeIn>
-        <div style={{ marginBottom: 28 }}>
-          <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>⚙️ Admin Settings</h2>
-          <p style={{ fontSize: 13, color: "var(--ct4)" }}>Full control over the portal — only visible to you.</p>
-        </div>
-      </FadeIn>
-
-      {/* ── Change Password ── */}
-      <FadeIn delay={80}>
-        {card(<>
-          <SectionHead icon="🔑" title="Change Super Admin Password" />
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <input type="password" placeholder="New password" value={newPw} onChange={e => { setNewPw(e.target.value); setPwErr(""); }} />
-            <input type="password" placeholder="Confirm new password" value={confirmPw} onChange={e => { setConfirmPw(e.target.value); setPwErr(""); }} />
-            {pwErr && <div style={{ fontSize: 13, color: "#ef4444" }}>{pwErr}</div>}
-            <button className="btn-white" onClick={savePassword} style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }}>Update Password →</button>
-          </div>
-        </>)}
-      </FadeIn>
-
-      {/* ── Role Admin Passwords ── */}
-      <FadeIn delay={90}>
-        {card(<>
-          <SectionHead icon="👥" title="User-Admin Password" />
-          <p style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 12 }}>Give this password to the person who will block/delete fake users.</p>
-          <div style={{ display: "flex", gap: 10 }}>
-            <input type="text" placeholder="New User-Admin password" value={newUserAdminPw} onChange={e => setNewUserAdminPw(e.target.value)} />
-            <button className="btn-white" onClick={saveUserAdminPw} style={{ borderRadius: 10, padding: "0 18px", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>Save</button>
-          </div>
-          <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 8 }}>Current: {userAdminPassword}</div>
-        </>)}
-      </FadeIn>
-
-      <FadeIn delay={100}>
-        {card(<>
-          <SectionHead icon="📋" title="Complaint-Admin Password" />
-          <p style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 12 }}>Give this password to the person who will filter and delete fake complaints.</p>
-          <div style={{ display: "flex", gap: 10 }}>
-            <input type="text" placeholder="New Complaint-Admin password" value={newComplaintAdminPw} onChange={e => setNewComplaintAdminPw(e.target.value)} />
-            <button className="btn-white" onClick={saveComplaintAdminPw} style={{ borderRadius: 10, padding: "0 18px", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>Save</button>
-          </div>
-          <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 8 }}>Current: {complaintAdminPassword}</div>
-        </>)}
-      </FadeIn>
-
-      {/* ── Village Info ── */}
-      <FadeIn delay={160}>
-          {card(<>
-          <SectionHead icon="🏘" title="Village & Sarpanch Info" />
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>Village Name (Hindi/English)</label>
-              <input value={village} onChange={e => setVillage(e.target.value)} placeholder="ग्राम सभा पहराजपुर" />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>Sarpanch Name</label>
-              <input value={sarpanch} onChange={e => setSarpanch(e.target.value)} placeholder="Priyanka Yadav" />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>Sarpanch Address</label>
-              <input value={addr} onChange={e => setAddr(e.target.value)} placeholder="Gram Sabha Pahrajpur, Ballia, Uttar Pradesh" />
-            </div>
-            <button className="btn-white" onClick={() => { onSaveInfo(village, sarpanch); onSaveSarpanchAddress(addr); showToast("✅ Village info updated."); }} style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }}>
-              Save Info →
-            </button>
-          </div>
-        </>)}
-      </FadeIn>
-
-      {/* ── Sarpanch Photo + Social ── */}
-      <FadeIn delay={200}>
-        {card(<>
-          <SectionHead icon="📱" title="Sarpanch Photo & Contact Links" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 16, lineHeight: 1.6 }}>
-            These appear on the home page Sarpanch card. Photo max 2 MB.
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-            {/* Photo upload */}
-            <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-              <div style={{ width: 72, height: 72, borderRadius: 16, overflow: "hidden", flexShrink: 0, border: "2px solid rgba(34,197,94,0.3)", background: "linear-gradient(135deg,#16a34a,#166534)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {photoPreview
-                  ? <img src={photoPreview} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  : <span style={{ fontSize: 32 }}>👩</span>}
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500, display: "block", marginBottom: 8 }}>Sarpanch Profile Photo</label>
-                <label style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "9px 18px", borderRadius: 10, background: "var(--cbg7)", border: "1px solid rgba(255,255,255,0.15)", fontSize: 13, fontWeight: 600, cursor: "pointer", color: "var(--text-main)" }}>
-                  📷 Choose Photo
-                  <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: "none" }} />
-                </label>
-                {photoPreview && (
-                  <button onClick={() => { setPhotoPreview(""); onSaveSarpanchPhoto(""); showToast("🗑 Photo removed."); }}
-                    style={{ marginLeft: 10, fontSize: 12, color: "#f87171", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
-                    Remove
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div style={{ height: 1, background: "var(--cbg6)" }} />
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>WhatsApp Number (10 digits)</label>
-              <input value={wa} onChange={e => setWa(e.target.value)} placeholder="9876543210" maxLength={15} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <label style={{ fontSize: 12, color: "var(--ct5)", fontWeight: 500 }}>Instagram Username (without @)</label>
-              <input value={ig} onChange={e => setIg(e.target.value)} placeholder="priyanka_sarpanch" maxLength={40} />
-            </div>
-            <button className="btn-white" onClick={() => { onSaveSocial(wa, ig); showToast("✅ Contact links saved."); }} style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }}>
-              Save Contact Links →
-            </button>
-          </div>
-        </>)}
-      </FadeIn>
-
-      {/* ── Export ── */}
-      <FadeIn delay={240}>
-        {card(<>
-          <SectionHead icon="📊" title="Export Data" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 14, lineHeight: 1.6 }}>
-            Download all {problems.length} reported issues as a CSV file. Opens in Excel, Google Sheets, etc.
-          </p>
-          <button className="btn-ghost" onClick={exportCSV} style={{ borderRadius: 10, padding: "11px 0", width: "100%", fontSize: 14, fontWeight: 600 }}>
-            ⬇️ Download CSV ({problems.length} issues)
-          </button>
-        </>)}
-      </FadeIn>
-
-      {/* ── Achievements Manager ── */}
-      <FadeIn delay={300}>
-        {card(<>
-          <SectionHead icon="🏆" title="Achievements & Completed Works" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 18, lineHeight: 1.6 }}>
-            Add completed development works and achievements visible to all villagers.
-          </p>
-
-          {/* Add form */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "16px", background: "rgba(34,197,94,0.05)", borderRadius: 14, border: "1px solid rgba(34,197,94,0.15)", marginBottom: 18 }}>
-            <div style={{ fontSize: 12, color: "#22c55e", fontWeight: 600, marginBottom: 4 }}>+ Add New Achievement</div>
-            <input placeholder="Work Title *" value={achForm.title} onChange={e => setAF("title", e.target.value)} maxLength={120} />
-            <textarea rows={3} placeholder="Description — what was done, cost, benefit…" value={achForm.description} onChange={e => setAF("description", e.target.value)} maxLength={600} />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-              <select value={achForm.category} onChange={e => setAF("category", e.target.value)}>
-                {ACH_CATEGORIES.map(c => <option key={c}>{c}</option>)}
-              </select>
-              <select value={achForm.village} onChange={e => setAF("village", e.target.value)}>
-                {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
-              </select>
-              <input type="date" value={achForm.date} onChange={e => setAF("date", e.target.value)} />
-            </div>
-
-            {/* Photo upload */}
-            <label style={{ cursor: "pointer", border: "1px dashed rgba(34,197,94,0.3)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(34,197,94,0.03)" }}>
-              {achPhotoLoading ? "⏳ Compressing…" : achPhoto ? "📷 Photo attached — click to change" : "📷 Add Photo (optional)"}
-              <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) handleAchPhoto(e.target.files[0]); }} />
-            </label>
-            {achPhoto && (
-              <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <img src={achPhoto} alt="preview" style={{ width: "100%", maxHeight: 160, objectFit: "cover", display: "block" }} />
-                <button onClick={() => setAchPhoto(undefined)} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 12 }}>✕ Remove</button>
-              </div>
-            )}
-
-            <button className="btn-white" style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }}
-              onClick={() => {
-                if (!achForm.title.trim()) { showToast("⚠️ Title is required."); return; }
-                if (!achForm.description.trim()) { showToast("⚠️ Description is required."); return; }
-                onAddAchievement({ id: uuid(), ...achForm, photo: achPhoto });
-                setAchForm(blankAch()); setAchPhoto(undefined);
-                showToast("✅ Achievement added successfully!");
-              }}>
-              Add Achievement →
-            </button>
-          </div>
-
-          {/* List */}
-          {achievements.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "20px 0", color: "var(--ct3)", fontSize: 13 }}>No achievements added yet.</div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {achievements.map(a => (
-                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <div style={{ fontSize: 18 }}>{ACH_CAT_ICONS[a.category] ?? "✅"}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.title}</div>
-                    <div style={{ fontSize: 11, color: "var(--ct35)" }}>{a.category} · {a.village} · {a.date}</div>
-                  </div>
-                  <button className="btn-danger" style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { onDeleteAchievement(a.id); showToast("🗑 Achievement deleted."); }}>Delete</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </>)}
-      </FadeIn>
-
-      {/* ── Notices Manager ── */}
-      <FadeIn delay={360}>
-        {card(<>
-          <SectionHead icon="📢" title="Notices & Announcements" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 18, lineHeight: 1.6 }}>
-            Post official notices visible to all villagers on the home page.
-          </p>
-
-          {/* Add form */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 16, background: "rgba(245,158,11,0.05)", borderRadius: 14, border: "1px solid rgba(245,158,11,0.2)", marginBottom: 18 }}>
-            <div style={{ fontSize: 12, color: "#f59e0b", fontWeight: 600, marginBottom: 2 }}>+ Post New Notice</div>
-
-            {/* Type selector */}
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {NOTICE_TYPES.map(t => {
-                const m = NOTICE_META[t];
-                return (
-                  <button key={t} onClick={() => setNoticeType(t)} style={{ padding: "6px 12px", borderRadius: 9, border: `1px solid ${noticeType === t ? m.color + "88" : "var(--cb10)"}`, background: noticeType === t ? m.bg : "rgba(255,255,255,0.03)", color: noticeType === t ? m.color : "rgba(255,255,255,0.38)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-                    {m.icon} {m.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <input placeholder="Notice Title *" value={noticeTitle} onChange={e => setNoticeTitle(e.target.value)} maxLength={120} />
-            <textarea rows={4} placeholder="Full notice / announcement text…" value={noticeBody} onChange={e => setNoticeBody(e.target.value)} maxLength={800} />
-            <div style={{ display: "flex", gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: 11, color: "var(--ct4)", marginBottom: 4, display: "block" }}>Notice Date</label>
-                <input type="date" value={noticeDate} onChange={e => setNoticeDate(e.target.value)} />
-              </div>
-            </div>
-            <button className="btn-white" style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }} onClick={submitNotice}>
-              Post Notice →
-            </button>
-          </div>
-
-          {/* List */}
-          {notices.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "16px 0", color: "var(--ct3)", fontSize: 13 }}>No notices posted yet.</div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {[...notices].sort((a,b) => new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).map(n => {
-                const m = NOTICE_META[n.type];
-                return (
-                  <div key={n.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderLeft: `3px solid ${m.color}` }}>
-                    <span style={{ fontSize: 18 }}>{m.icon}</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title}</div>
-                      <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.label} · {n.date}</div>
-                    </div>
-                    <button className="btn-danger" style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { onDeleteNotice(n.id); showToast("🗑 Notice deleted."); }}>Delete</button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>)}
-      </FadeIn>
-
-      {/* ── Gallery Manager ── */}
-      <FadeIn delay={380}>
-        {card(<>
-          <SectionHead icon="📷" title="Photos & Videos Gallery" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 18, lineHeight: 1.6 }}>
-            Upload village photos or add YouTube videos. Visible to all on the home page.
-          </p>
-
-          {/* Type toggle */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-            {(["photo","video"] as const).map(t => (
-              <button key={t} onClick={() => setMediaType(t)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: `1px solid ${mediaType === t ? "rgba(168,85,247,0.5)" : "var(--cb10)"}`, background: mediaType === t ? "rgba(168,85,247,0.15)" : "var(--cbg4)", color: mediaType === t ? "#c084fc" : "var(--ct4)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                {t === "photo" ? "📷 Photo" : "🎬 YouTube Video"}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 16, background: "rgba(168,85,247,0.05)", borderRadius: 14, border: "1px solid rgba(168,85,247,0.15)", marginBottom: 18 }}>
-            <input placeholder="Title *" value={mediaTitle} onChange={e => setMediaTitle(e.target.value)} maxLength={100} />
-            <input placeholder="Caption (optional)" value={mediaCaption} onChange={e => setMediaCaption(e.target.value)} maxLength={200} />
-
-            {mediaType === "photo" ? (<>
-              <label style={{ cursor: "pointer", border: "1px dashed rgba(168,85,247,0.35)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(168,85,247,0.04)" }}>
-                {mediaPhotoLoading ? "⏳ Compressing…" : mediaPhoto ? "📷 Photo selected — click to change" : "📷 Select Photo"}
-                <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) handleMediaPhoto(e.target.files[0]); }} />
-              </label>
-              {mediaPhoto && (
-                <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <img src={mediaPhoto} alt="preview" style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block" }} />
-                  <button onClick={() => setMediaPhoto(undefined)} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 12 }}>✕</button>
-                </div>
-              )}
-            </>) : (
-              <input placeholder="YouTube URL (e.g. https://youtu.be/xxxxx)" value={mediaVideoUrl} onChange={e => setMediaVideoUrl(e.target.value)} />
-            )}
-
-            <button className="btn-white" style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }} onClick={submitMedia}>
-              Add to Gallery →
-            </button>
-          </div>
-
-          {/* Existing items list */}
-          {media.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "16px 0", color: "var(--ct3)", fontSize: 13 }}>No gallery items yet.</div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {media.map(m => (
-                <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  {m.type === "photo"
-                    ? <img src={m.url} alt={m.title} style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
-                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: "rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>🎬</div>}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</div>
-                    <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.type === "photo" ? "📷 Photo" : "🎬 Video"} · {fmtDate(m.createdAt)}</div>
-                  </div>
-                  <button className="btn-danger" style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { onDeleteMedia(m.id); showToast("🗑 Removed from gallery."); }}>Delete</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </>)}
-      </FadeIn>
-
-      {/* ── Feedback Manager ── */}
-      <FadeIn delay={440}>
-        {card(<>
-          <SectionHead icon="💬" title="Public Feedback" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 14, lineHeight: 1.6 }}>
-            {feedbacks.length} feedback{feedbacks.length!==1?"s":""} received from villagers.
-          </p>
-          {feedbacks.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "14px 0", color: "var(--ct3)", fontSize: 13 }}>No feedback yet.</div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 320, overflowY: "auto" }}>
-              {[...feedbacks].sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime()).map(f => (
-                <div key={f.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 14px", borderRadius:12, background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)" }}>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
-                      {f.name}
-                      <span style={{ fontSize:12 }}>{Array.from({length:f.rating}).map((_,i)=><span key={i}>⭐</span>)}</span>
-                    </div>
-                    <div style={{ fontSize:12, color:"var(--ct45)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{f.message}</div>
-                    <div style={{ fontSize:11, color:"var(--cb25)", marginTop:2 }}>{fmtDate(f.createdAt)}</div>
-                  </div>
-                  <button className="btn-danger" style={{ borderRadius:8, padding:"5px 12px", fontSize:12, flexShrink:0 }} onClick={() => { onDeleteFeedback(f.id); showToast("🗑 Feedback removed."); }}>Delete</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </>)}
-      </FadeIn>
-
-      {/* ── Danger Zone ── */}
-      <FadeIn delay={500}>
-        {card(<>
-          <SectionHead icon="⚠️" title="Danger Zone" />
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 12, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>Delete Resolved Issues</div>
-                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 3 }}>{problems.filter(p => p.status === "Resolved").length} resolved issues will be removed</div>
-              </div>
-              {confirmClear === "resolved"
-                ? <div style={{ display: "flex", gap: 8 }}>
-                    <button className="btn-danger" style={{ borderRadius: 8, padding: "7px 14px", fontSize: 13 }} onClick={() => { onClearResolved(); setConfirmClear(null); }}>Confirm</button>
-                    <button className="btn-ghost" style={{ borderRadius: 8, padding: "7px 14px", fontSize: 13 }} onClick={() => setConfirmClear(null)}>Cancel</button>
-                  </div>
-                : <button className="btn-danger" style={{ borderRadius: 8, padding: "7px 14px", fontSize: 13 }} onClick={() => setConfirmClear("resolved")}>Delete</button>}
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 12, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>Clear ALL Issues</div>
-                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 3 }}>Permanently delete all {problems.length} issues</div>
-              </div>
-              {confirmClear === "all"
-                ? <div style={{ display: "flex", gap: 8 }}>
-                    <button className="btn-danger" style={{ borderRadius: 8, padding: "7px 14px", fontSize: 13 }} onClick={() => { onClearAll(); setConfirmClear(null); }}>Confirm</button>
-                    <button className="btn-ghost" style={{ borderRadius: 8, padding: "7px 14px", fontSize: 13 }} onClick={() => setConfirmClear(null)}>Cancel</button>
-                  </div>
-                : <button className="btn-danger" style={{ borderRadius: 8, padding: "7px 14px", fontSize: 13 }} onClick={() => setConfirmClear("all")}>Clear All</button>}
-            </div>
-          </div>
-        </>)}
-      </FadeIn>
-    </div>
-  );
-}
-
-
-// ── Enhanced Floating Action Button with Voice & Photo ─────────────────────
-function EnhancedFAB({
-  onOpenSubmit, isOpen, onOpenBoard, onOpenNotices,
-}: {
-  onOpenSubmit: () => void;
-  isOpen: boolean;
-  onOpenBoard: () => void;
-  onOpenNotices: () => void;
-}) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [voiceText, setVoiceText] = useState("");
-  const recognitionRef = useRef<any>(null);
-
-  const startVoiceInput = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("🎤 Speech recognition not supported on your device");
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = "hi-IN";
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = false;
-
-    recognitionRef.current.onstart = () => setIsListening(true);
-    recognitionRef.current.onend = () => setIsListening(false);
-
-    recognitionRef.current.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setVoiceText(transcript);
-      onOpenSubmit();
-    };
-
-    recognitionRef.current.onerror = () => {
-      setIsListening(false);
-      alert("🎤 Mic access denied or error occurred");
-    };
-
-    recognitionRef.current.start();
-  };
-
-  const handleAction = (fn: () => void) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    fn();
-  };
-
-  return (
-    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-
-      {/* Backdrop dim when open */}
-      {menuOpen && (
-        <div
-          onClick={() => setMenuOpen(false)}
-          style={{ position: "fixed", inset: 0, background: "rgba(5,10,8,0.45)", backdropFilter: "blur(3px)", zIndex: -1 }}
-        />
-      )}
-
-      <style>{`
-        .lg-btn {
-          position: relative;
-          border-radius: 50%;
-          background:
-            linear-gradient(155deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 50%, rgba(255,255,255,0.1) 100%),
-            rgba(10,18,14,0.55);
-          backdrop-filter: blur(18px) saturate(160%);
-          -webkit-backdrop-filter: blur(18px) saturate(160%);
-          border: 1px solid rgba(255,255,255,0.28);
-          box-shadow: 0 1px 1px rgba(255,255,255,0.35) inset, 0 -6px 12px rgba(255,255,255,0.05) inset, 0 12px 28px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; user-select: none;
-        }
-        .lg-btn::before {
-          content: ''; position: absolute; top: 6%; left: 12%; width: 50%; height: 35%;
-          border-radius: 50%; background: radial-gradient(ellipse, rgba(255,255,255,0.5) 0%, transparent 70%);
-          pointer-events: none; opacity: 0.8;
-        }
-        .lg-btn svg { display: block; flex-shrink: 0; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); }
-        .lg-action {
-          width: 52px; height: 52px; color: rgba(255,255,255,0.92);
-          opacity: 0; transform: translateY(16px) scale(0.5); pointer-events: none;
-          transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
-        }
-        .lg-zone-open .lg-action { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-        .lg-zone-open .lg-action:nth-child(1) { transition-delay: 0.21s; }
-        .lg-zone-open .lg-action:nth-child(2) { transition-delay: 0.16s; }
-        .lg-zone-open .lg-action:nth-child(3) { transition-delay: 0.11s; }
-        .lg-zone-open .lg-action:nth-child(4) { transition-delay: 0.06s; }
-        .lg-zone-open .lg-action:nth-child(5) { transition-delay: 0.01s; }
-        .lg-action:active { transform: scale(0.88) !important; }
-        .lg-label {
-          position: absolute; right: 64px; top: 50%; transform: translateY(-50%);
-          background: rgba(20,28,22,0.92); color: #fff; font-size: 12.5px; font-weight: 500;
-          padding: 7px 12px; border-radius: 8px; white-space: nowrap;
-          opacity: 0; transition: opacity 0.3s; pointer-events: none;
-          border: 1px solid rgba(255,255,255,0.08);
-        }
-        .lg-zone-open .lg-action .lg-label { opacity: 1; }
-        .lg-zone-open .lg-action:nth-child(1) .lg-label { transition-delay: 0.43s; }
-        .lg-zone-open .lg-action:nth-child(2) .lg-label { transition-delay: 0.38s; }
-        .lg-zone-open .lg-action:nth-child(3) .lg-label { transition-delay: 0.33s; }
-        .lg-zone-open .lg-action:nth-child(4) .lg-label { transition-delay: 0.28s; }
-        .lg-zone-open .lg-action:nth-child(5) .lg-label { transition-delay: 0.23s; }
-        .lg-main {
-          width: 64px; height: 64px; color: #fff;
-          background: linear-gradient(155deg, #15803d 0%, #052e16 75%) !important;
-          border: 1px solid rgba(255,255,255,0.28) !important;
-          box-shadow: 0 1px 1px rgba(255,255,255,0.25) inset, 0 12px 28px rgba(0,0,0,0.5), 0 2px 8px rgba(5,46,22,0.55) !important;
-          transition: transform 0.3s, background 0.3s, border-color 0.3s;
-        }
-        .lg-main:active { transform: scale(0.92); }
-        .lg-main-icon {
-          display:flex; align-items:center; justify-content:center;
-          transition: transform 0.45s cubic-bezier(0.65,0,0.35,1);
-          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4));
-        }
-        .lg-zone-open .lg-main { background: linear-gradient(155deg, #dc2626 0%, #450a0a 75%) !important; border-color: rgba(255,255,255,0.3) !important; }
-        .lg-zone-open .lg-main .lg-main-icon { transform: rotate(45deg); }
-        .lg-main::after {
-          content: ''; position: absolute; inset: -6px; border-radius: 50%;
-          border: 1.5px solid rgba(34,197,94,0.35); animation: lgPulse 2.6s ease-out infinite;
-        }
-        .lg-zone-open .lg-main::after { animation: none; opacity: 0; }
-        @keyframes lgPulse { 0% { transform: scale(1); opacity: .6; } 70% { transform: scale(1.35); opacity: 0; } 100% { transform: scale(1.35); opacity: 0; } }
-        .lg-mic { width: 52px; height: 52px; }
-        .lg-mic.listening { background: linear-gradient(155deg, rgba(248,113,113,0.4) 0%, rgba(255,255,255,0.06) 60%); border-color: rgba(248,113,113,0.5); animation: lgListenPulse 1s infinite; }
-        @keyframes lgListenPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.5); } 50% { box-shadow: 0 0 0 10px rgba(248,113,113,0); } }
-        @media (prefers-reduced-motion: reduce) { .lg-action, .lg-main, .lg-main-icon, .lg-mic { transition: none !important; animation: none !important; } }
-      `}</style>
-
-      <div className={menuOpen ? "lg-zone-open" : ""} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-
-        {/* Notices */}
-        <div className="lg-btn lg-action" onClick={handleAction(onOpenNotices)} title="Notices">
-          <span className="lg-label">Notices</span>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
-        </div>
-
-        {/* Board */}
-        <div className="lg-btn lg-action" onClick={handleAction(onOpenBoard)} title="All Issues">
-          <span className="lg-label">All Issues</span>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-        </div>
-
-        {/* Voice */}
-        <div
-          className={`lg-btn lg-action lg-mic ${isListening ? "listening" : ""}`}
-          onClick={startVoiceInput}
-          title={isListening ? "Listening..." : "Report with voice"}
-        >
-          <span className="lg-label">{isListening ? "Listening…" : "Voice Report"}</span>
-          {isListening ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-          )}
-        </div>
-
-        {/* Submit / Report */}
-        <div className="lg-btn lg-action" onClick={(e) => { handleAction(onOpenSubmit)(e); setMenuOpen(false); }} title="Report a Problem">
-          <span className="lg-label">Report Problem</span>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
-        </div>
-
-        {/* Main toggle */}
-        <div className="lg-btn lg-main" onClick={() => setMenuOpen(m => !m)}>
-          <span className="lg-main-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-          </span>
-        </div>
-
-      </div>
-    </div>
-  );
-}
-
-// ── Photo Carousel ───────────────────────────────────────────────────────────
-function PhotoCarousel({ media }: { media: any[] }) {
-  const [current, setCurrent] = useState(0);
-  const [animating, setAnimating] = useState(false);
-
-  useEffect(() => {
-    if (media.length === 0) return;
-    const timer = setInterval(() => {
-      setAnimating(true);
-      setTimeout(() => {
-        setCurrent(c => (c + 1) % media.length);
-        setAnimating(false);
-      }, 400);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [media.length]);
-
-  if (!media || media.length === 0) return (
-    <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16 }}>📷 Village Gallery</h2>
-      <div style={{ borderRadius: 16, background: "var(--cbg5)", height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "var(--ct4)", fontSize: 13 }}>No photos uploaded yet</p>
-      </div>
-    </div>
-  );
-
-  const idx1 = current % media.length;
-  const idx2 = (current + 1) % media.length;
-
-  return (
-    <div style={{ marginTop: 32, marginBottom: 8 }}>
-      <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 12 }}>📷 Village Gallery</h2>
-      <div style={{ 
-        display: "flex", gap: 10, perspective: "1000px",
-        transform: animating ? "rotateY(90deg)" : "rotateY(0deg)",
-        transition: "transform 0.4s ease",
-      }}>
-        {[idx1, idx2].map((idx, pos) => (
-          <div key={idx} style={{
-            flex: 1, borderRadius: 12, overflow: "hidden",
-            aspectRatio: "3/2",
-            maxHeight: 140,
-            boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-            transform: animating 
-              ? pos === 0 ? "rotateY(-90deg) scale(0.85)" : "rotateY(90deg) scale(0.85)"
-              : "rotateY(0deg) scale(1)",
-            transition: `transform 0.4s ease ${pos * 0.05}s`,
-          }}>
-            <img
-              src={media[idx]?.url}
-              alt={media[idx]?.caption || ""}
-              style={{ width: "100%", height: "100%", objectFit: "cover", imageRendering: "auto" }}
-            />
-          </div>
-        ))}
-      </div>
-      {/* Dots */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
-        {media.map((_, i) => (
-          <div key={i} onClick={() => setCurrent(i)} style={{
-            width: i === current ? 20 : 7, height: 7,
-            borderRadius: 4, background: i === current ? "var(--text-main)" : "var(--cb20)",
-            cursor: "pointer", transition: "all 0.3s"
-          }} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const saveSettings = async (data) => {
-    try {
-      await setDoc(doc(db, "settings", "main"), data, { merge: true });
-    } catch(e) { console.log(e); }
-  };
-
-
-// ── Welcome Splash ──────────────────────────────────────────────────────────
-const SPLASH_STYLE = `
-  @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
-  @keyframes glowPulse { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:0.9;transform:scale(1.08)} }
-  @keyframes particleDrift { 0%,100%{transform:translateY(0) scale(1);opacity:0.5} 50%{transform:translateY(-28px) scale(1.3);opacity:1} }
-  @keyframes borderRotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-  @keyframes splashExit { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(1.04)} }
-  .splash-shimmer { background:linear-gradient(90deg,#fff 0%,#a3f0c0 20%,#fff 40%,#d4af37 60%,#fff 80%,#a3f0c0 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite; }
-  .splash-exit { animation:splashExit 0.7s ease forwards; }
-`;
-
-function WelcomeSplash({ onDone }: { onDone: () => void }) {
-  const isReturning = !!localStorage.getItem("gsp-visited");
-  const [phase, setPhase] = useState(0);
-  const [exiting, setExiting] = useState(false);
-  useEffect(() => {
-    const t = [
-      setTimeout(() => setPhase(1), 300),
-      setTimeout(() => setPhase(2), 1000),
-      setTimeout(() => setPhase(3), 1800),
-      setTimeout(() => setPhase(4), 2600),
-      setTimeout(() => setPhase(5), 3400),
-      setTimeout(() => setExiting(true), 4800),
-      setTimeout(() => onDone(), 5500),
-    ];
-    return () => t.forEach(clearTimeout);
-  }, [onDone]);
-  const vis = (p: number): React.CSSProperties => ({
-    opacity: phase >= p ? 1 : 0,
-    transform: phase >= p ? "translateY(0)" : "translateY(22px)",
-    transition: "opacity 0.6s ease, transform 0.6s ease",
-  });
-  const particles = [
-    {top:"10%",left:"7%",size:5,delay:"0s",dur:"4.2s"},
-    {top:"18%",left:"90%",size:4,delay:"0.5s",dur:"5s"},
-    {top:"68%",left:"4%",size:6,delay:"1s",dur:"4.6s"},
-    {top:"80%",left:"93%",size:3,delay:"0.3s",dur:"6s"},
-    {top:"45%",left:"2%",size:4,delay:"0.8s",dur:"5.4s"},
-    {top:"55%",left:"96%",size:5,delay:"1.3s",dur:"4s"},
-  ];
-  return (
-    <div className={exiting ? "splash-exit" : ""} style={{position:"fixed",inset:0,zIndex:99999,display:"flex",alignItems:"center",justifyContent:"center",background:"#000",overflow:"hidden"}}>
-      <style>{SPLASH_STYLE}</style>
-      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 50%, #0a1a0d 0%, #000 70%)",pointerEvents:"none"}} />
-      <div style={{position:"absolute",width:"min(500px,90vw)",height:"min(500px,90vw)",borderRadius:"50%",border:"1px solid transparent",background:"linear-gradient(#000,#000) padding-box, conic-gradient(from 0deg, transparent 0%, rgba(34,197,94,0.55) 25%, transparent 50%, rgba(212,175,55,0.45) 75%, transparent 100%) border-box",animation:"borderRotate 8s linear infinite",pointerEvents:"none"}} />
-      <div style={{position:"absolute",width:"min(360px,70vw)",height:"min(360px,70vw)",borderRadius:"50%",background:"radial-gradient(circle, rgba(22,163,74,0.16) 0%, transparent 70%)",animation:"glowPulse 3s ease-in-out infinite",pointerEvents:"none"}} />
-      {particles.map((p,i) => (
-        <div key={i} style={{position:"absolute",top:p.top,left:p.left,width:p.size,height:p.size,borderRadius:"50%",background:"rgba(34,197,94,0.75)",boxShadow:`0 0 ${p.size*3}px rgba(34,197,94,0.6)`,animation:`particleDrift ${p.dur} ${p.delay} ease-in-out infinite`,pointerEvents:"none"}} />
-      ))}
-      <div style={{position:"relative",zIndex:2,textAlign:"center",padding:"0 24px",maxWidth:600,width:"100%"}}>
-        <div style={{...vis(1),marginBottom:26,display:"flex",justifyContent:"center"}}>
-          <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:72,height:72,borderRadius:20,background:"linear-gradient(135deg,#16a34a 0%,#166534 100%)",boxShadow:"0 0 0 1px rgba(255,255,255,0.15),0 0 40px rgba(22,163,74,0.55)",position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,rgba(255,255,255,0.25) 0%,transparent 60%)"}} />
-            <img src="/logo.png" alt="Logo" style={{ width: 44, height: 44, borderRadius: 12, objectFit: "contain", position: "relative", zIndex: 1 }} />
-          </div>
-        </div>
-        <div style={{...vis(2),marginBottom:10}}>
-          <div style={{fontFamily:"DM Sans,sans-serif",fontSize:11,fontWeight:700,letterSpacing:"0.38em",color:"rgba(212,175,55,0.88)",textTransform:"uppercase"}}>
-            {isReturning ? "✦  Welcome Back to the  ✦" : "✦  Welcome to the  ✦"}
-          </div>
-        </div>
-        <div style={{...vis(2),marginBottom:4}}>
-          <div className="splash-shimmer" style={{fontFamily:"Sora,sans-serif",fontWeight:800,fontSize:"clamp(32px,7vw,64px)",lineHeight:1.05,letterSpacing:"-0.03em"}}>Digital Portal</div>
-        </div>
-        <div style={{...vis(3),marginBottom:4}}>
-          <div style={{fontFamily:"DM Sans,sans-serif",fontSize:12,color:"rgba(255,255,255,0.4)",letterSpacing:"0.2em",textTransform:"uppercase"}}>of</div>
-        </div>
-        <div style={{...vis(3),marginBottom:2}}>
-          <div style={{fontFamily:"Sora,sans-serif",fontWeight:700,fontSize:"clamp(18px,4.5vw,36px)",color:"#fff"}}>Gram Sabha</div>
-        </div>
-        <div style={{...vis(3),marginBottom:20}}>
-          <div style={{fontFamily:"Sora,sans-serif",fontWeight:300,fontSize:"clamp(22px,5.5vw,46px)",color:"rgba(255,255,255,0.88)",letterSpacing:"0.05em",textTransform:"uppercase"}}>Pahrajpur</div>
-        </div>
-        <div style={{...vis(3),display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:20}}>
-          <div style={{height:1,width:70,background:"linear-gradient(90deg,transparent,rgba(212,175,55,0.7),transparent)"}} />
-          <div style={{width:5,height:5,borderRadius:"50%",background:"rgba(212,175,55,0.85)",boxShadow:"0 0 10px rgba(212,175,55,0.6)",flexShrink:0}} />
-          <div style={{height:1,width:70,background:"linear-gradient(90deg,transparent,rgba(212,175,55,0.7),transparent)"}} />
-        </div>
-        <div style={{...vis(4),marginBottom:28}}>
-          <p style={{fontFamily:"DM Sans,sans-serif",fontSize:"clamp(11px,2.5vw,14px)",color:"rgba(255,255,255,0.36)",letterSpacing:"0.14em",textTransform:"uppercase",lineHeight:1.9}}>ग्राम सेवा · पारदर्शिता · विकास</p>
-        </div>
-        <div style={{...vis(5)}}>
-          <button onClick={() => { setExiting(true); setTimeout(onDone, 700); }} style={{fontFamily:"Sora,sans-serif",fontWeight:600,fontSize:13,padding:"12px 34px",borderRadius:50,background:"rgba(22,163,74,0.12)",border:"1px solid rgba(34,197,94,0.4)",color:"#4ade80",cursor:"pointer",letterSpacing:"0.1em",textTransform:"uppercase",transition:"all 0.25s ease",backdropFilter:"blur(8px)"}}>
-            Enter Portal →
-          </button>
-          <p style={{marginTop:14,fontFamily:"DM Sans,sans-serif",fontSize:11,color:"rgba(255,255,255,0.25)"}}>Auto-entering in a moment…</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function App() {
-  const [showSplash, setShowSplash] = useState(!localStorage.getItem("gsp-visited"));
-  const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings">("home");
-  const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
-  const [adminRole, setAdminRole] = useState<AdminRole | null>(() => (localStorage.getItem("adminRole") as AdminRole) || null);
-  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
-  const [toast, setToast]           = useState<string | null>(null);
-  const [filterCat, setFilterCat]   = useState("All");
-  const [filterStatus, setFilterStatus] = useState("All");
-  const [filterWard, setFilterWard] = useState("All");
-  const [search, setSearch]         = useState("");
-  const [sort, setSort]             = useState("newest");
-  const [loading, setLoading]       = useState(true);
-
-  // Dynamic admin-configurable settings
-  const [adminPassword, setAdminPassword] = useState("admin123");
-  const [userAdminPassword, setUserAdminPassword] = useState("useradmin123");
-  const [complaintAdminPassword, setComplaintAdminPassword] = useState("workadmin123");
-  const [villageName, setVillageName]     = useState("Gram Sabha Pahrajpur");
-  const [sarpanchName, setSarpanchName]   = useState("Priyanka Yadav");
-  const [achievements, setAchievements]   = useState<Achievement[]>([]);
-  const [media, setMedia]                 = useState<MediaItem[]>([]);
-  const [notices, setNotices]             = useState<Notice[]>([]);
-  const [feedbacks, setFeedbacks]         = useState<Feedback[]>([]);
-  const [whatsapp, setWhatsapp]           = useState("");
-  const [instagram, setInstagram]         = useState("");
-  const [sarpanchPhoto, setSarpanchPhoto] = useState("");
-  const [sarpanchAddress, setSarpanchAddress] = useState("Gram Sabha Pahrajpur, Ballia, Uttar Pradesh");
-  const [theme, setTheme]                 = useState<"dark"|"light">("light");
-  const [showSubmitFAB, setShowSubmitFAB] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-
-  
-  // Load sarpanch settings from Firestore in realtime
-  useEffect(() => {
-    const sq = doc(db, "settings", "sarpanch");
-    const unsubSarpanch = onSnapshot(sq, (snap) => {
-      if (snap.exists()) {
-        const d = snap.data();
-        if (d.sarpanchName) setSarpanchName(d.sarpanchName);
-        if (d.sarpanchAddress) setSarpanchAddress(d.sarpanchAddress);
-        if (d.villageName) setVillageName(d.villageName);
-      }
-    });
-    return () => unsubSarpanch();
-  }, []);
-
-    // Load problems from Firestore in realtime
-  useEffect(() => {
-    const q = query(collection(db, "problems"), orderBy("submittedAt", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
-      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setProblems(list);
-    });
-    return () => unsub();
-  }, []);
-
-  
-  // Load settings from Firestore
-  useEffect(() => {
-    const unsub = onSnapshot(doc(db, "settings", "main"), (snap) => {
-      if (snap.exists()) {
-        const d = snap.data();
-        if (d.villageName) setVillageName(d.villageName);
-        if (d.sarpanchName) setSarpanchName(d.sarpanchName);
-        if (d.sarpanchAddress) setSarpanchAddress(d.sarpanchAddress);
-        if (d.whatsapp) setWhatsapp(d.whatsapp);
-        if (d.instagram) setInstagram(d.instagram);
-        if (d.adminPassword) setAdminPassword(d.adminPassword);
-        if (d.userAdminPassword) setUserAdminPassword(d.userAdminPassword);
-        if (d.complaintAdminPassword) setComplaintAdminPassword(d.complaintAdminPassword);
-        if (d.theme) setTheme(d.theme);
-        if (d.sarpanchPhoto) setSarpanchPhoto(d.sarpanchPhoto);
-      }
-    });
-    return () => unsub();
-  }, []);
-
-  
-  // Load achievements, media, notices, feedbacks from Firestore
-  useEffect(() => {
-    const unsub1 = onSnapshot(doc(db, "settings", "achievements"), (snap) => {
-      if (snap.exists() && snap.data().list) setAchievements(snap.data().list);
-    });
-        const unsub2 = onSnapshot(doc(db, "settings", "media"), (snap) => {
-          if (snap.exists() && snap.data().list) setMedia(snap.data().list);
-        });
-    const unsub3 = onSnapshot(doc(db, "settings", "notices"), (snap) => {
-      if (snap.exists() && snap.data().list) setNotices(snap.data().list);
-    });
-    const unsub4 = onSnapshot(doc(db, "settings", "feedback"), (snap) => {
-      if (snap.exists() && snap.data().list) setFeedbacks(snap.data().list);
-    });
-    return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
-  }, []);
-
-  useEffect(() => {
-    setLoading(false);
-  }, []);
-
-  // Load blocked users list from Firestore in realtime
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, "blockedUsers"), (snap) => {
-      setBlockedUsers(snap.docs.map(d => d.data() as BlockedUser));
-    });
-    return () => unsub();
-  }, []);
-
-  // Cache media for instant load
-  useEffect(() => {
-    if (media.length > 0) {
-      try { localStorage.setItem('cached-media', JSON.stringify(media)); } catch {}
-    }
-  }, [media]);
-
-  const saveProblems = (list: Problem[]) => {
-    setProblems(list);
-    // Problems saved to Firestore
-  };
-
-  const addProblem = async (p: Problem) => {
-    if (blockedUsers.some(u => u.mobile === p.mobile)) {
-      showToast("❌ Aapka number block kar diya gaya hai. Aap complaint submit nahi kar sakte.");
-      throw new Error("blocked");
-    }
-    try {
-      const firestoreData = p as any;
-      const cleanData = Object.fromEntries(Object.entries(firestoreData).filter(([_, v]) => v !== undefined));
-      await setDoc(doc(db, "problems", p.id), cleanData);
-      setSubmitSuccess(true);
-      showToast(`✅ Problem submitted! Your ID: #${p.id}`);
-    } catch(e: any) {
-      showToast("❌ Submit failed. Try again.");
-      throw e;
-    }
-  };
-
-  const updateProblem = async (id: string, changes: Partial<Problem>) => {
-    await updateDoc(doc(db, "problems", id), changes);
-    showToast("✅ Problem updated successfully.");
-  };
-
-  const deleteProblem = async (id: string) => {
-    await deleteDoc(doc(db, "problems", id));
-    showToast("🗑 Issue deleted.");
-  };
-
-  const clearResolved = async () => {
-    await Promise.all(problems.filter(p => p.status === "Resolved").map(p => deleteDoc(doc(db, "problems", p.id))));
-    showToast("🗑 All resolved issues deleted.");
-  };
-
-  const clearAll = async () => {
-    await Promise.all(problems.map(p => deleteDoc(doc(db, "problems", p.id))));
-    showToast("🗑 All issues cleared.");
-  };
-
-  const saveAchievements = (list: Achievement[]) => {
-    setAchievements(list);
-    try { setDoc(doc(db, "settings", "achievements"), { list: list }); } catch (_) {}
-  };
-
-  const addAchievement = (a: Achievement) => saveAchievements([a, ...achievements]);
-  const deleteAchievement = (id: string) => saveAchievements(achievements.filter(a => a.id !== id));
-
-    const saveMedia = (list: MediaItem[]) => { setMedia(list); try { const cleanList = list.map(({photo, ...rest}) => rest); setDoc(doc(db, "settings", "media"), { list: cleanList }); } catch (_) {} };
-    const addMedia = (m: MediaItem) => saveMedia([m, ...media]);
-    const deleteMedia = (id: string) => saveMedia(media.filter(m => m.id !== id));
-
-  const saveNotices = (list: Notice[]) => {
-    setNotices(list);
-    try { setDoc(doc(db, "settings", "notices"), { list: list }); } catch (_) {}
-  };
-  const addNotice    = (n: Notice) => saveNotices([n, ...notices]);
-  const deleteNotice = (id: string) => saveNotices(notices.filter(n => n.id !== id));
-
-  const saveFeedbacks  = (list: Feedback[]) => { setFeedbacks(list); try { setDoc(doc(db, "settings", "feedback"), { list: list }); } catch (_) {} };
-  const addFeedback    = (f: Feedback) => saveFeedbacks([f, ...feedbacks]);
-  const deleteFeedback = (id: string)  => saveFeedbacks(feedbacks.filter(f => f.id !== id));
-
-  const saveSocial = (w: string, i: string) => {
-    setWhatsapp(w); setInstagram(i);
-    try { saveSettings({ whatsapp: w }); saveSettings({ instagram: i }); } catch (_) {}
-  };
-  const saveSarpanchPhoto = (p: string) => {
-    setSarpanchPhoto(p);
-    try { setDoc(doc(db, "settings", "main"), { sarpanchPhoto: p }, { merge: true }); localStorage.setItem("gram-seva:sarpanchPhoto", p); } catch (_) {}
-  };
-
-  const saveSarpanchAddress = (addr: string) => {
-    setSarpanchAddress(addr);
-    try { saveSettings({ sarpanchAddress: addr }); } catch (_) {}
-  };
-
-  const toggleTheme = () => {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    try { saveSettings({ theme: next }); } catch (_) {}
-  };
-
-  const savePassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { adminPassword: pw }, { merge: true }); } catch (_) {}
-    setAdminPassword(pw);
-    localStorage.setItem("gram-seva:adminPw", pw);
-  };
-
-  const saveUserAdminPassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { userAdminPassword: pw }, { merge: true }); } catch (_) {}
-    setUserAdminPassword(pw);
-  };
-
-  const saveComplaintAdminPassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { complaintAdminPassword: pw }, { merge: true }); } catch (_) {}
-    setComplaintAdminPassword(pw);
-  };
-
-  const blockUser = async (mobile: string, name: string, reason = "Fake / Spam") => {
-    await setDoc(doc(db, "blockedUsers", mobile), { mobile, name, reason, blockedAt: new Date().toISOString() });
-  };
-
-  const unblockUser = async (mobile: string) => {
-    await deleteDoc(doc(db, "blockedUsers", mobile));
-  };
-
-  const deleteUserAndComplaints = async (mobile: string, name: string) => {
-    const userProblems = problems.filter(p => p.mobile === mobile);
-    await Promise.all(userProblems.map(p => deleteDoc(doc(db, "problems", p.id))));
-    await blockUser(mobile, name, "Fake user — admin ne delete kiya");
-    showToast(`🗑 ${name} aur unki saari complaints delete kar di gayi`);
-  };
-
-  const saveInfo = (v: string, s: string) => {
-    setVillageName(v); setSarpanchName(s);
-    saveSettings({ villageName: v });
-    saveSettings({ sarpanchName: s });
-  };
-
-  const showToast = (msg: string) => setToast(msg);
-
-  const saveUser = async (u: AppUser) => {
-    await setDoc(doc(db, "users", u.id), { ...u }, { merge: true });
-    setCurrentUser(u); localStorage.setItem("gsp-user", JSON.stringify(u));
-    showToast("✅ Profile updated.");
-  };
-
-  const logoutUser = () => { setCurrentUser(null); localStorage.removeItem("gsp-user"); setPage("home"); showToast("👋 Logged out."); };
-
-  const logout = () => { setIsAdmin(false); setAdminRole(null); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); };
-  const canManageComplaints = adminRole === "super" || adminRole === "complaint-admin";
-  const canManageUsers = adminRole === "super" || adminRole === "user-admin";
-
-  const filtered = problems.filter(p => {
-    if (filterCat    !== "All" && p.category !== filterCat)    return false;
-    if (filterStatus !== "All" && p.status   !== filterStatus) return false;
-    if (filterWard   !== "All" && p.ward     !== filterWard)   return false;
-    if (search && !p.title.toLowerCase().includes(search.toLowerCase()) && !p.id.includes(search.toUpperCase())) return false;
-    return true;
-  }).sort((a, b) => {
-    if (sort === "newest") return new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime();
-    if (sort === "oldest") return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
-    const order: Record<string, number> = { Urgent: 0, High: 1, Medium: 2, Low: 3 };
-    return order[a.priority] - order[b.priority];
-  });
-
-  const stats = {
-    total:      problems.length,
-    pending:    problems.filter(p => p.status === "Pending").length,
-    inprogress: problems.filter(p => p.status === "In Progress").length,
-    resolved:   problems.filter(p => p.status === "Resolved").length,
-  };
-
-  const navLinks = [
-    { id: "home" as const, label: "⌂ Home" },
-    { id: "dashboard" as const, label: "▦ Dashboard" },
-    { id: "notices" as const, label: "📢 Notices" },
-    { id: "achievements" as const, label: "🏆 Achievements" },
-    { id: "profile" as const, label: currentUser ? "👤 Profile" : "🔐 Login" },
-  ];
-
-  return (
-    <>
-      {showSplash && <WelcomeSplash onDone={() => { localStorage.setItem("gsp-visited","1"); setShowSplash(false); }} />}
-      <div data-theme={theme} style={{ minHeight:"100vh", background:"var(--bg-page)", color:"var(--text-main)" }} className="grid-bg"><div className="aurora-bg"><div className="ab ab1"/><div className="ab ab2"/><div className="ab ab3"/><div className="ab ab4"/></div>
-      <style>{GLOBAL_STYLE}</style>
-
-      {/* NAVBAR */}
-      <nav className="desktop-nav" style={{ padding: "10px 12px" }}>
-        <div className="glass-dark" style={{ borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-          {/* Logo + Name */}
-          <div onClick={() => setPage("home")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flexShrink: 0 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 8, overflow: "hidden", background: "rgba(255,255,255,0.08)" }}>
-              <img src="/logo.png" alt="GSP Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-            </div>
-            <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
-              {villageName}
-            </span>
-          </div>
-          {/* Scrollable nav links */}
-          <div style={{ flex: 1, overflowX: "auto", display: "flex", gap: 4, alignItems: "center", scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
-            {navLinks.map(l => (
-              <button key={l.id} className="btn-ghost" onClick={() => { if (l.id === "profile" && !currentUser) setPage("login"); else setPage(l.id); }}
-                style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, background: page === l.id ? "var(--cbg12)" : "var(--cbg5)" }}>
-                {l.label}
-              </button>
-            ))}
-            <button className="btn-white" onClick={() => { if (!currentUser) setPage("login"); else setPage("submit"); }} style={{ borderRadius: 8, padding: "6px 12px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>＋ Post Problem</button>
-            {currentUser ? <button className="btn-ghost" onClick={logoutUser} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, color: "#f87171" }}>Logout</button> : null}
-            {isAdmin && canManageComplaints && (
-              <button className="btn-ghost" onClick={() => setPage("settings")}
-                style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, background: page === "settings" ? "var(--cbg12)" : "var(--cbg5)", color: "#fbbf24" }}>
-                ⚙️
-              </button>
-            )}
-            {isAdmin && canManageUsers && (
-              <button className="btn-ghost" onClick={() => setPage("manageusers")}
-                style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, background: page === "manageusers" ? "var(--cbg12)" : "var(--cbg5)", color: "#38d9f5" }}>
-                👥
-              </button>
-            )}
-            {isAdmin
-              ? <button className="btn-ghost" onClick={logout} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0, color: "#f87171" }}>Logout</button>
-              : <button className="btn-ghost" onClick={() => setPage("admin")} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Admin</button>}
-            <button onClick={toggleTheme} style={{ borderRadius: 8, padding: "5px 11px", fontSize: 14, whiteSpace: "nowrap", flexShrink: 0, background: "var(--cbg7)", border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" }} title="Toggle theme">
-              {theme === "dark" ? "☀️" : "🌙"}
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 16px 60px" }}>
-
-        {/* ── HOME ─────────────────────────────────────────────────────────── */}
-        {page === "dashboard" && (
-          <div>
-            {/* ── HERO ──────────────────────────────────────────────── */}
-            <div style={{ padding:"52px 0 40px", position:"relative", overflow:"hidden" }}>
-              {/* bg glow */}
-              <div style={{ position:"absolute",width:600,height:600,borderRadius:"50%",top:-240,left:-180,background:"radial-gradient(circle,rgba(124,92,252,0.10) 0%,transparent 70%)",pointerEvents:"none" }}/>
-              <div style={{ position:"absolute",width:400,height:400,borderRadius:"50%",bottom:-120,right:-60,background:"radial-gradient(circle,rgba(56,217,245,0.06) 0%,transparent 70%)",pointerEvents:"none" }}/>
-
-              <div className="hero-split" style={{ display:"flex",alignItems:"center",gap:52,position:"relative" }}>
-                {/* LEFT */}
-                <div className="hero-left" style={{ flex:1,minWidth:0,display:"flex",flexDirection:"column",alignItems:"flex-start" }}>
-                  <FadeIn>
-                    <span style={{ display:"inline-flex",alignItems:"center",gap:7,padding:"5px 14px",borderRadius:100,fontSize:12,fontWeight:600,letterSpacing:"0.04em",background:"rgba(124,92,252,0.12)",border:"1px solid rgba(124,92,252,0.32)",color:"#b57bee",marginBottom:22 }}>
-                      <span style={{ width:7,height:7,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 6px #4ade80",display:"inline-block",animation:"pulse-dot 2s infinite" }}/>
-                      Digital Gram Panchayat Portal
-                    </span>
-                  </FadeIn>
-
-                  <FadeIn delay={180}>
-                    <h1 style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:"clamp(28px,4.5vw,56px)",lineHeight:1.06,letterSpacing:"-0.03em",marginBottom:18 }}>
-                      <span style={{ display:"block",color:"var(--text-main)" }}>Gram Sabha Pahrajpur</span>
-                      <span className="shimmer-text" style={{ display:"block" }}>{villageName.split(" ").slice(-1)[0]}</span>
-                      <span style={{ display:"block",color:"var(--ct4)",fontWeight:400,fontSize:"0.52em",marginTop:10,letterSpacing:"-0.01em",fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Village Governance, Reimagined</span>
-                    </h1>
-                  </FadeIn>
-
-                  <FadeIn delay={400}>
-                    <p style={{ fontSize:15,color:"var(--ct45)",lineHeight:1.8,maxWidth:440,fontWeight:400,marginBottom:28 }}>
-                      Report infrastructure problems. Track every resolution. Receive official notices from your Sarpanch — transparent and accountable governance.
-                    </p>
-                  </FadeIn>
-
-                  <FadeIn delay={600}>
-                    <div className="hero-ctas" style={{ display:"flex",gap:12,flexWrap:"wrap" }}>
-                      <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius:14,padding:"13px 28px",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",gap:8 }}>
-                        📋 Report a Problem <span style={{ opacity:0.7 }}>→</span>
-                      </button>
-                      <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius:14,padding:"13px 28px",fontSize:15,fontWeight:600 }}>
-                        📊 View All Issues
-                      </button>
-                    </div>
-                  </FadeIn>
-
-                </div>
-
-                {/* RIGHT — 3D Orb */}
-                <div className="hero-orb-col" style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:16,flexShrink:0 }}>
-                  <FadeIn delay={350}>
-                    <div style={{ position:"relative",width:270,height:270 }}>
-                      <div style={{ position:"absolute",inset:-40,borderRadius:"50%",background:"radial-gradient(ellipse,rgba(124,92,252,0.22) 0%,transparent 70%)",animation:"pulseGlow 3s ease-in-out infinite",pointerEvents:"none" }}/>
-                      <div style={{ position:"absolute",inset:16,borderRadius:"50%",background:"radial-gradient(ellipse at 35% 30%,rgba(181,123,238,0.95) 0%,rgba(124,92,252,0.75) 45%,rgba(56,217,245,0.45) 100%)",boxShadow:"0 0 60px rgba(124,92,252,0.55),0 0 120px rgba(124,92,252,0.22),inset 0 0 36px rgba(255,255,255,0.10)",animation:"floatOrb 5s ease-in-out infinite" }}>
-                        <div style={{ position:"absolute",top:"14%",left:"20%",width:"38%",height:"22%",borderRadius:"50%",background:"rgba(255,255,255,0.26)",filter:"blur(7px)" }}/>
-                        <div style={{ position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"rgba(255,255,255,0.92)",letterSpacing:"0.06em",textShadow:"0 2px 12px rgba(0,0,0,0.4)" }}>GSP</div>
-                      </div>
-                      <div style={{ position:"absolute",top:"50%",left:"50%",width:11,height:11,marginTop:-5.5,marginLeft:-5.5,animation:"orbit1 5s linear infinite" }}><div style={{ width:11,height:11,borderRadius:"50%",background:"#38d9f5",boxShadow:"0 0 12px #38d9f5" }}/></div>
-                      <div style={{ position:"absolute",top:"50%",left:"50%",width:8,height:8,marginTop:-4,marginLeft:-4,animation:"orbit2 7s linear infinite" }}><div style={{ width:8,height:8,borderRadius:"50%",background:"#f4c95d",boxShadow:"0 0 10px #f4c95d" }}/></div>
-                      <div className="glass" style={{ position:"absolute",top:-6,right:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4s ease-in-out infinite" }}>
-                        <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>Resolved</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"#4ade80" }}>{stats.resolved}</div>
-                      </div>
-                      <div className="glass" style={{ position:"absolute",bottom:6,left:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4.5s ease-in-out infinite 0.8s" }}>
-                        <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>Total</div>
-                        <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:19,color:"#b57bee" }}>{stats.total}</div>
-                      </div>
-                      <div className="glass" style={{ position:"absolute",bottom:52,right:-20,padding:"6px 12px",borderRadius:11,animation:"floatChip 6s ease-in-out infinite 1.2s" }}>
-                        <div style={{ display:"flex",alignItems:"center",gap:5 }}><div style={{ width:7,height:7,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 7px #4ade80",animation:"pulse-dot 2s infinite" }}/><span style={{ fontSize:11,color:"var(--text-main)",fontWeight:600 }}>Live</span></div>
-                      </div>
-                    </div>
-                    {/* mini stats strip */}
-                    <div className="glass" style={{ padding:0,borderRadius:16,overflow:"hidden",width:270,marginTop:14 }}>
-                      <div style={{ display:"flex" }}>
-                        {([{num:stats.total,label:"Total",color:"#b57bee"},{num:stats.resolved,label:"Done",color:"#4ade80"},{num:stats.pending,label:"Pending",color:"#f4c95d"},{num:stats.inprogress,label:"Active",color:"#38d9f5"}] as const).map((s,i)=>(
-                          <div key={s.label} style={{ flex:1,textAlign:"center",padding:"11px 4px",borderRight:i<3?"1px solid rgba(124,92,252,0.10)":"none" }}>
-                            <div style={{ fontFamily:"'Space Grotesk',sans-serif",fontWeight:700,fontSize:16,color:s.color }}>{s.num}</div>
-                            <div style={{ fontSize:10,color:"var(--ct4)",marginTop:2,fontWeight:500 }}>{s.label}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </FadeIn>
-                </div>
-              </div>
-            </div>
-
-            <FadeIn delay={1200}>
-              <div style={{ display: "flex", gap: 12, marginBottom: 36, flexWrap: "wrap" }}>
-                <StatCard label="Total Problems" value={stats.total} color="#b57bee" />
-                <StatCard label="Pending" value={stats.pending} color="#f4c95d" />
-                <StatCard label="In Progress" value={stats.inprogress} color="#7c5cfc" />
-                <StatCard label="Resolved" value={stats.resolved} color="#4ade80" />
-              </div>
-            </FadeIn>
-
-            <FadeIn delay={1700}>
-              <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, marginBottom: 16, color: "var(--text-main)" }}>Issues by Category</h3>
-              <CategoryGrid problems={problems} onNavigate={() => setPage("board")} />
-            </FadeIn>
-
-            {problems.length > 0 && (
-              <FadeIn delay={1900}>
-                <div style={{ marginTop: 40 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    <h3 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 18, color: "var(--text-main)" }}>Recent Issues</h3>
-                    <button className="btn-ghost" onClick={() => setPage("board")} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {problems.slice(0, 3).map(p => <ProblemCard key={p.id} problem={p} isAdmin={false} onUpdate={updateProblem} onDelete={deleteProblem} />)}
-                  </div>
-                </div>
-              </FadeIn>
-            )}
-
-            {problems.length === 0 && !loading && (
-              <FadeIn delay={1600}>
-                <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center", marginTop: 20 }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>🌱</div>
-                  <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No issues reported yet</div>
-                  <div style={{ color: "var(--ct4)", fontSize: 14, marginBottom: 24 }}>Be the first to report a problem in your village.</div>
-                  <button className="btn-white" onClick={() => setPage("submit")} style={{ borderRadius: 12, padding: "12px 28px", fontSize: 14, fontWeight: 600 }}>Submit First Problem →</button>
-                </div>
-              </FadeIn>
-            )}
-
-            {/* Sarpanch Profile + Social */}
-            <FadeIn delay={1800}>
-              <div style={{ marginTop: 40 }}>
-                <h3 style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:600, fontSize:18, marginBottom:14, color:"var(--text-main)" }}>Your Sarpanch</h3>
-                <SarpanchCard sarpanchName={sarpanchName} photo={sarpanchPhoto} whatsapp={whatsapp} instagram={instagram} address={sarpanchAddress} />
-              </div>
-            </FadeIn>
-
-            {/* Notices preview on home */}
-            {notices.length > 0 && (
-              <FadeIn delay={2000}>
-                <div style={{ marginTop: 40 }}>
-                  <NoticesPage notices={notices} isAdmin={isAdmin} onDelete={deleteNotice} compact onViewAll={() => setPage("notices")} />
-                </div>
-              </FadeIn>
-            )}
-
-            {/* Photo Carousel */}
-            <FadeIn delay={1800}>
-              <PhotoCarousel media={media} />
-            </FadeIn>
-
-            
-
-            {/* Feedback Section */}
-            <FadeIn delay={2200}>
-              <div style={{ marginTop: 40 }}>
-                <FeedbackSection feedbacks={feedbacks} onAdd={addFeedback} />
-              </div>
-            </FadeIn>
-
-            {/* Made By tag */}
-            <div style={{ marginTop: 60, textAlign: "center" }}>
-              <span style={{ fontSize: 12, color: "var(--ct4)", letterSpacing: "0.08em", fontWeight: 500 }}>
-                Made with ❤️ by <span style={{ color: "var(--text-main)", fontWeight: 700 }}>Abhinav Yadav</span>
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* ── COMMUNITY HOME / INSTAGRAM-STYLE FEED ───────────────────────── */}
-        {page === "home" && (
-          <CommunityFeed problems={problems} user={currentUser} onUpdate={updateProblem as any} onOpenLogin={() => setPage("login")} />
-        )}
-
-        {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
-        {page === "submit" && (
-          <div style={{ paddingTop: 40 }}>
-            <FadeIn>{currentUser ? <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setPage("home")} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("submit"); }} />}</FadeIn>
-          </div>
-        )}
-
-        {page === "profile" && (
-          <FadeIn>{currentUser ? <UserProfilePage user={currentUser} problems={problems} onUpdate={updateProblem as any} onDelete={deleteProblem} onLogout={logoutUser} onOpenSettings={() => setPage("user-settings")} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />}</FadeIn>
-        )}
-
-        {/* ── USER LOGIN ───────────────────────────────────────────────────── */}
-        {page === "login" && <AuthPage onLogin={u => { setCurrentUser(u); setPage("home"); showToast(`✅ Welcome ${u.name}!`); }} />}
-
-        {page === "user-settings" && (currentUser ? <UserSettingsPage user={currentUser} onSave={saveUser} onBack={() => setPage("profile")} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("profile"); }} />)}
-
-        {/* ── BOARD ────────────────────────────────────────────────────────── */}
-        {page === "board" && (
-          <div style={{ paddingTop: 32 }}>
-            <FadeIn>
-              <div style={{ marginBottom: 24 }}>
-                <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontWeight: 600, fontSize: 26, marginBottom: 6 }}>
-                  {isAdmin ? "🛡 Admin Dashboard" : "All Reported Issues"}
-                </h2>
-                <p style={{ fontSize: 13, color: "var(--ct4)" }}>{filtered.length} of {problems.length} issues shown</p>
-              </div>
-            </FadeIn>
-            <FadeIn delay={100}>
-              <FilterBar filterCat={filterCat} setFilterCat={setFilterCat} filterStatus={filterStatus} setFilterStatus={setFilterStatus}
-                filterWard={filterWard} setFilterWard={setFilterWard} search={search} setSearch={setSearch} sort={sort} setSort={setSort} />
-            </FadeIn>
-            {loading ? (
-              <div style={{ textAlign: "center", padding: 60, color: "var(--ct3)", fontSize: 14 }}>Loading…</div>
-            ) : filtered.length === 0 ? (
-              <FadeIn delay={200}>
-                <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
-                  <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-                  <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 18, fontWeight: 600, marginBottom: 8 }}>No issues found</div>
-                  <div style={{ color: "var(--ct4)", fontSize: 13 }}>{problems.length === 0 ? "No problems have been submitted yet." : "Try adjusting your filters."}</div>
-                </div>
-              </FadeIn>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {filtered.map((p, i) => (
-                  <FadeIn key={p.id} delay={i * 40}>
-                    <ProblemCard problem={p} isAdmin={isAdmin && canManageComplaints} onUpdate={updateProblem} onDelete={deleteProblem} />
-                  </FadeIn>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── NOTICES ──────────────────────────────────────────────────────── */}
-        {page === "notices" && (
-          <div style={{ paddingTop: 32, maxWidth: 800, margin: "0 auto" }}>
-            <FadeIn>
-              <NoticesPage notices={notices} isAdmin={isAdmin} onDelete={deleteNotice} />
-            </FadeIn>
-          </div>
-        )}
-
-        {/* ── GALLERY ──────────────────────────────────────────────────────── */}
-        {page === "gallery" && (
-          <div style={{ paddingTop: 32, maxWidth: 960, margin: "0 auto" }}>
-            <FadeIn>
-              <GalleryPage media={media} isAdmin={isAdmin} onDelete={deleteMedia} />
-            </FadeIn>
-          </div>
-        )}
-
-        {/* ── ACHIEVEMENTS ─────────────────────────────────────────────────── */}
-        {page === "achievements" && (
-          <div style={{ paddingTop: 32 }}>
-            <AchievementsPage achievements={achievements} isAdmin={isAdmin} onDelete={deleteAchievement} />
-          </div>
-        )}
-
-        {/* ── ADMIN LOGIN ───────────────────────────────────────────────────── */}
-        {page === "admin" && !isAdmin && (
-          <AdminLogin
-            superPassword={adminPassword}
-            userAdminPassword={userAdminPassword}
-            complaintAdminPassword={complaintAdminPassword}
-            onLogin={(role) => {
-              setIsAdmin(true);
-              setAdminRole(role);
-              localStorage.setItem("isAdmin", "true");
-              localStorage.setItem("isAdmin-time", Date.now().toString());
-              localStorage.setItem("adminRole", role);
-              setPage(role === "user-admin" ? "manageusers" : "board");
-            }}
-          />
-        )}
-
-        {/* ── MANAGE USERS (User-Admin) ───────────────────────────────────────── */}
-        {page === "manageusers" && isAdmin && canManageUsers && (
-          <ManageUsers
-            problems={problems}
-            blockedUsers={blockedUsers}
-            onBlock={blockUser}
-            onUnblock={unblockUser}
-            onDeleteUser={deleteUserAndComplaints}
-            showToast={showToast}
-          />
-        )}
-
-        {/* ── SETTINGS ─────────────────────────────────────────────────────── */}
-        {page === "settings" && isAdmin && canManageComplaints && (
-          <AdminSettings
-            problems={problems} achievements={achievements} media={media} notices={notices} feedbacks={feedbacks} adminPassword={adminPassword}
-            userAdminPassword={userAdminPassword} complaintAdminPassword={complaintAdminPassword}
-            villageName={villageName} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} sarpanchAddress={sarpanchAddress} whatsapp={whatsapp} instagram={instagram}
-            onSavePassword={savePassword} onSaveUserAdminPassword={saveUserAdminPassword} onSaveComplaintAdminPassword={saveComplaintAdminPassword}
-            onSaveInfo={saveInfo} onSaveSocial={saveSocial} onSaveSarpanchPhoto={saveSarpanchPhoto} onSaveSarpanchAddress={saveSarpanchAddress}
-            onClearResolved={clearResolved} onClearAll={clearAll}
-            onAddAchievement={addAchievement} onDeleteAchievement={deleteAchievement}
-            onAddMedia={addMedia} onDeleteMedia={deleteMedia}
-            onAddNotice={addNotice} onDeleteNotice={deleteNotice}
-            onDeleteFeedback={deleteFeedback}
-            showToast={showToast}
-          />
-        )}
-      </div>
-
-      {/* Instagram-style mobile bottom navigation */}
-      <div className="mobile-bottom-nav">
-        <button onClick={() => setPage("home")} className={page === "home" ? "active" : ""}>⌂<span>Home</span></button>
-        <button onClick={() => currentUser ? setPage("submit") : setPage("login")} className="post-main">＋</button>
-        <button onClick={() => currentUser ? setPage("profile") : setPage("login")} className={page === "profile" ? "active" : ""}>◉<span>Profile</span></button>
-      </div>
-
-      {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
-
-      {submitSuccess && (
-        <div onClick={() => setSubmitSuccess(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 400, margin: "0 16px 16px", background: "var(--cbg5)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 24, padding: "32px 24px 26px", textAlign: "center", boxShadow: "0 -10px 60px rgba(0,0,0,0.4)" }}>
-            <div style={{ width: 80, height: 80, margin: "0 auto 16px", borderRadius: "50%", background: "linear-gradient(155deg, #4ade80 0%, #16a34a 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(22,163,74,0.4)" }}>
-              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-            </div>
-            <div style={{ fontSize: 14, color: "var(--ct4)", marginBottom: 18 }}>आपकी समस्या सफलतापूर्वक दर्ज की गई है</div>
-            <div style={{ display: "flex", gap: 12, textAlign: "left", background: "var(--cbg6)", border: "1px solid var(--cbg12)", borderRadius: 16, padding: "14px 16px", marginBottom: 18 }}>
-              <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg, #f0d080, #c9a84c)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#1a3a2a" }}>{sarpanchPhoto ? <img src={sarpanchPhoto} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : sarpanchName.split(" ").map(n => n[0]).join("").slice(0,2)}</div>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", marginBottom: 3 }}>{sarpanchName} · Sarpanch</div>
-                <div style={{ fontSize: 13.5, color: "var(--ct65)", lineHeight: 1.5 }}>धन्यवाद! आपकी समस्या जल्द ही हल की जाएगी। हम हर शिकायत को गंभीरता से लेते हैं — आपका सहयोग गाँव को बेहतर बनाता है। 🙏</div>
-              </div>
-            </div>
-            <button onClick={() => {
-              setSubmitSuccess(false);
-              if (showSubmitFAB) setShowSubmitFAB(false);
-              if (page === "submit") setPage("board");
-            }} style={{ width: "100%", padding: "13px 0", borderRadius: 12, background: "var(--cbg8)", border: "1px solid var(--cbg12)", color: "var(--text-main)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Theek Hai</button>
-          </div>
-        </div>
-      )}
-
-      {/* Enhanced FAB with Voice & Photo */}
-      <EnhancedFAB
-        onOpenSubmit={() => { if (!currentUser) setPage("login"); else setShowSubmitFAB(!showSubmitFAB); }}
-        isOpen={showSubmitFAB}
-        onOpenBoard={() => setPage("board")}
-        onOpenNotices={() => setPage("notices")}
-      />
-
-      {/* Submit Form Modal */}
-      {showSubmitFAB && currentUser && (
-        <div onClick={() => setShowSubmitFAB(false)} style={{
-          position: "fixed", inset: 0, zIndex: 998, background: "rgba(0,0,0,0.5)",
-          display: "flex", alignItems: "center", justifyContent: "center", padding: 16, backdropFilter: "blur(4px)"
-        }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} />
-          </div>
-        </div>
-      )}
-    </div>
-    </>
-  );
 }
