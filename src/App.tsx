@@ -2229,7 +2229,7 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
             <option value="All">All Villages</option>
             {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
           </select>
-          <span style={0}</span>
+          <span style={{}}></span>
         </div>
       </FadeIn>
 
