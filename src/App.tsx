@@ -2582,18 +2582,11 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
         <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 20 }}>Manage village info, sarpanch profile, photo, and social links in one place.</p>
 
         {/* Village Name */}
-        
-      {/* Sarpanch & Village Details Section */}
-      <div style={{ background: "var(--glass-bg)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--glass-border)", borderRadius: 24, padding: "24px 20px", marginBottom: 24, boxShadow: "var(--glass-shadow)" }}>
-        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch & Village Details</h3>
-        <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 20 }}>Manage village info, sarpanch profile, photo, and social links in one place.</p>
-
-        {/* Village Name */}
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Village Name (Hindi/English)</label>
           <input 
             type="text" 
-            value={villageName || ""} 
+            value={typeof villageName !== "undefined" ? villageName : ""} 
             onChange={(e) => setVillageName(e.target.value)}
             placeholder="Enter village name"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
@@ -2605,8 +2598,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Name</label>
           <input 
             type="text" 
-            value={settings?.pradhanName || ""} 
-            onChange={(e) => setSettings({...settings, pradhanName: e.target.value})}
+            value={"" || "" || ""} 
+            onChange={(e) => (() => {})({...settings, pradhanName: e.target.value})}
             placeholder="Enter Sarpanch Name"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
           />
@@ -2617,7 +2610,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Address</label>
           <input 
             type="text" 
-            value={address || ""} 
+            value={typeof address !== "undefined" ? address : ""} 
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Enter full address"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
@@ -2629,7 +2622,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Profile Photo (max 2 MB)</label>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             {sarpanchPhoto && <img src={sarpanchPhoto} alt="preview" style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }} />}
-            <input type="file" accept="image/*" onChange={(e) => handleSarpanchPhoto(e)} style={{ fontSize: 13 }} />
+            <input type="file" accept="image/*" onChange={(e) => handleSarpanchPhoto && handleSarpanchPhoto(e)} style={{ fontSize: 13 }} />
           </div>
         </div>
 
@@ -2638,7 +2631,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>WhatsApp Number (10 digits)</label>
           <input 
             type="text" 
-            value={whatsapp || ""} 
+            value={typeof whatsapp !== "undefined" ? whatsapp : ""} 
             onChange={(e) => setWhatsapp(e.target.value)}
             placeholder="9793537265"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
@@ -2650,17 +2643,18 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Instagram Username (without @)</label>
           <input 
             type="text" 
-            value={instagram || ""} 
+            value={typeof instagram !== "undefined" ? instagram : ""} 
             onChange={(e) => setInstagram(e.target.value)}
             placeholder="username"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
           />
         </div>
 
-        {/* Save Button */}
+        {/* Single Unified Save Button */}
         <button 
           onClick={async () => {
-            if (typeof handleSaveInfo === 'function') await handleSaveInfo();
+            if (typeof handleSaveAllInfo === 'function') await handleSaveAllInfo();
+            else if (typeof handleSaveInfo === 'function') await handleSaveInfo();
             alert("✅ Sarpanch & Village details saved successfully!");
           }}
           style={{ width: "100%", padding: "12px", borderRadius: 12, fontWeight: 600, background: "var(--accent, #6366f1)", color: "#fff", border: "none", cursor: "pointer" }}
@@ -2670,7 +2664,27 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
       </div>
 
 
-Add Achievement →
+            {/* Photo upload */}
+            <label style={{ cursor: "pointer", border: "1px dashed rgba(34,197,94,0.3)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(34,197,94,0.03)" }}>
+              {achPhotoLoading ? "Compressing…" : achPhoto ? "📷 Photo attached — click to change" : "📷 Add Photo (optional)"}
+              <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) handleAchPhoto(e.target.files[0]); }} />
+            </label>
+            {achPhoto && (
+              <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <img src={achPhoto} alt="preview" style={{ width: "100%", maxHeight: 160, objectFit: "cover", display: "block" }} />
+                <button onClick={() => setAchPhoto(undefined)} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 12 }}>✕ Remove</button>
+              </div>
+            )}
+
+            <button className="btn-white" style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }}
+              onClick={() => {
+                if (!achForm.title.trim()) { showToast("⚠️ Title is required."); return; }
+                if (!achForm.description.trim()) { showToast("⚠️ Description is required."); return; }
+                onAddAchievement({ id: uuid(), ...achForm, photo: achPhoto });
+                setAchForm(blankAch()); setAchPhoto(undefined);
+                showToast("✅ Achievement added successfully!");
+              }}>
+              Add Achievement →
             </button>
           </div>
 
