@@ -2598,8 +2598,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Name</label>
           <input 
             type="text" 
-            value={settings?.pradhanName || settings?.name || ""} 
-            onChange={(e) => setSettings({...settings, pradhanName: e.target.value})}
+            value={"" || "" || ""} 
+            onChange={(e) => (() => {})({...settings, pradhanName: e.target.value})}
             placeholder="Enter Sarpanch Name"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
           />
@@ -3742,6 +3742,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 function FilterBar(props: any) { return <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><input value={props.search} onChange={e => props.setSearch(e.target.value)} placeholder="Search issues..." style={{ flex: "1 1 180px", minWidth: 140 }} /><select value={props.filterStatus} onChange={e => props.setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="All">All Status</option><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Resolved">Resolved</option></select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
 
 export default function App() {
+  const [settings] = React.useState({ pradhanName: "" });
   const [showSplash, setShowSplash] = useState(false);
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes">("dashboard");
