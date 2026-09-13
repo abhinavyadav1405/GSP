@@ -20,7 +20,7 @@ const GLOBAL_STYLE = `
   @keyframes blob2 { 0%,100% { transform: translate(0px,0px) scale(1); } 33% { transform: translate(-50px,55px) scale(1.08); } 66% { transform: translate(65px,-20px) scale(0.95); } }
   @keyframes blob3 { 0%,100% { transform: translate(0px,0px) scale(1); } 33% { transform: translate(40px,50px) scale(1.06); } 66% { transform: translate(-55px,-35px) scale(1.04); } }
   .aurora-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-  .ab { position: absolute; border-radius: 50%; filter: blur(75px); opacity: 0.40; mix-blend-mode: multiply; }
+  .ab {0}
   .ab1 { width: 55vw; height: 55vw; max-width: 680px; background: radial-gradient(circle, rgba(255,50,50,0.7) 0%, transparent 100%); top: -15%; left: -10%; animation: blob1 8s ease-in-out infinite; }
   .ab2 { width: 50vw; height: 50vw; max-width: 580px; background: radial-gradient(circle, rgba(255,220,0,0.7) 0%, transparent 100%); top: 30%; right: -12%; animation: blob2 10s ease-in-out infinite; }
   .ab3 { width: 42vw; height: 42vw; max-width: 520px; background: radial-gradient(circle, rgba(50,205,50,0.65) 0%, transparent 100%); bottom: -10%; left: 30%; animation: blob3 12s ease-in-out infinite; }
@@ -53,10 +53,10 @@ const GLOBAL_STYLE = `
     --btn-ghost-bg:rgba(124,92,252,0.08);--btn-ghost-color:#1a1040;
     --btn-ghost-border:rgba(124,92,252,0.22);--scrollbar:rgba(124,92,252,0.30);--grid-line:rgba(124,92,252,0.06);
   }
-  .glass{background:var(--glass-bg);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid var(--glass-border);position:relative;overflow:hidden;}
+  .glass{0}
   .glass::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(145deg,rgba(124,92,252,0.20) 0%,rgba(255,255,255,0.04) 40%,rgba(56,217,245,0.08) 100%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
   [data-theme="light"] .glass::before{background:linear-gradient(145deg,rgba(124,92,252,0.12) 0%,rgba(255,255,255,0.5) 50%,rgba(56,217,245,0.08) 100%);}
-  .glass-dark{background:var(--navbar-bg);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border:1px solid var(--glass-border);position:relative;overflow:hidden;}
+  .glass-dark{0}
   .btn-white{background:linear-gradient(135deg,#7c5cfc 0%,#5b3fd4 100%);color:#fff;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;transition:all 0.2s;box-shadow:0 4px 16px rgba(124,92,252,0.35);}
   .btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,92,252,0.5);}
   .btn-white:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none;}
@@ -1710,11 +1710,11 @@ function UserProfilePage({ user, problems, onUpdate, onDelete, onLogout, onOpenS
                 <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by title or ID…" style={{ flex: "1 1 180px", minWidth: 140 }} />
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
+          <select value={0} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
             <option value="All">All Status</option>
-            <option value="Pending">⏳ Pending ({(issues || []).filter(i => i.status === "Pending")?.length || 0})</option>
+            <option value="Pending">⏳ Pending ({0})</option>
             <option value="In Progress">In Progress</option>
-            <option value="Resolved">✅ Resolved ({(issues || []).filter(i => i.status === "Resolved")?.length || 0})</option>
+            <option value="Resolved">✅ Resolved ({0})</option>
           </select>
           <select value={sort} onChange={e => setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}>
             <option value="newest">Newest First</option>
@@ -1854,7 +1854,7 @@ function ManageUsers({ problems, blockedUsers, onBlock, onUnblock, onDeleteUser,
 
 // ── Category Grid ─────────────────────────────────────────────────────────────
 function CategoryGrid({ problems, onNavigate }: { problems: Problem[]; onNavigate: () => void }) {
-  const counts = CATEGORIES.reduce((acc, cat) => { acc[cat] = problems.filter(p => p.category === cat).length; return acc; }, {} as Record<string, number>);
+  const counts = CATEGORIES.reduce((acc, cat) => {0}, {} as Record<string, number>);
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))", gap: 12 }}>
       {CATEGORIES.map(cat => (
@@ -1962,7 +1962,7 @@ function FeedbackSection({ feedbacks, onAdd }: { feedbacks: Feedback[]; onAdd: (
         <div style={{ display:"flex", gap:4, marginBottom:14, alignItems:"center" }}>
           {[1,2,3,4,5].map(s => (
             <span key={s} onClick={()=>setRating(s)} onMouseEnter={()=>setHovered(s)} onMouseLeave={()=>setHovered(0)}
-              style={{ fontSize:28, cursor:"pointer", filter:s<=(hovered||rating)?"none":"grayscale(1) opacity(0.25)", transition:"all 0.15s" }}>⭐</span>
+              style={0}}>⭐</span>
           ))}
           <span style={{ fontSize:12, color:"rgba(255,255,255,0.38)", marginLeft:10 }}>{["","Poor","Fair","Good","Very Good","Excellent"][hovered||rating]}</span>
         </div>
@@ -2221,15 +2221,15 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
       {/* Filters */}
       <FadeIn delay={120}>
         <div className="glass" style={{ borderRadius: 14, padding: "14px 16px", marginBottom: 20, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <select value={filterCat} onChange={e => setFilterCat(e.target.value)} style={{ width: "auto", fontSize: 13, padding: "7px 12px" }}>
+          <select value={0} onChange={e => setFilterCat(e.target.value)} style={{ width: "auto", fontSize: 13, padding: "7px 12px" }}>
             <option value="All">All Categories</option>
             {ACH_CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
-          <select value={filterVillage} onChange={e => setFilterVillage(e.target.value)} style={{ width: "auto", fontSize: 13, padding: "7px 12px" }}>
+          <select value={0} onChange={e => setFilterVillage(e.target.value)} style={{ width: "auto", fontSize: 13, padding: "7px 12px" }}>
             <option value="All">All Villages</option>
             {["Chhatarsar","Pahrajpur","Chakjalal","Chakmoti","Chakjiya","Other"].map(w => <option key={w}>{w}</option>)}
           </select>
-          <span style={{ fontSize: 12, color: "var(--ct35)", marginLeft: "auto" }}>{filtered.length} work{filtered.length !== 1 ? "s" : ""}</span>
+          <span style={0}</span>
         </div>
       </FadeIn>
 
@@ -2868,7 +2868,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 12, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>Delete Resolved Issues</div>
-                <div style={{ fontSize: 12, color: "var(--ct4)", marginTop: 3 }}>{problems.filter(p => p.status === "Resolved").length} resolved issues will be removed</div>
+                <div style={0} resolved issues will be removed</div>
               </div>
               {confirmClear === "resolved"
                 ? <div style={{ display: "flex", gap: 8 }}>
@@ -2977,7 +2977,7 @@ function EnhancedFAB({
           border-radius: 50%; background: radial-gradient(ellipse, rgba(255,255,255,0.5) 0%, transparent 70%);
           pointer-events: none; opacity: 0.8;
         }
-        .lg-btn svg { display: block; flex-shrink: 0; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); }
+        .lg-btn svg {0}
         .lg-action {
           width: 52px; height: 52px; color: rgba(255,255,255,0.92);
           opacity: 0; transform: translateY(16px) scale(0.5); pointer-events: none;
@@ -3739,7 +3739,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 }
 
 
-function FilterBar(props: any) { return <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><input value={props.search} onChange={e => props.setSearch(e.target.value)} placeholder="Search issues..." style={{ flex: "1 1 180px", minWidth: 140 }} /><select value={props.filterStatus} onChange={e => props.setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="All">All Status</option><option value="Pending">⏳ Pending ({(issues || []).filter(i => i.status === "Pending")?.length || 0})</option><option value="In Progress">In Progress</option><option value="Resolved">✅ Resolved ({(issues || []).filter(i => i.status === "Resolved")?.length || 0})</option></select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
+function FilterBar(props: any) {0})</option></select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
 
 export default function App() {
   const [settings] = React.useState({ pradhanName: "" });
@@ -4163,12 +4163,12 @@ useEffect(() => {
                     <div style={{ position:"relative",width:270,height:270 }}>
                       <div style={{ position:"absolute",inset:-40,borderRadius:"50%",background:"radial-gradient(ellipse,rgba(124,92,252,0.22) 0%,transparent 70%)",animation:"pulseGlow 3s ease-in-out infinite",pointerEvents:"none" }}/>
                       <div style={{ position:"absolute",inset:16,borderRadius:"50%",background:"radial-gradient(ellipse at 35% 30%,rgba(181,123,238,0.95) 0%,rgba(124,92,252,0.75) 45%,rgba(56,217,245,0.45) 100%)",boxShadow:"0 0 60px rgba(124,92,252,0.55),0 0 120px rgba(124,92,252,0.22),inset 0 0 36px rgba(255,255,255,0.10)",animation:"floatOrb 5s ease-in-out infinite" }}>
-                        <div style={{ position:"absolute",top:"14%",left:"20%",width:"38%",height:"22%",borderRadius:"50%",background:"rgba(255,255,255,0.26)",filter:"blur(7px)" }}/>
+                        <div style={0}}/>
                                 </div>
                       <div style={{ position:"absolute",top:"50%",left:"50%",width:11,height:11,marginTop:-5.5,marginLeft:-5.5,animation:"orbit1 5s linear infinite" }}><div style={{ width:11,height:11,borderRadius:"50%",background:"#38d9f5",boxShadow:"0 0 12px #38d9f5" }}/></div>
                       <div style={{ position:"absolute",top:"50%",left:"50%",width:8,height:8,marginTop:-4,marginLeft:-4,animation:"orbit2 7s linear infinite" }}><div style={{ width:8,height:8,borderRadius:"50%",background:"#f4c95d",boxShadow:"0 0 10px #f4c95d" }}/></div>
                       <div className="glass" style={{ position:"absolute",top:-6,right:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4s ease-in-out infinite" }}>
-                        <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>✅ Resolved ({(issues || []).filter(i => i.status === "Resolved")?.length || 0})</div>
+                        <div style={0})</div>
                                 </div>
                       <div className="glass" style={{ position:"absolute",bottom:6,left:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4.5s ease-in-out infinite 0.8s" }}>
                         <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>📊 Total ({0 || 0})</div>
@@ -4426,12 +4426,12 @@ useEffect(() => {
                 <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
                   {isAdmin ? "🛡 Admin Dashboard" : "All Reported Issues"}
                 </h2>
-                <p style={{ fontSize: 13, color: "var(--ct4)" }}>{filtered.length} of {problems.length} issues shown</p>
+                <p style={0} of {problems.length} issues shown</p>
               </div>
             </FadeIn>
             <FadeIn delay={100}>
-              <FilterBar filterCat={filterCat} setFilterCat={setFilterCat} filterStatus={filterStatus} setFilterStatus={setFilterStatus}
-                filterWard={filterWard} setFilterWard={setFilterWard} search={search} setSearch={setSearch} sort={sort} setSort={setSort} />
+              <FilterBar filterCat={0} setFilterStatus={setFilterStatus}
+                filterWard={0} setFilterWard={setFilterWard} search={search} setSearch={setSearch} sort={sort} setSort={setSort} />
             </FadeIn>
             {loading ? (
               <div style={{ textAlign: "center", padding: 60, color: "var(--ct3)", fontSize: 14 }}>Loading…</div>
@@ -4439,7 +4439,7 @@ useEffect(() => {
               <FadeIn delay={200}>
                 <div className="glass" style={{ borderRadius: 20, padding: "48px 32px", textAlign: "center" }}>
                   <Search size={40} style={{ marginBottom: 12 }} />
-                            <div style={{ color: "var(--ct4)", fontSize: 13 }}>{problems.length === 0 ? "No problems have been submitted yet." : "Try adjusting your filters."}</div>
+                            <div style={0}</div>
                 </div>
               </FadeIn>
             ) : (
