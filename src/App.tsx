@@ -2868,7 +2868,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderRadius: 12, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>Delete Resolved Issues</div>
-                <div style={0} resolved issues will be removed</div>
+                <div style={0} resolved issues will be removed></div>
               </div>
               {confirmClear === "resolved"
                 ? <div style={{ display: "flex", gap: 8 }}>
