@@ -1886,7 +1886,7 @@ function SarpanchCard({ sarpanchName, photo, whatsapp, instagram, address }: { s
           <div style={{ fontSize: 10, color: "#22c55e", fontWeight: 700, letterSpacing: "0.12em", marginBottom: 5 }}>GRAM PRADHAN · SARPANCH</div>
                     
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-main)", marginBottom: 8, marginTop: 4 }}>
-              {"Gram Pradhan Name" || "Gram Pradhan Name"}
+              {"Yadav Ji" || "Yadav Ji"}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "var(--text-muted)", marginBottom: 12 }}>
               {"" && (
