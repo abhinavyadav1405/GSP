@@ -4036,13 +4036,13 @@ useEffect(() => {
   };
 
   const navLinks = [
-    { id: "schemes" as const, label: "Schemes", icon: "🏛" },
-    { id: "home" as const, label: "Home", icon: "⌂" },
-    { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
-    { id: "notices" as const, label: "Notices", icon: "📢" },
-    { id: "achievements" as const, label: "Achievements", icon: "🏆" },
-    { id: "profile" as const, label: currentUser ? "Profile" : "Login", icon: currentUser ? "👤" : "🔐" },
-  ];
+  { id: 'home' as const, label: 'Home', icon: '🏠' },
+  { id: 'dashboard' as const, label: 'Dashboard', icon: '📊' },
+  { id: 'schemes' as const, label: 'Schemes', icon: '🏛️' },
+  { id: 'notices' as const, label: 'Notices', icon: '📢' },
+  { id: 'achievements' as const, label: 'Achievements', icon: '🏆' },
+  { id: 'profile' as const, label: currentUser ? 'Profile' : 'Login', icon: currentUser ? '👤' : '🔑' },
+];
 
   return (
     <>
