@@ -571,5 +571,5 @@ function CommunityPostCard({ problem, user, onUpdate, onOpenLogin }: { problem: 
         {user ? <div style={{ display: "flex", gap: 7, marginTop: 6 }}><input value={comment} onChange={e => setComment(e.target.value)} placeholder="Write a comment…" onKeyDown={e => e.key === "Enter" && addComment()} /><button className="btn-white" onClick={addComment} style={{ width: 80, borderRadius: 10 }}>Send</button></div> : <button className="btn-ghost" onClick={onOpenLogin} style={{ width: "100%", borderRadius: 10, padding: 9 }}>Login to comment</button>}
       </div>}
     </div>
-  </article>;
+  </article>
 }
