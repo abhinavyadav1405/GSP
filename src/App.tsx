@@ -4171,7 +4171,7 @@ useEffect(() => {
                         <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>✅ Resolved ({(issues || []).filter(i => i.status === "Resolved")?.length || 0})</div>
                                 </div>
                       <div className="glass" style={{ position:"absolute",bottom:6,left:-18,padding:"8px 14px",borderRadius:13,animation:"floatChip 4.5s ease-in-out infinite 0.8s" }}>
-                        <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>📊 Total ({issues?.length || 0})</div>
+                        <div style={{ fontSize:10,color:"var(--ct4)",marginBottom:2 }}>📊 Total ({0 || 0})</div>
                                 </div>
                       <div className="glass" style={{ position:"absolute",bottom:52,right:-20,padding:"6px 12px",borderRadius:11,animation:"floatChip 6s ease-in-out infinite 1.2s" }}>
                         <div style={{ display:"flex",alignItems:"center",gap:5 }}><div style={{ width:7,height:7,borderRadius:"50%",background:"#4ade80",boxShadow:"0 0 7px #4ade80",animation:"pulse-dot 2s infinite" }}/><span style={{ fontSize:11,color:"var(--text-main)",fontWeight:600 }}>Live</span></div>
