@@ -2,7 +2,7 @@ import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
 import { useState, useEffect, useRef } from "react";
-import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle, CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard, Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren, Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat, Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown, ShieldAlert, Upload, CircleUserRound, Heart, MessageCircle, Send, Landmark } from "lucide-react";
+import { Award,  Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle, CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard, Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren, Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat, Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown, ShieldAlert, Upload, CircleUserRound, Heart, MessageCircle, Send, Landmark  } from 'lucide-react';
 import { Leaf } from "lucide-react";
 
 import {
@@ -4036,12 +4036,12 @@ useEffect(() => {
   };
 
   const navLinks = [
-  { id: 'home' as const, label: 'Home', icon: '🏠' },
-  { id: 'dashboard' as const, label: 'Dashboard', icon: '📊' },
-  { id: 'schemes' as const, label: 'Schemes', icon: '🏛️' },
-  { id: 'notices' as const, label: 'Notices', icon: '📢' },
-  { id: 'achievements' as const, label: 'Achievements', icon: '🏆' },
-  { id: 'profile' as const, label: currentUser ? 'Profile' : 'Login', icon: currentUser ? '👤' : '🔑' },
+  { id: 'home' as const, label: 'Home', icon: Home },
+  { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'schemes' as const, label: 'Schemes', icon: Landmark },
+  { id: 'notices' as const, label: 'Notices', icon: Bell },
+  { id: 'achievements' as const, label: 'Achievements', icon: Award },
+  { id: 'profile' as const, label: currentUser ? 'Profile' : 'Login', icon: User },
 ];
 
   return (
