@@ -1962,7 +1962,7 @@ function FeedbackSection({ feedbacks, onAdd }: { feedbacks: Feedback[]; onAdd: (
         <div style={{ display:"flex", gap:4, marginBottom:14, alignItems:"center" }}>
           {[1,2,3,4,5].map(s => (
             <span key={s} onClick={()=>setRating(s)} onMouseEnter={()=>setHovered(s)} onMouseLeave={()=>setHovered(0)}
-              style={0}}>⭐</span>
+              style={{}}>⭐</span>
           ))}
           <span style={{ fontSize:12, color:"rgba(255,255,255,0.38)", marginLeft:10 }}>{["","Poor","Fair","Good","Very Good","Excellent"][hovered||rating]}</span>
         </div>
