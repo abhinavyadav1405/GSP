@@ -3739,7 +3739,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 }
 
 
-function FilterBar(props: any) {0})</option></select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
+function FilterBar(props: any) {</select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
 
 export default function App() {
   const [settings] = React.useState({ pradhanName: "" });
