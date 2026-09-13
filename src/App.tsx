@@ -2574,7 +2574,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
       <FadeIn delay={160}>
           {card(<>
           <SectionHead icon="🏘" title="Village & Sarpanch Info" />
-          
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            
       {/* Unified Sarpanch & Village Details Section */}
       <div style={{ background: "var(--glass-bg)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--glass-border)", borderRadius: 24, padding: "24px 20px", marginBottom: 24, boxShadow: "var(--glass-shadow)" }}>
         <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch & Village Details</h3>
@@ -2585,8 +2586,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Village Name (Hindi/English)</label>
           <input 
             type="text" 
-            value={typeof villageName !== 'undefined' ? villageName : ""} 
-            onChange={(e) => typeof setVillageName === 'function' && setVillageName(e.target.value)}
+            value={typeof villageName !== "undefined" ? villageName : ""} 
+            onChange={(e) => setVillageName(e.target.value)}
             placeholder="Enter village name"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
           />
@@ -2597,11 +2598,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Name</label>
           <input 
             type="text" 
-            value={typeof pradhanName !== 'undefined' ? pradhanName : (typeof settings !== 'undefined' && settings?.pradhanName ? settings.pradhanName : "")} 
-            onChange={(e) => {
-              if (typeof setPradhanName === 'function') setPradhanName(e.target.value);
-              if (typeof setSettings === 'function' && typeof settings !== 'undefined') setSettings({...settings, pradhanName: e.target.value});
-            }}
+            value={"" || "" || ""} 
+            onChange={(e) => (() => {})({...settings, pradhanName: e.target.value})}
             placeholder="Enter Sarpanch Name"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
           />
@@ -2612,8 +2610,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Address</label>
           <input 
             type="text" 
-            value={typeof address !== 'undefined' ? address : ""} 
-            onChange={(e) => typeof setAddress === 'function' && setAddress(e.target.value)}
+            value={typeof address !== "undefined" ? address : ""} 
+            onChange={(e) => setAddress(e.target.value)}
             placeholder="Enter full address"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
           />
@@ -2623,8 +2621,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Sarpanch Profile Photo (max 2 MB)</label>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {typeof sarpanchPhoto !== 'undefined' && sarpanchPhoto && <img src={sarpanchPhoto} alt="preview" style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }} />}
-            <input type="file" accept="image/*" onChange={(e) => typeof handleSarpanchPhoto === 'function' && handleSarpanchPhoto(e)} style={{ fontSize: 13 }} />
+            {sarpanchPhoto && <img src={sarpanchPhoto} alt="preview" style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover" }} />}
+            <input type="file" accept="image/*" onChange={(e) => handleSarpanchPhoto && handleSarpanchPhoto(e)} style={{ fontSize: 13 }} />
           </div>
         </div>
 
@@ -2633,8 +2631,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>WhatsApp Number (10 digits)</label>
           <input 
             type="text" 
-            value={typeof whatsapp !== 'undefined' ? whatsapp : ""} 
-            onChange={(e) => typeof setWhatsapp === 'function' && setWhatsapp(e.target.value)}
+            value={typeof whatsapp !== "undefined" ? whatsapp : ""} 
+            onChange={(e) => setWhatsapp(e.target.value)}
             placeholder="9793537265"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
           />
@@ -2645,8 +2643,8 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6, color: "var(--text-main)" }}>Instagram Username (without @)</label>
           <input 
             type="text" 
-            value={typeof instagram !== 'undefined' ? instagram : ""} 
-            onChange={(e) => typeof setInstagram === 'function' && setInstagram(e.target.value)}
+            value={typeof instagram !== "undefined" ? instagram : ""} 
+            onChange={(e) => setInstagram(e.target.value)}
             placeholder="username"
             style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-input)", color: "var(--text-main)" }}
           />
@@ -2664,7 +2662,6 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           Save All Details →
         </button>
       </div>
-
 
 
             {/* Photo upload */}
