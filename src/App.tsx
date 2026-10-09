@@ -3999,7 +3999,8 @@ useEffect(() => {
     { id: "home" as const, label: "Home", icon: "⌂" },
     { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
     { id: "notices" as const, label: "Notices", icon: "📢" },
-    { id: "achievements" as const, label: "Achievements", icon: "🏆" },\n    { id: "ai" as const, label: "Paras AI", icon: "🤖" },
+    { id: "achievements" as const, label: "Achievements", icon: "🏆" },
+    { id: "ai" as const, label: "Paras AI", icon: "🤖" },
     { id: "profile" as const, label: currentUser ? "Profile" : "Login", icon: currentUser ? "👤" : "🔐" },
   ];
 
