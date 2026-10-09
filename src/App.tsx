@@ -2465,52 +2465,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
               </div>
 
               
-              {/* 🛡️ All 3 Admins Management Section */}
-              <div className="glass" style={{ borderRadius: 20, padding: "24px", marginBottom: 24, border: "2px solid rgba(251,191,36,0.6)" }}>
-                          <p style={{ fontSize: 13, color: "var(--ct4)", marginBottom: 16 }}>Teeno admins ki details yahan bharein taaki user profile aur home directory mein unka naam, photo aur contact buttons dikhein.</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                  {["super", "userAdmin", "complaintAdmin"].map((key) => {
-                    const title = key === "super" ? "👑 Super Admin" : key === "userAdmin" ? "🛡️ User Admin" : "⚖️ Complaint Admin";
-                    return (
-                      <div key={key} style={{ background: "var(--cbg5)", borderRadius: 14, padding: "14px", border: "1px solid var(--cbg12)", display: "flex", flexDirection: "column", gap: 8 }}>
-                        <div style={{ fontWeight: 700, color: "#fbbf24", fontSize: 14 }}>{title}</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8 }}>
-                          <input placeholder="Name" value={adminDetails[key]?.name || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], name: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
-                          <input placeholder="Phone" value={adminDetails[key]?.phone || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], phone: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
-                          <input placeholder="Email" value={adminDetails[key]?.email || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], email: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
-                          <input placeholder="WhatsApp" value={adminDetails[key]?.whatsapp || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], whatsapp: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
-                          <input placeholder="Instagram" value={adminDetails[key]?.instagram || ""} onChange={e => setAdminDetails({...adminDetails, [key]: {...adminDetails[key], instagram: e.target.value}})} style={{ padding: "8px 12px", borderRadius: 8, background: "var(--input-bg, rgba(255,255,255,0.08))", border: "1px solid var(--border, rgba(255,255,255,0.15))", color: "inherit" }} />
-                          <label style={{ padding: "8px 12px", borderRadius: 8, background: "var(--cbg5)", border: "1px solid rgba(255,255,255,0.15)", color: "inherit", display: "flex", alignItems: "center", cursor: "pointer", fontSize: 13, gap: 8 }}>
-  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: adminDetails[key]?.photo ? "#4ade80" : "inherit", fontWeight: adminDetails[key]?.photo ? 600 : 400 }}>
-    {adminDetails[key]?.photo ? "✅ Photo Selected" : "📷 Upload Photo"}
-  </span>
-  {adminDetails[key]?.photo && (
-    <img src={adminDetails[key].photo} alt="preview" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover" }} />
-  )}
-  <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const b64 = await compressImage(file, 200, 0.5);
-        setAdminDetails(prev => ({...prev, [key]: {...prev[key], photo: b64}}));
-      } catch(err) { console.error(err); }
-    }
-  }} />
-</label>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <button className="btn-white" onClick={async () => {
-                    await setDoc(doc(db, "settings", "allAdmins"), adminDetails);
-                    alert("All 3 Admins saved successfully!");
-                  }} style={{ borderRadius: 12, padding: "14px", fontWeight: 700, background: "linear-gradient(135deg, #fbbf24, #d97706)", color: "#000", border: "none", cursor: "pointer" }}>
-                    Save All Admins Info 💾
-                  </button>
-                </div>
-              </div>
-
-              <SectionHead icon="🔑" title="Change Super Admin Password" />
+                            <SectionHead icon="🔑" title="Change Super Admin Password" />
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <input type="password" placeholder="New password" value={newPw} onChange={e => { setNewPw(e.target.value); setPwErr(""); }} />
             <input type="password" placeholder="Confirm new password" value={confirmPw} onChange={e => { setConfirmPw(e.target.value); setPwErr(""); }} />
