@@ -3658,6 +3658,11 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes">("dashboard");
+  const [parasMessages, setParasMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([
+    { role: "assistant", text: "नमस्ते! मैं Paras AI हूँ — Gram Sabha Pahrajpur का AI सहायक। मैं गाँव की समस्याओं का विश्लेषण, महत्वपूर्ण कार्यों की प्राथमिकता, जानकारी समझाने और पोस्ट/नोटिस का ड्राफ्ट बनाने में मदद कर सकता हूँ। आप क्या करना चाहते हैं?" }
+  ]);
+  const [parasInput, setParasInput] = useState("");
+  const [parasLoading, setParasLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
   const [publicProfileUser, setPublicProfileUser] = useState<PublicProfileData | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
@@ -3934,6 +3939,38 @@ useEffect(() => {
   const logoutUser = () => { setCurrentUser(null); localStorage.removeItem("gsp-user"); setPage("home"); showToast("👋 Logged out."); };
 
   const logout = () => { setIsAdmin(false); setAdminRole(null); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); };
+  const askParasAI = async (question?: string) => {
+    const prompt = (question ?? parasInput).trim();
+    if (!prompt || parasLoading) return;
+    const nextMessages = [...parasMessages, { role: "user" as const, text: prompt }];
+    setParasMessages(nextMessages);
+    setParasInput("");
+    setParasLoading(true);
+    try {
+      const response = await fetch("/api/paras-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: prompt,
+          history: nextMessages.slice(-10).map(m => ({ role: m.role, text: m.text })),
+          context: {
+            villageName,
+            problems: problems.slice(0, 80).map(p => ({ id: p.id, title: p.title, category: p.category, status: p.status, ward: p.ward, priority: p.priority, date: p.date, description: p.description })),
+            notices: notices.slice(0, 30).map(n => ({ title: n.title, body: n.body, date: n.date })),
+            achievements: achievements.slice(0, 20).map(a => ({ title: a.title, description: a.description, date: a.date })),
+          }
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Paras AI अभी जवाब नहीं दे पाया।");
+      setParasMessages(prev => [...prev, { role: "assistant", text: String(data.reply || "मुझे कोई जवाब नहीं मिला।") }]);
+    } catch (error) {
+      setParasMessages(prev => [...prev, { role: "assistant", text: error instanceof Error ? error.message : "कनेक्शन में समस्या है। कृपया फिर कोशिश करें।" }]);
+    } finally {
+      setParasLoading(false);
+    }
+  };
+
   const canManageComplaints = adminRole === "super" || adminRole === "complaint-admin";
   const canManageUsers = adminRole === "super" || adminRole === "user-admin";
 
@@ -3962,7 +3999,7 @@ useEffect(() => {
     { id: "home" as const, label: "Home", icon: "⌂" },
     { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
     { id: "notices" as const, label: "Notices", icon: "📢" },
-    { id: "achievements" as const, label: "Achievements", icon: "🏆" },
+    { id: "achievements" as const, label: "Achievements", icon: "🏆" },\n    { id: "ai" as const, label: "Paras AI", icon: "🤖" },
     { id: "profile" as const, label: currentUser ? "Profile" : "Login", icon: currentUser ? "👤" : "🔐" },
   ];
 
@@ -4022,6 +4059,48 @@ useEffect(() => {
       )}
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 16px 60px" }}>
+
+        {/* ── PARAS AI ─────────────────────────────────────────────────────── */}
+        {page === "ai" && (
+          <div style={{ maxWidth: 900, margin: "22px auto", paddingBottom: 20 }}>
+            <div style={{ borderRadius: 26, overflow: "hidden", border: "1px solid var(--cbg12)", background: "var(--bg-card, rgba(255,255,255,.78))", boxShadow: "0 18px 55px rgba(80,65,180,.12)" }}>
+              <div style={{ padding: "22px 20px", background: "linear-gradient(120deg,#4f46e5,#7c3aed 52%,#0891b2)", color: "#fff", display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ width: 54, height: 54, borderRadius: 18, background: "rgba(255,255,255,.18)", display: "grid", placeItems: "center", fontSize: 30 }}>🤖</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 23, fontWeight: 800, letterSpacing: "-.03em" }}>Paras AI</div>
+                  <div style={{ fontSize: 12, opacity: .88, marginTop: 4 }}>गाँव का AI सहायक · Gemini-powered</div>
+                </div>
+                <div style={{ fontSize: 11, borderRadius: 99, padding: "6px 10px", background: "rgba(255,255,255,.17)" }}>AI Assistant</div>
+              </div>
+              <div style={{ padding: 16 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                  {[
+                    "गाँव की समस्याओं का विश्लेषण करो",
+                    "सबसे जरूरी 5 काम बताओ",
+                    "एक नई ग्राम सभा सूचना का ड्राफ्ट बनाओ",
+                    "पानी और सड़क की समस्याओं का सारांश दो",
+                  ].map(prompt => (
+                    <button key={prompt} onClick={() => askParasAI(prompt)} disabled={parasLoading} style={{ border: "1px solid var(--cbg12)", background: "var(--cbg5)", color: "var(--text-main)", borderRadius: 99, padding: "9px 12px", fontSize: 12, cursor: parasLoading ? "wait" : "pointer" }}>{prompt}</button>
+                  ))}
+                </div>
+                <div aria-live="polite" style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 280, maxHeight: "52vh", overflowY: "auto", padding: "8px 2px 14px" }}>
+                  {parasMessages.map((message, index) => (
+                    <div key={index} style={{ alignSelf: message.role === "user" ? "flex-end" : "stretch", maxWidth: message.role === "user" ? "88%" : "100%", display: "flex", gap: 9, alignItems: "flex-start" }}>
+                      {message.role === "assistant" && <div style={{ width: 30, height: 30, borderRadius: 11, flexShrink: 0, display: "grid", placeItems: "center", background: "linear-gradient(135deg,#6366f1,#0891b2)", color: "#fff" }}>✦</div>}
+                      <div style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", lineHeight: 1.7, fontSize: 14, padding: "12px 14px", borderRadius: 16, background: message.role === "user" ? "linear-gradient(135deg,#5b4be8,#7c3aed)" : "var(--cbg5)", color: message.role === "user" ? "#fff" : "var(--text-main)", border: message.role === "assistant" ? "1px solid var(--cbg8)" : "none" }}>{message.text}</div>
+                    </div>
+                  ))}
+                  {parasLoading && <div style={{ color: "var(--ct4)", fontSize: 13, padding: "4px 42px" }}>Paras AI सोच रहा है…</div>}
+                </div>
+                <form onSubmit={e => { e.preventDefault(); void askParasAI(); }} style={{ display: "flex", gap: 9, alignItems: "flex-end", paddingTop: 12, borderTop: "1px solid var(--cbg8)" }}>
+                  <textarea value={parasInput} onChange={e => setParasInput(e.target.value)} placeholder="Paras AI से कुछ भी पूछें…" rows={2} disabled={parasLoading} style={{ flex: 1, resize: "vertical", minWidth: 0, border: "1px solid var(--cbg12)", borderRadius: 15, padding: "12px 14px", font: "inherit", fontSize: 14, color: "var(--text-main)", background: "var(--cbg4)", outline: "none" }} />
+                  <button type="submit" disabled={parasLoading || !parasInput.trim()} style={{ height: 46, minWidth: 50, border: 0, borderRadius: 14, color: "#fff", background: parasLoading || !parasInput.trim() ? "#9ca3af" : "linear-gradient(135deg,#5b4be8,#0891b2)", fontSize: 20, cursor: parasLoading || !parasInput.trim() ? "not-allowed" : "pointer" }}>➤</button>
+                </form>
+                <div style={{ marginTop: 10, color: "var(--ct4)", fontSize: 11, lineHeight: 1.5 }}>Paras AI की सलाह की जाँच कर लें। यह पोस्ट और नोटिस का ड्राफ्ट बना सकता है; आपकी पुष्टि के बिना वेबसाइट पर कुछ प्रकाशित नहीं करेगा।</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── HOME ─────────────────────────────────────────────────────────── */}
         {page === "dashboard" && (
