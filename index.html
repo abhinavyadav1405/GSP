@@ -34,8 +34,50 @@
         border: 1px solid rgba(255,255,255,0.2) !important;
       }
     </style>
+    <style>
+      #gsp-loader {
+        position: fixed; inset: 0; z-index: 99999; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 22px;
+        background: linear-gradient(145deg, #f7f4ff 0%, #eef3ff 52%, #fff9e9 100%);
+        opacity: 1; visibility: visible; transition: opacity .45s ease, visibility .45s ease;
+      }
+      #gsp-loader.gsp-loader-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+      .gsp-loader-logo-wrap { position: relative; width: 142px; height: 142px; display: grid; place-items: center; }
+      .gsp-loader-ring {
+        position: absolute; inset: 0; border-radius: 50%;
+        border: 4px solid rgba(99, 102, 241, .12);
+        border-top-color: #5b65e8; border-right-color: #f5ad18;
+        animation: gsp-loader-spin 1.15s linear infinite;
+      }
+      .gsp-loader-logo {
+        width: 108px; height: 108px; object-fit: contain; border-radius: 24px;
+        animation: gsp-loader-breathe 1.5s ease-in-out infinite;
+        filter: drop-shadow(0 8px 18px rgba(55, 75, 180, .16));
+      }
+      .gsp-loader-title { font: 700 19px/1.3 system-ui, sans-serif; color: #28224d; letter-spacing: .2px; }
+      .gsp-loader-caption { margin-top: -14px; font: 500 13px/1.4 system-ui, sans-serif; color: #777394; }
+      .gsp-loader-dots { display: flex; gap: 7px; margin-top: -8px; }
+      .gsp-loader-dots span { width: 7px; height: 7px; border-radius: 50%; background: #6657e8; animation: gsp-loader-dot 1s ease-in-out infinite; }
+      .gsp-loader-dots span:nth-child(2) { animation-delay: .15s; background: #159bd0; }
+      .gsp-loader-dots span:nth-child(3) { animation-delay: .3s; background: #f5ad18; }
+      @keyframes gsp-loader-spin { to { transform: rotate(360deg); } }
+      @keyframes gsp-loader-breathe { 0%,100% { transform: scale(.94); } 50% { transform: scale(1.04); } }
+      @keyframes gsp-loader-dot { 0%,60%,100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-6px); opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) {
+        .gsp-loader-ring, .gsp-loader-logo, .gsp-loader-dots span { animation: none; }
+      }
+    </style>
     </head>
   <body>
+    <div id="gsp-loader" role="status" aria-live="polite" aria-label="Gram Sabha Pahrajpur is loading">
+      <div class="gsp-loader-logo-wrap">
+        <div class="gsp-loader-ring"></div>
+        <img class="gsp-loader-logo" src="/logo.png" alt="Gram Sabha Pahrajpur logo" />
+      </div>
+      <div class="gsp-loader-title">Gram Sabha Pahrajpur</div>
+      <div class="gsp-loader-caption">Aapka portal load ho raha hai...</div>
+      <div class="gsp-loader-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
