@@ -4000,7 +4000,6 @@ useEffect(() => {
     { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
     { id: "notices" as const, label: "Notices", icon: "📢" },
     { id: "achievements" as const, label: "Achievements", icon: "🏆" },
-    { id: "ai" as const, label: "Paras AI", icon: "🤖" },
     { id: "profile" as const, label: currentUser ? "Profile" : "Login", icon: currentUser ? "👤" : "🔐" },
   ];
 
@@ -4062,7 +4061,7 @@ useEffect(() => {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 16px 60px" }}>
 
         {/* ── PARAS AI ─────────────────────────────────────────────────────── */}
-        {page === "ai" && (
+        {false && page === "ai" && (
           <div style={{ maxWidth: 900, margin: "22px auto", paddingBottom: 20 }}>
             <div style={{ borderRadius: 26, overflow: "hidden", border: "1px solid var(--cbg12)", background: "var(--bg-card, rgba(255,255,255,.78))", boxShadow: "0 18px 55px rgba(80,65,180,.12)" }}>
               <div style={{ padding: "22px 20px", background: "linear-gradient(120deg,#4f46e5,#7c3aed 52%,#0891b2)", color: "#fff", display: "flex", alignItems: "center", gap: 14 }}>
