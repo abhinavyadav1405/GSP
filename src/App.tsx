@@ -3107,86 +3107,55 @@ const SPLASH_STYLE = `
 `;
 
 function WelcomeSplash({ onDone }: { onDone: () => void }) {
-  const isReturning = !!localStorage.getItem("gsp-visited");
-  const [phase, setPhase] = useState(0);
-  const [exiting, setExiting] = useState(false);
   useEffect(() => {
-    const t = [
-      setTimeout(() => setPhase(1), 300),
-      setTimeout(() => setPhase(2), 1000),
-      setTimeout(() => setPhase(3), 1800),
-      setTimeout(() => setPhase(4), 2600),
-      setTimeout(() => setPhase(5), 3400),
-      setTimeout(() => setExiting(true), 4800),
-      setTimeout(() => onDone(), 5500),
-    ];
-    return () => t.forEach(clearTimeout);
+    const timer = window.setTimeout(onDone, 2200);
+    return () => window.clearTimeout(timer);
   }, [onDone]);
-  const vis = (p: number): React.CSSProperties => ({
-    opacity: phase >= p ? 1 : 0,
-    transform: phase >= p ? "translateY(0)" : "translateY(22px)",
-    transition: "opacity 0.6s ease, transform 0.6s ease",
-  });
-  const particles = [
-    {top:"10%",left:"7%",size:5,delay:"0s",dur:"4.2s"},
-    {top:"18%",left:"90%",size:4,delay:"0.5s",dur:"5s"},
-    {top:"68%",left:"4%",size:6,delay:"1s",dur:"4.6s"},
-    {top:"80%",left:"93%",size:3,delay:"0.3s",dur:"6s"},
-    {top:"45%",left:"2%",size:4,delay:"0.8s",dur:"5.4s"},
-    {top:"55%",left:"96%",size:5,delay:"1.3s",dur:"4s"},
-  ];
+
   return (
-    <div className={exiting ? "splash-exit" : ""} style={{position:"fixed",inset:0,zIndex:99999,display:"flex",alignItems:"center",justifyContent:"center",background:"#000",overflow:"hidden"}}>
-      <style>{SPLASH_STYLE}</style>
-      <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse 80% 60% at 50% 50%, #0a1a0d 0%, #000 70%)",pointerEvents:"none"}} />
-      <div style={{position:"absolute",width:"min(500px,90vw)",height:"min(500px,90vw)",borderRadius:"50%",border:"1px solid transparent",background:"linear-gradient(#000,#000) padding-box, conic-gradient(from 0deg, transparent 0%, rgba(34,197,94,0.55) 25%, transparent 50%, rgba(212,175,55,0.45) 75%, transparent 100%) border-box",animation:"borderRotate 8s linear infinite",pointerEvents:"none"}} />
-      <div style={{position:"absolute",width:"min(360px,70vw)",height:"min(360px,70vw)",borderRadius:"50%",background:"radial-gradient(circle, rgba(22,163,74,0.16) 0%, transparent 70%)",animation:"glowPulse 3s ease-in-out infinite",pointerEvents:"none"}} />
-      {particles.map((p,i) => (
-        <div key={i} style={{position:"absolute",top:p.top,left:p.left,width:p.size,height:p.size,borderRadius:"50%",background:"rgba(34,197,94,0.75)",boxShadow:`0 0 ${p.size*3}px rgba(34,197,94,0.6)`,animation:`particleDrift ${p.dur} ${p.delay} ease-in-out infinite`,pointerEvents:"none"}} />
-      ))}
-      <div style={{position:"relative",zIndex:2,textAlign:"center",padding:"0 24px",maxWidth:600,width:"100%"}}>
-        <div style={{...vis(1),marginBottom:26,display:"flex",justifyContent:"center"}}>
-          <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:72,height:72,borderRadius:20,background:"linear-gradient(135deg,#16a34a 0%,#166534 100%)",boxShadow:"0 0 0 1px rgba(255,255,255,0.15),0 0 40px rgba(22,163,74,0.55)",position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",inset:0,background:"linear-gradient(160deg,rgba(255,255,255,0.25) 0%,transparent 60%)"}} />
-            <img src="/logo.png" alt="Logo" style={{ width: 44, height: 44, borderRadius: 12, objectFit: "contain", position: "relative", zIndex: 1 }} />
-          </div>
-        </div>
-        <div style={{...vis(2),marginBottom:10}}>
-          <div style={{fontFamily:"DM Sans,sans-serif",fontSize:11,fontWeight:700,letterSpacing:"0.38em",color:"rgba(212,175,55,0.88)",textTransform:"uppercase"}}>
-            {isReturning ? "✦  Welcome Back to the  ✦" : "✦  Welcome to the  ✦"}
-          </div>
-        </div>
-        <div style={{...vis(2),marginBottom:4}}>
-          <div className="splash-shimmer" style={{fontFamily:"Sora,sans-serif",fontWeight:800,fontSize:"clamp(32px,7vw,64px)",lineHeight:1.05,letterSpacing:"-0.03em"}}>Digital Portal</div>
-        </div>
-        <div style={{...vis(3),marginBottom:4}}>
-          <div style={{fontFamily:"DM Sans,sans-serif",fontSize:12,color:"rgba(255,255,255,0.4)",letterSpacing:"0.2em",textTransform:"uppercase"}}>of</div>
-        </div>
-        <div style={{...vis(3),marginBottom:2}}>
-          <div style={{fontFamily:"Sora,sans-serif",fontWeight:700,fontSize:"clamp(18px,4.5vw,36px)",color:"#fff"}}>Gram Sabha</div>
-        </div>
-        <div style={{...vis(3),marginBottom:20}}>
-          <div style={{fontFamily:"Sora,sans-serif",fontWeight:300,fontSize:"clamp(22px,5.5vw,46px)",color:"rgba(255,255,255,0.88)",letterSpacing:"0.05em",textTransform:"uppercase"}}>Pahrajpur</div>
-        </div>
-        <div style={{...vis(3),display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:20}}>
-          <div style={{height:1,width:70,background:"linear-gradient(90deg,transparent,rgba(212,175,55,0.7),transparent)"}} />
-          <div style={{width:5,height:5,borderRadius:"50%",background:"rgba(212,175,55,0.85)",boxShadow:"0 0 10px rgba(212,175,55,0.6)",flexShrink:0}} />
-          <div style={{height:1,width:70,background:"linear-gradient(90deg,transparent,rgba(212,175,55,0.7),transparent)"}} />
-        </div>
-        <div style={{...vis(4),marginBottom:28}}>
-          <p style={{fontFamily:"DM Sans,sans-serif",fontSize:"clamp(11px,2.5vw,14px)",color:"rgba(255,255,255,0.36)",letterSpacing:"0.14em",textTransform:"uppercase",lineHeight:1.9}}>ग्राम सेवा · पारदर्शिता · विकास</p>
-        </div>
-        <div style={{...vis(5)}}>
-          <button onClick={() => { setExiting(true); setTimeout(onDone, 700); }} style={{fontFamily:"Sora,sans-serif",fontWeight:600,fontSize:13,padding:"12px 34px",borderRadius:50,background:"rgba(22,163,74,0.12)",border:"1px solid rgba(34,197,94,0.4)",color:"#4ade80",cursor:"pointer",letterSpacing:"0.1em",textTransform:"uppercase",transition:"all 0.25s ease",backdropFilter:"blur(8px)"}}>
-            Enter Portal →
-          </button>
-          <p style={{marginTop:14,fontFamily:"DM Sans,sans-serif",fontSize:11,color:"rgba(255,255,255,0.25)"}}>Auto-entering in a moment…</p>
+    <div
+      role="status"
+      aria-label="Loading Gram Sabha Pahrajpur"
+      style={{
+        position: "fixed", inset: 0, zIndex: 999999,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        gap: 24, background: "linear-gradient(145deg, #f8f7ff 0%, #edf8ff 52%, #f4fff6 100%)",
+        overflow: "hidden",
+      }}
+    >
+      <style>{`
+        @keyframes gspLogoFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-9px) scale(1.035); } }
+        @keyframes gspRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes gspLoad { 0% { transform: translateX(-110%); } 100% { transform: translateX(240%); } }
+        @media (prefers-reduced-motion: reduce) { .gsp-loader-motion { animation: none !important; } }
+      `}</style>
+      <div style={{ position: "absolute", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,.12), rgba(34,197,94,.04) 55%, transparent 72%)" }} />
+      <div style={{ position: "relative", width: 174, height: 174, display: "grid", placeItems: "center" }}>
+        <div className="gsp-loader-motion" style={{
+          position: "absolute", inset: 0, borderRadius: "50%",
+          border: "3px solid transparent", borderTopColor: "#2563eb", borderRightColor: "#f59e0b",
+          borderBottomColor: "#16a34a", animation: "gspRing 2s linear infinite",
+          filter: "drop-shadow(0 3px 8px rgba(37,99,235,.18))",
+        }} />
+        <div className="gsp-loader-motion" style={{
+          width: 142, height: 142, borderRadius: 30, background: "rgba(255,255,255,.88)",
+          border: "1px solid rgba(99,102,241,.12)", boxShadow: "0 16px 42px rgba(67,56,202,.12)",
+          display: "grid", placeItems: "center", animation: "gspLogoFloat 1.5s ease-in-out infinite",
+        }}>
+          <img src="/logo.png" alt="Gram Sabha Pahrajpur logo" style={{ width: 124, height: 124, objectFit: "contain" }} />
         </div>
       </div>
+      <div style={{ textAlign: "center", padding: "0 24px", position: "relative" }}>
+        <div style={{ fontFamily: "Sora, sans-serif", fontSize: "clamp(20px, 5vw, 27px)", fontWeight: 800, letterSpacing: "-.03em", color: "#211b4b" }}>Gram Sabha Pahrajpur</div>
+        <div style={{ marginTop: 8, fontFamily: "DM Sans, sans-serif", fontSize: 13, fontWeight: 600, color: "#6b7280", letterSpacing: ".08em" }}>YOUR VILLAGE · YOUR VOICE</div>
+      </div>
+      <div style={{ width: 150, height: 4, borderRadius: 99, background: "rgba(99,102,241,.13)", overflow: "hidden" }}>
+        <div className="gsp-loader-motion" style={{ height: "100%", width: "42%", borderRadius: 99, background: "linear-gradient(90deg,#2563eb,#16a34a,#f59e0b)", animation: "gspLoad .95s ease-in-out infinite alternate" }} />
+      </div>
+      <div style={{ fontSize: 12, color: "#8b8ba7", fontFamily: "DM Sans, sans-serif" }}>Loading portal…</div>
     </div>
   );
 }
-
 
 // ── User & Post Search ───────────────────────────────────────────────────────
 function UserSearchPage({
@@ -3686,7 +3655,7 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 function FilterBar(props: any) { return <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><input value={props.search} onChange={e => props.setSearch(e.target.value)} placeholder="Search issues..." style={{ flex: "1 1 180px", minWidth: 140 }} /><select value={props.filterStatus} onChange={e => props.setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="All">All Status</option><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Resolved">Resolved</option></select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes">("dashboard");
   const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
