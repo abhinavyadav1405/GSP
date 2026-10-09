@@ -20,12 +20,24 @@ export default async function handler(req: any, res: any) {
     const message = typeof body.message === "string" ? body.message.trim().slice(0, 5000) : "";
     if (!message) return res.status(400).json({ error: "कृपया पहले अपना सवाल लिखें।" });
 
-    const history: ChatMessage[] = Array.isArray(body.history)
-      ? body.history.slice(-10).filter((m: any) =>
+    const rawHistory: ChatMessage[] = Array.isArray(body.history)
+      ? body.history.slice(-12).filter((m: any) =>
           (m?.role === "user" || m?.role === "assistant") &&
           typeof m?.text === "string"
         ).map((m: any) => ({ role: m.role, text: m.text.slice(0, 4000) }))
       : [];
+
+    // Gemini requires the first conversation turn to be from the user.
+    const history: ChatMessage[] = [];
+    for (const item of rawHistory) {
+      if (history.length === 0 && item.role !== "user") continue;
+      const previous = history[history.length - 1];
+      if (previous && previous.role === item.role) {
+        previous.text += "\n\n" + item.text;
+      } else {
+        history.push({ ...item });
+      }
+    }
 
     const safeContext = body.context && typeof body.context === "object"
       ? JSON.stringify({
