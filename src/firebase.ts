@@ -35,6 +35,7 @@ const firebaseConfig = {
                                     setDoc,
                                       getDoc,
                                         query,
+                                          where,
                                           orderBy,
                                             arrayUnion,
                                               arrayRemove,
