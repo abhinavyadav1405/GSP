@@ -3124,8 +3124,10 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
       }}
     >
       <style>{`
-        @keyframes gspLogoFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-9px) scale(1.035); } }
+        @keyframes gspLogoFloat { 0%,100% { transform: translateY(0) scale(1) rotate(0deg); } 50% { transform: translateY(-9px) scale(1.045) rotate(2deg); } }
         @keyframes gspRing { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes gspLogoAura { 0%,100% { box-shadow: 0 16px 42px rgba(37,99,235,.13), 0 0 0 0 rgba(22,163,74,.12); } 50% { box-shadow: 0 20px 55px rgba(37,99,235,.22), 0 0 0 12px rgba(22,163,74,0); } }
+        @keyframes gspLogoReveal { from { opacity: 0; transform: scale(.78) rotate(-8deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
         @keyframes gspLoad { 0% { transform: translateX(-110%); } 100% { transform: translateX(240%); } }
         @media (prefers-reduced-motion: reduce) { .gsp-loader-motion { animation: none !important; } }
       `}</style>
@@ -3140,9 +3142,9 @@ function WelcomeSplash({ onDone }: { onDone: () => void }) {
         <div className="gsp-loader-motion" style={{
           width: 142, height: 142, borderRadius: 30, background: "rgba(255,255,255,.88)",
           border: "1px solid rgba(99,102,241,.12)", boxShadow: "0 16px 42px rgba(67,56,202,.12)",
-          display: "grid", placeItems: "center", animation: "gspLogoFloat 1.5s ease-in-out infinite",
+          display: "grid", placeItems: "center", animation: "gspLogoFloat 1.8s ease-in-out infinite, gspLogoAura 2.4s ease-in-out infinite",
         }}>
-          <img src="/logo.png" alt="Gram Sabha Pahrajpur logo" style={{ width: 124, height: 124, objectFit: "contain" }} />
+          <img src="/logo.svg" alt="Gram Sabha Pahrajpur logo" style={{ width: 124, height: 124, objectFit: "contain", animation: "gspLogoReveal .75s cubic-bezier(.2,.8,.2,1) both" }} />
         </div>
       </div>
       <div style={{ textAlign: "center", padding: "0 24px", position: "relative" }}>
@@ -4015,7 +4017,7 @@ useEffect(() => {
           {/* Logo + Name */}
           <div onClick={() => setPage("home")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", flexShrink: 0 }}>
             <div style={{ width: 36, height: 36, borderRadius: 8, overflow: "hidden", background: "rgba(255,255,255,0.08)" }}>
-              <img src="/logo.png" alt="GSP Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+              <img src="/logo.svg" alt="GSP Logo" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
             <span style={{ fontSize: 16, fontWeight: 700 }}>
               {villageName}
