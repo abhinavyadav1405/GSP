@@ -3657,7 +3657,7 @@ function FilterBar(props: any) { return <div className="glass" style={{ borderRa
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes">("dashboard");
+  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes"|"ai">("dashboard");
   const [parasMessages, setParasMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([
     { role: "assistant", text: "नमस्ते! मैं Paras AI हूँ — Gram Sabha Pahrajpur का AI सहायक। मैं गाँव की समस्याओं का विश्लेषण, महत्वपूर्ण कार्यों की प्राथमिकता, जानकारी समझाने और पोस्ट/नोटिस का ड्राफ्ट बनाने में मदद कर सकता हूँ। आप क्या करना चाहते हैं?" }
   ]);
