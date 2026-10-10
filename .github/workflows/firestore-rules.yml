@@ -1,0 +1,36 @@
+name: Firestore Rules Candidate Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - fix/security-migration-plan
+
+permissions:
+  contents: read
+
+jobs:
+  firestore-rules:
+    name: Test candidate rules in emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked application dependencies
+        run: npm ci
+
+      - name: Install temporary emulator test tools
+        run: npm install --no-save --package-lock=false @firebase/rules-unit-testing firebase-tools
+
+      - name: Run Firestore Emulator rules tests
+        run: npx firebase emulators:exec --only firestore --project demo-gsp-security-rules --non-interactive "node --test tests/firestore-rules.test.mjs"
