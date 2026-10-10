@@ -27,10 +27,10 @@ Do not deploy restrictive rules until the identity model and the corresponding a
 
 ## Current validation
 
-- GitHub Actions CI completed successfully for commit `b2024636c47d23d2d76c3bc3f52afd2985ef442d`: `npm ci` and `npm run build` both passed.
-- The latest GitHub Actions run for commit `bf63caff7be227709ea99f02e9b3b381a93412dc` passed dependency installation, the new Node-based security regression checks, and the Vite production build: https://github.com/abhinavyadav1405/GSP/actions/runs/38034270488.
-- The regression checks guard selected configuration/code invariants; they are not a substitute for Firebase Emulator rules tests or an end-to-end security review.
-- No Firestore rules tests, account migration, server-side admin authorization rollout, or live production data migration have been performed.
+- GitHub Actions CI passed for commit `fdd093c37052de1a986a86531ca647d0fa66d178`, including dependency installation, Node-based regression checks, and the Vite production build: https://github.com/abhinavyadav1405/GSP/actions/runs/38034437086.
+- A CodeQL workflow now runs JavaScript/TypeScript static security analysis on pushes and pull requests to `main` and `fix/security-migration-plan`, plus a weekly scheduled scan. Review its findings when the first run completes.
+- The regression checks guard selected configuration/code invariants; neither those checks nor CodeQL substitute for Firebase Emulator rules tests or an end-to-end security review.
+- No Firestore rules tests, account migration, server-side admin authorization rollout, or live production data migration have been performed. The current client-side admin credential exposure and permissive Firestore rules remain unresolved.
 
 ## Deployment gate
 
