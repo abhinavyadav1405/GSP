@@ -9,14 +9,13 @@ service cloud.firestore {
     function reportOnly() {
       let oldReports = resource.data.keys().hasAny(['reports']) ? resource.data.reports : [];
       let newReports = request.resource.data.reports;
-      let appended = newReports[newReports.size() - 1];
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reports', 'moderationStatus'])
-        && newReports is list
+      return newReports is list
         && newReports.size() == oldReports.size() + 1
         && newReports.hasAll(oldReports)
-        && appended is map
-        && appended.userId == userId()
-        && appended.reason in [
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reports', 'moderationStatus'])
+        && newReports[newReports.size() - 1] is map
+        && newReports[newReports.size() - 1].userId == userId()
+        && newReports[newReports.size() - 1].reason in [
           'गलत या झूठी जानकारी',
           'अश्लील या अनुचित वीडियो',
           'गाली-गलौज या उत्पीड़न',
@@ -25,6 +24,45 @@ service cloud.firestore {
           'अन्य'
         ]
         && request.resource.data.moderationStatus == 'reported';
+    }
+
+    function safeToggle(field) {
+      let oldList = resource.data.keys().hasAny([field]) && resource.data[field] is list ? resource.data[field] : [];
+      let newList = request.resource.data[field];
+      return newList is list
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([field])
+        && (
+          newList.size() == oldList.size() + 1
+            && newList.hasAll(oldList)
+            && !oldList.hasAny([userId()])
+            && newList.hasAny([userId()])
+          || newList.size() + 1 == oldList.size()
+            && oldList.hasAll(newList)
+            && oldList.hasAny([userId()])
+            && !newList.hasAny([userId()])
+        );
+    }
+
+    function appendOwnComment() {
+      let oldComments = resource.data.keys().hasAny(['comments']) && resource.data.comments is list ? resource.data.comments : [];
+      let newComments = request.resource.data.comments;
+      return newComments is list
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['comments'])
+        && newComments.size() == oldComments.size() + 1
+        && newComments.hasAll(oldComments)
+        && newComments[newComments.size() - 1] is map
+        && newComments[newComments.size() - 1].userId == userId()
+        && newComments[newComments.size() - 1].text is string
+        && newComments[newComments.size() - 1].text.size() > 0
+        && newComments[newComments.size() - 1].text.size() <= 2000;
+    }
+
+    function safeProblemInteraction() {
+      return signedIn() && (
+        safeToggle('likes')
+        || safeToggle('supporters')
+        || appendOwnComment()
+      );
     }
 
     match /users/{id} {
@@ -41,12 +79,15 @@ service cloud.firestore {
       allow create: if signedIn() && request.resource.data.authorId == userId();
       allow update: if isAdmin()
         || (signedIn() && reportOnly())
+        || safeProblemInteraction()
         || (signedIn() && resource.data.authorId == userId()
           && request.resource.data.authorId == resource.data.authorId
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'resolutionChallenge', 'resolutionChallengeAt', 'resolvedAt'])
           && request.resource.data.status == 'In Progress'
           && request.resource.data.resolutionChallenge.userId == userId()
-          && request.resource.data.resolutionChallenge.reason is string);
+          && request.resource.data.resolutionChallenge.reason is string
+          && request.resource.data.resolutionChallenge.reason.size() > 0
+          && request.resource.data.resolutionChallenge.reason.size() <= 2000);
       allow delete: if isAdmin() || (signedIn() && resource.data.authorId == userId());
     }
     match /reels/{id} {
@@ -63,6 +104,8 @@ service cloud.firestore {
             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['caption'])
             || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['challengedAt', 'challengeReason', 'resolvedAt'])
               && request.resource.data.challengeReason is string
+              && request.resource.data.challengeReason.size() > 0
+              && request.resource.data.challengeReason.size() <= 2000
               && request.resource.data.resolvedAt == null
           ));
       allow delete: if isAdmin() || (signedIn() && resource.data.ownerId == userId());
