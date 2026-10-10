@@ -73,9 +73,9 @@ const GLOBAL_STYLE = `
   @keyframes floatOrb{0%,100%{transform:translateY(0);}50%{transform:translateY(-22px);}}
   @keyframes floatChip{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
   @keyframes pulseGlow{0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:1;transform:scale(1.07);}}
-  @keyframes galleryCardReveal{from{opacity:0;transform:translateY(22px) scale(0.975);filter:blur(5px);}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}}
-  .gallery-photo-card:hover{transform:translateY(-5px);box-shadow:0 14px 34px rgba(120,70,220,0.2);border-color:rgba(168,85,247,0.55)!important;}
-  .gallery-photo-card:hover .gallery-photo-image{transform:scale(1.055);filter:saturate(1.12) contrast(1.025);}
+  @keyframes galleryCardReveal{from{opacity:0;}to{opacity:1;}}
+  .gallery-photo-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(120,70,220,0.12);border-color:rgba(168,85,247,0.35)!important;}
+  .gallery-photo-card:hover .gallery-photo-image{transform:scale(1.015);filter:saturate(1.03);}
   @media(prefers-reduced-motion:reduce){.gallery-photo-card,.gallery-photo-image{animation:none!important;transition:none!important;}}
   @keyframes shimmerTxt{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
   @keyframes orbit1{from{transform:rotate(0deg) translateX(108px) rotate(0deg);}to{transform:rotate(360deg) translateX(108px) rotate(-360deg);}}
@@ -2107,10 +2107,10 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
           {items.map(item => {
             const ytId = item.type === "video" ? getYoutubeId(item.url) : null;
             return (
-              <div key={item.id} className="gallery-photo-card" style={{ breakInside: "avoid", marginBottom: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", position: "relative", cursor: item.type === "photo" ? "zoom-in" : "default", animation: "galleryCardReveal 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both", transition: "transform 280ms ease, box-shadow 280ms ease, border-color 280ms ease" }}
+              <div key={item.id} className="gallery-photo-card" style={{ breakInside: "avoid", marginBottom: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", position: "relative", cursor: item.type === "photo" ? "zoom-in" : "default", animation: "galleryCardReveal 320ms ease-out both", transition: "transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease" }}
                 onClick={() => item.type === "photo" && setLightbox(item)}>
                 {item.type === "photo" ? (
-                  <img className="gallery-photo-image" src={item.url} alt={item.title} loading="lazy" style={{ width: "100%", display: "block", objectFit: "cover", transform: "scale(1.001)", transition: "transform 650ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 450ms ease", filter: "saturate(0.94)" }} />
+                  <img className="gallery-photo-image" src={item.url} alt={item.title} loading="lazy" style={{ width: "100%", display: "block", objectFit: "cover", transform: "scale(1.001)", transition: "transform 260ms ease, filter 260ms ease", filter: "saturate(1)" }} />
                 ) : ytId ? (
                   <div style={{ position: "relative", paddingBottom: "56.25%", background: "#000" }}>
                     <iframe src={`https://www.youtube.com/embed/${ytId}`} title={item.title}
