@@ -19,7 +19,8 @@ exports.expireResolvedReels = onSchedule("every 60 minutes", async () => {
     if (reel.videoDeleted || !reel.problemId) continue;
 
     const problemSnap = await db.collection("problems").doc(reel.problemId).get();
-    const isResolved = problemSnap.exists && problemSnap.data().status === "Resolved";
+    const problemData = problemSnap.exists ? problemSnap.data() : null;
+    const isResolved = !!problemData && problemData.status === "Resolved";
 
     if (!isResolved) {
       // A user challenge returns the linked problem to progress and resets the timer.
@@ -30,7 +31,7 @@ exports.expireResolvedReels = onSchedule("every 60 minutes", async () => {
     }
 
     if (!reel.resolvedAt) {
-      await reelDoc.ref.update({ resolvedAt: new Date(now).toISOString() });
+      await reelDoc.ref.update({ resolvedAt: problemData.resolvedAt || new Date(now).toISOString() });
       continue;
     }
 
