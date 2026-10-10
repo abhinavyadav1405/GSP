@@ -11,11 +11,11 @@
 2. From the `functions` directory, install dependencies: `npm ci`.
 3. Migrate existing credentials before deploying the restrictive rules: `node scripts/migrate-legacy-credentials.js`. Run with Application Default Credentials pointed at the correct Firebase project. Verify user profile documents no longer contain `passwordHash`.
 4. Deploy the callable authentication functions: `firebase deploy --only functions:authenticateGspUser,functions:registerGspUser`.
-5. Set the Admin custom claim from a trusted workstation: `node scripts/set-admin-claim.js <existing-user-id>`. The corresponding user must have signed in at least once so the Firebase Auth user exists.
+5. Set the Admin custom claim from a trusted workstation: `node scripts/set-admin-claim.js <existing-user-id> [super|user-admin|complaint-admin]`. The corresponding user must have signed in at least once so the Firebase Auth user exists.
 6. Deploy rules: `firebase deploy --only firestore:rules,storage`.
 7. Deploy the scheduled cleanup separately: `firebase deploy --only functions:expireResolvedReels`.
 
-Do not deploy restrictive Firestore rules before migrating credentials and reviewing all collections used by the live app. The wildcard rule intentionally denies writes to collections not explicitly listed; verify the full app against staging first. The Admin UI still needs to be backed by a token claim before treating it as authorized; a localStorage admin flag is not a security boundary.
+Do not deploy restrictive Firestore rules before migrating credentials and reviewing all collections used by the live app. The wildcard rule intentionally denies writes to collections not explicitly listed; verify the full app against staging first. The Admin UI now requires the server-issued Admin claim and a valid role claim; localStorage is not an authorization source.
 
 ## Security notes
 - Never commit service-account JSON or credentials to Git.
