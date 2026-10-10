@@ -8,7 +8,7 @@ import { Leaf } from "lucide-react";
 
 import {
   db,
-  collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove,
+  collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove, addDoc,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
 
@@ -1382,7 +1382,11 @@ function CommunityPostCard({
   const moderatePost = async (action: "keep" | "remove" | "warn") => {
     if (action === "keep") await onUpdate(problem.id, { reports: [], moderationStatus: "visible" });
     if (action === "remove") await onUpdate(problem.id, { reports: [], moderationStatus: "removed", removedAt: new Date().toISOString() });
-    if (action === "warn") await onUpdate(problem.id, { reports: [], moderationStatus: "visible", warningSentAt: new Date().toISOString(), warningReason: (problem.reports || []).map(r => r.reason).join(", ") || "Admin warning" });
+    if (action === "warn") {
+      const reason = (problem.reports || []).map(r => r.reason).join(", ") || "Admin warning";
+      await addDoc(collection(db, "userWarnings"), { userId: problem.authorId || "", userName: problem.name, contentType: "post", contentId: problem.id, reason, createdAt: new Date().toISOString() });
+      await onUpdate(problem.id, { reports: [], moderationStatus: "visible", warningSentAt: new Date().toISOString(), warningReason: reason });
+    }
   };
   const challengePostResolution = async () => {
     if (!user || !(problem.authorId === user.id || (problem.mobile === user.mobile && problem.name === user.name)) || !challengeReason.trim()) return;
