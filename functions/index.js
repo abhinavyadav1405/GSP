@@ -113,11 +113,13 @@ exports.registerGspUser = onCall({ enforceAppCheck: false }, async (request) => 
   const credentialRef = db.collection("userCredentials").doc(id);
   if ((await userRef.get()).exists) throw new HttpsError("already-exists", "Ye User ID already registered hai.");
   const profile = { id, name, mobile, ward, createdAt: new Date().toISOString() };
+  let profileCreated = false;
   try {
     await userRef.create(profile);
+    profileCreated = true;
     await credentialRef.create(newCredential(password));
   } catch (error) {
-    await userRef.delete().catch(() => {});
+    if (profileCreated) await userRef.delete().catch(() => {});
     if (error.code === 6 || error.code === "already-exists") throw new HttpsError("already-exists", "Ye User ID already registered hai.");
     throw error;
   }
