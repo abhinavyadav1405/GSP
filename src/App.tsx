@@ -781,7 +781,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
     setForm(current => ({
       ...current,
       ...(nameMatch?.[1] ? { name: nameMatch[1].trim() } : {}),
-      ...(mobileMatch?.[1] ? { mobile: mobileMatch[1] } : {}),
+      ...((mobileMatch?.[1] || mobileMatch?.[0]) ? { mobile: mobileMatch[1] || mobileMatch[0] } : {}),
       title: current.title.trim() ? current.title : title,
       description,
     }));
@@ -2870,6 +2870,10 @@ function EnhancedFAB({
   const [isListening, setIsListening] = useState(false);
   const [voiceText, setVoiceText] = useState("");
   const recognitionRef = useRef<any>(null);
+
+  useEffect(() => () => {
+    try { recognitionRef.current?.abort?.(); } catch { /* Ignore cleanup errors. */ }
+  }, []);
 
   const startVoiceInput = (e: React.MouseEvent) => {
     e.stopPropagation();
