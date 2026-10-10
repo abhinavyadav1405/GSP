@@ -4019,9 +4019,6 @@ useEffect(() => {
         if (d.sarpanchAddress) setSarpanchAddress(d.sarpanchAddress);
         if (d.whatsapp) setWhatsapp(d.whatsapp);
         if (d.instagram) setInstagram(d.instagram);
-        if (d.adminPassword) setAdminPassword(d.adminPassword);
-        if (d.userAdminPassword) setUserAdminPassword(d.userAdminPassword);
-        if (d.complaintAdminPassword) setComplaintAdminPassword(d.complaintAdminPassword);
         if (d.theme) setTheme(d.theme);
         if (d.sarpanchPhoto) setSarpanchPhoto(d.sarpanchPhoto);
       }
