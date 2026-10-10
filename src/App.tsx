@@ -7,7 +7,7 @@ import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyh
 import { Leaf } from "lucide-react";
 
 import {
-  db, auth, functions, signInWithCustomToken, httpsCallable,
+  db, auth, functions, signInWithCustomToken, httpsCallable, onAuthStateChanged,
   collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove, addDoc,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
@@ -3855,6 +3855,43 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 function FilterBar(props: any) { return <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><input value={props.search} onChange={e => props.setSearch(e.target.value)} placeholder="Search issues..." style={{ flex: "1 1 180px", minWidth: 140 }} /><select value={props.filterStatus} onChange={e => props.setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="All">All Status</option><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Resolved">Resolved</option></select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
 
 export default function App() {
+  useEffect(() => {
+    let active = true;
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) return;
+      try {
+        const token = await firebaseUser.getIdTokenResult();
+        if (!active) return;
+        const firebaseUserId = String(token.claims.gspUserId || "");
+        if (!firebaseUserId) {
+          localStorage.removeItem("gsp-user");
+          localStorage.removeItem("isAdmin");
+          setCurrentUser(null);
+          setIsAdmin(false);
+          return;
+        }
+        const stored = localStorage.getItem("gsp-user");
+        const profile = stored ? JSON.parse(stored) as AppUser : null;
+        if (profile && profile.id === firebaseUserId) {
+          setCurrentUser(profile);
+        } else {
+          localStorage.removeItem("gsp-user");
+          setCurrentUser(null);
+        }
+        setIsAdmin(token.claims.admin === true);
+      } catch (error) {
+        console.error("Firebase session verification failed", error);
+        if (active) {
+          localStorage.removeItem("gsp-user");
+          localStorage.removeItem("isAdmin");
+          setCurrentUser(null);
+          setIsAdmin(false);
+        }
+      }
+    });
+    return () => { active = false; unsubscribe(); };
+  }, []);
+
   const [showSplash, setShowSplash] = useState(true);
   const [problems, setProblems]     = useState<Problem[]>([]);
   const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes"|"ai"|"reels">("dashboard");
