@@ -3936,9 +3936,9 @@ export default function App() {
   const [loading, setLoading]       = useState(true);
 
   // Dynamic admin-configurable settings
-  const [adminPassword, setAdminPassword] = useState("admin123");
-  const [userAdminPassword, setUserAdminPassword] = useState("useradmin123");
-  const [complaintAdminPassword, setComplaintAdminPassword] = useState("workadmin123");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [userAdminPassword, setUserAdminPassword] = useState("");
+  const [complaintAdminPassword, setComplaintAdminPassword] = useState("");
   const [villageName, setVillageName]     = useState("Gram Sabha Pahrajpur");
   const [sarpanchName, setSarpanchName]   = useState("");
   const [achievements, setAchievements]   = useState<Achievement[]>([]);
@@ -4155,20 +4155,16 @@ useEffect(() => {
     try { saveSettings({ theme: next }); } catch (_) {}
   };
 
-  const savePassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { adminPassword: pw }, { merge: true }); } catch (_) {}
-    setAdminPassword(pw);
-    localStorage.setItem("gram-seva:adminPw", pw);
+  const savePassword = (_pw: string) => {
+    showToast("Admin access ab Firebase ke verified Admin claims se manage hota hai; password yahan save nahi hota.");
   };
 
-  const saveUserAdminPassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { userAdminPassword: pw }, { merge: true }); } catch (_) {}
-    setUserAdminPassword(pw);
+  const saveUserAdminPassword = (_pw: string) => {
+    showToast("User-Admin role trusted Admin claim se assign hota hai.");
   };
 
-  const saveComplaintAdminPassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { complaintAdminPassword: pw }, { merge: true }); } catch (_) {}
-    setComplaintAdminPassword(pw);
+  const saveComplaintAdminPassword = (_pw: string) => {
+    showToast("Complaint-Admin role trusted Admin claim se assign hota hai.");
   };
 
   const blockUser = async (mobile: string, name: string, reason = "Fake / Spam") => {
