@@ -3832,7 +3832,7 @@ useEffect(() => {
       setSubmitSuccess(true);
       showToast(`✅ Problem submitted! Your ID: #${p.id}`);
     } catch(e: any) {
-      showToast("❌ Submit failed. Try again.");
+      if (e?.message !== "blocked") showToast("❌ Submit failed. Try again.");
       throw e;
     }
   };
