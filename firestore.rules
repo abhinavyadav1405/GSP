@@ -24,7 +24,7 @@ service cloud.firestore {
     }
     match /problems/{id} {
       allow read: if true;
-      allow create: if signedIn() && (!request.resource.data.keys().hasAny(['authorId']) || request.resource.data.authorId == userId());
+      allow create: if signedIn() && request.resource.data.authorId == userId();
       allow update: if isAdmin()
         || (signedIn() && reportOnly())
         || (signedIn() && resource.data.authorId == userId()
