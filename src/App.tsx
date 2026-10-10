@@ -770,21 +770,49 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
   
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  // Voice input creates an editable draft only; it never submits a complaint automatically.
+  // Voice input fills a reviewable draft; it never publishes or submits anything.
   useEffect(() => {
     if (!voiceDraft?.text.trim()) return;
     const transcript = voiceDraft.text.trim();
-    const mobileMatch = transcript.match(/(?:mobile|phone|मोबाइल|फोन)\D{0,8}(\d{10})/i) || transcript.match(/\b[6-9]\d{9}\b/);
-    const nameMatch = transcript.match(/(?:mera naam|my name is|नाम है|मेरा नाम)\s+([^,.;]+?)(?=\s+(?:mobile|phone|ward|मेरा मोबाइल|मोबाइल|वार्ड)\b|[,.;]|$)/i);
-    const description = transcript;
-    const title = transcript.length > 72 ? `${transcript.slice(0, 69).trim()}…` : transcript;
+    const mobileMatch = transcript.match(/(?:mobile|phone|मोबाइल|फोन)\D{0,8}([6-9]\d{9})/i) || transcript.match(/\b[6-9]\d{9}\b/);
+    const nameMatch = transcript.match(/(?:mera naam|my name is|नाम है|मेरा नाम)\s+([^,.;]+?)(?=\s+(?:mobile|phone|ward|मेरा मोबाइल|मोबाइल|वार्ड|category|priority|location|address)\b|[,.;]|$)/i);
+    const titleMatch = transcript.match(/(?:title|शीर्षक|समस्या का नाम)\s*(?:hai|है|:)?\s*([^,.;]+)/i);
+    const locationMatch = transcript.match(/(?:location|address|landmark|जगह|स्थान|पता)\s*(?:hai|है|:)?\s*([^,.;]+)/i);
+    const captionMatch = transcript.match(/(?:caption|कैप्शन)\s*(?:hai|है|:)?\s*([^,.;]+)/i);
+    const priorityMatch = transcript.match(/(?:priority|प्राथमिकता)\s*(?:hai|है|:)?\s*(urgent|तुरंत|high|उच्च|medium|मध्यम|low|कम)/i);
+    const normalized = transcript.toLocaleLowerCase("hi-IN");
+    const category = CATEGORIES.find(item => normalized.includes(item.toLocaleLowerCase("en-US")))
+      || (/(pani|water|जल|पानी)/i.test(normalized) ? "Water Supply" : undefined)
+      || (/(sadak|road|रास्ता|सड़क)/i.test(normalized) ? "Road / Path" : undefined)
+      || (/(bijli|electricity|बिजली)/i.test(normalized) ? "Electricity" : undefined)
+      || (/(naali|drainage|नाली)/i.test(normalized) ? "Drainage" : undefined)
+      || (/(safai|sanitation|सफाई|कचरा)/i.test(normalized) ? "Sanitation" : undefined)
+      || (/(school|education|शिक्षा|विद्यालय)/i.test(normalized) ? "Education" : undefined)
+      || (/(hospital|health|स्वास्थ्य|अस्पताल)/i.test(normalized) ? "Health" : undefined)
+      || (/(street light|स्ट्रीट लाइट|सड़क की लाइट)/i.test(normalized) ? "Street Light" : undefined);
+    const ward = WARDS.find(item => normalized.includes(item.toLocaleLowerCase("en-US")));
+    const priority = priorityMatch ? (/urgent|तुरंत/i.test(priorityMatch[1]) ? "Urgent" : /high|उच्च/i.test(priorityMatch[1]) ? "High" : /low|कम/i.test(priorityMatch[1]) ? "Low" : "Medium") : undefined;
+    const cleanedDescription = transcript
+      .replace(/(?:my name is|mera naam|मेरा नाम|नाम है)\s+[^,.;]+/i, "")
+      .replace(/(?:mobile|phone|मोबाइल|फोन)\D{0,8}[6-9]\d{9}/i, "")
+      .replace(/(?:title|शीर्षक|समस्या का नाम)\s*(?:hai|है|:)?\s*[^,.;]+/i, "")
+      .replace(/(?:location|address|landmark|जगह|स्थान|पता)\s*(?:hai|है|:)?\s*[^,.;]+/i, "")
+      .replace(/(?:caption|कैप्शन)\s*(?:hai|है|:)?\s*[^,.;]+/i, "")
+      .replace(/(?:priority|प्राथमिकता)\s*(?:hai|है|:)?\s*(urgent|तुरंत|high|उच्च|medium|मध्यम|low|कम)/i, "")
+      .trim();
+    const title = titleMatch?.[1]?.trim() || (cleanedDescription.length > 72 ? cleanedDescription.slice(0, 69).trim() + "…" : cleanedDescription || transcript);
     setForm(current => ({
       ...current,
       ...(nameMatch?.[1] ? { name: nameMatch[1].trim() } : {}),
       ...((mobileMatch?.[1] || mobileMatch?.[0]) ? { mobile: mobileMatch[1] || mobileMatch[0] } : {}),
-      title: current.title.trim() ? current.title : title,
-      description,
+      ...(ward ? { ward } : {}),
+      ...(category ? { category } : {}),
+      ...(priority ? { priority } : {}),
+      title: titleMatch?.[1]?.trim() || (current.title.trim() ? current.title : title),
+      description: cleanedDescription || transcript,
     }));
+    if (captionMatch?.[1]) setCaption(captionMatch[1].trim());
+    if (locationMatch?.[1]) setLocationText(locationMatch[1].trim());
   }, [voiceDraft?.id]);
 
   // 🎤 Voice-to-Text for description
@@ -2859,12 +2887,13 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
 
 // ── Enhanced Floating Action Button with Voice & Photo ─────────────────────
 function EnhancedFAB({
-  onOpenSubmit, isOpen, onOpenBoard, onOpenNotices,
+  onOpenSubmit, isOpen, onOpenBoard, onOpenNotices, onNavigate,
 }: {
   onOpenSubmit: (voiceText?: string) => void;
   isOpen: boolean;
   onOpenBoard: () => void;
   onOpenNotices: () => void;
+  onNavigate: (page: "home" | "profile" | "schemes" | "dashboard") => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -2915,6 +2944,18 @@ function EnhancedFAB({
       if (/(notice|सूचना|नोटिस)/i.test(normalized)) {
         setMenuOpen(false);
         onOpenNotices();
+        return;
+      }
+      const navigationCommands: Array<{ pattern: RegExp; page: "home" | "profile" | "schemes" | "dashboard" }> = [
+        { pattern: /(profile|प्रोफाइल|मेरी जानकारी)/i, page: "profile" },
+        { pattern: /(scheme|yojana|योजना|सरकारी योजना)/i, page: "schemes" },
+        { pattern: /(dashboard|डैशबोर्ड|मुख्य पटल)/i, page: "dashboard" },
+        { pattern: /(home|होम|मुख्य पेज)/i, page: "home" },
+      ];
+      const navigation = navigationCommands.find(command => command.pattern.test(normalized));
+      if (navigation) {
+        setMenuOpen(false);
+        onNavigate(navigation.page);
         return;
       }
       // Treat other speech as an editable complaint draft, never as an automatic submission.
@@ -4739,6 +4780,7 @@ useEffect(() => {
         isOpen={showSubmitFAB}
         onOpenBoard={() => setPage("board")}
         onOpenNotices={() => setPage("notices")}
+        onNavigate={(page) => { if (page === "profile" && !currentUser) { setPage("login"); return; } setPage(page); }}
       />
 
       {/* Submit Form Modal */}
