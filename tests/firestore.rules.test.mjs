@@ -114,3 +114,47 @@ test("non-admin users cannot delete another user's problem", async () => {
   const { deleteDoc } = await import("firebase/firestore");
   await assertFails(deleteDoc(doc(userDb("mallory"), "problems", "problem-1")));
 });
+
+test("signed-in users can add and remove only their own like/support and add their own comment", async () => {
+  await seed("problems", "problem-1", {
+    authorId: "author",
+    title: "Street light",
+    status: "In Progress",
+    likes: [],
+    supporters: [],
+    comments: [],
+  });
+  const db = userDb("reporter");
+  const problemRef = doc(db, "problems", "problem-1");
+
+  await assertSucceeds(updateDoc(problemRef, { likes: ["reporter"] }));
+  await assertSucceeds(updateDoc(problemRef, { likes: [] }));
+  await assertSucceeds(updateDoc(problemRef, { supporters: ["reporter"] }));
+  await assertSucceeds(updateDoc(problemRef, { comments: [{
+    id: "comment-1",
+    userId: "reporter",
+    userName: "Reporter",
+    text: "The street light is still broken.",
+    createdAt: "2026-10-10T12:00:00.000Z",
+  }] }));
+});
+
+test("users cannot alter problem status or add a like on behalf of another user", async () => {
+  await seed("problems", "problem-1", {
+    authorId: "author",
+    title: "Street light",
+    status: "In Progress",
+    likes: [],
+    comments: [],
+  });
+  const problemRef = doc(userDb("reporter"), "problems", "problem-1");
+  await assertFails(updateDoc(problemRef, { status: "Resolved" }));
+  await assertFails(updateDoc(problemRef, { likes: ["victim"] }));
+  await assertFails(updateDoc(problemRef, { comments: [{
+    id: "comment-1",
+    userId: "victim",
+    userName: "Victim",
+    text: "Spoofed comment",
+    createdAt: "2026-10-10T12:00:00.000Z",
+  }] }));
+});
