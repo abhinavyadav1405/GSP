@@ -4166,7 +4166,6 @@ useEffect(() => {
                   <FadeIn delay={180}>
                 <h1 style={{ margin: 0, fontSize: "clamp(28px, 5vw, 42px)", lineHeight: 1.2 }}>
                   <span style={{ display:"block",color:"var(--text-main)" }}>Gram Sabha Pahrajpur</span>
-                  <span className="shimmer-text" style={{ display:"block" }}>{villageName.split(" ").slice(-1)[0]}</span>
                   <span style={{ display:"block",color:"var(--ct4)",fontWeight:400,fontSize:"0.52em",marginTop:10,letterSpacing:"-0.01em",fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Village Governance, Reimagined</span>
                 </h1>
                   </FadeIn>
