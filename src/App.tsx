@@ -7,7 +7,7 @@ import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyh
 import { Leaf } from "lucide-react";
 
 import {
-  db,
+  db, auth, functions, signInWithCustomToken, httpsCallable,
   collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove, addDoc,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
@@ -1027,32 +1027,29 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
 
   const submit = async () => {
     setErr("");
-    if (!id.trim() || !password) { setErr("ID aur password required hai."); return; }
+    const userId = id.trim().toLowerCase();
+    if (!userId || !password) { setErr("ID aur password required hai."); return; }
     if (mode === "register" && (!name.trim() || !mobile.trim())) { setErr("Name aur mobile required hai."); return; }
     if (mode === "register" && mobile.replace(/\D/g, "").length < 10) { setErr("Valid 10-digit mobile number daalo."); return; }
+    if (mode === "register" && password.length < 8) { setErr("Password कम-से-कम 8 अक्षरों का होना चाहिए।"); return; }
     setBusy(true);
     try {
-      const userRef = doc(db, "users", id.trim().toLowerCase());
-      if (mode === "login") {
-        const snap = await getDoc(userRef);
-        if (!snap.exists()) { setErr("User ID nahi mila. Pehle account create karo."); return; }
-        const data = snap.data() as any;
-        const hash = await hashPassword(password);
-        if (data.passwordHash !== hash) { setErr("Galat password."); return; }
-        const user: AppUser = { id: data.id || id.trim().toLowerCase(), name: data.name, mobile: data.mobile, ward: data.ward || WARDS[0], createdAt: data.createdAt || new Date().toISOString(), avatar: data.avatar };
-        localStorage.setItem("gsp-user", JSON.stringify(user));
-        onLogin(user);
-      } else {
-        const existing = await getDoc(userRef);
-        if (existing.exists()) { setErr("Ye User ID already registered hai."); return; }
-        const user: AppUser = { id: id.trim().toLowerCase(), name: name.trim(), mobile: mobile.trim(), ward, createdAt: new Date().toISOString() };
-        await setDoc(userRef, { ...user, passwordHash: await hashPassword(password) });
-        localStorage.setItem("gsp-user", JSON.stringify(user));
-        onLogin(user);
-      }
-    } catch (e) {
+      const endpoint = httpsCallable(functions, mode === "login" ? "authenticateGspUser" : "registerGspUser");
+      const result = await endpoint(mode === "login"
+        ? { id: userId, password }
+        : { id: userId, password, name: name.trim(), mobile: mobile.trim(), ward });
+      const payload = result.data as { token: string; user: AppUser };
+      await signInWithCustomToken(auth, payload.token);
+      localStorage.setItem("gsp-user", JSON.stringify(payload.user));
+      onLogin(payload.user);
+    } catch (e: any) {
       console.error(e);
-      setErr("Connection error. Firebase settings/check karke dobara try karo.");
+      const code = String(e?.code || "");
+      const message = String(e?.message || "");
+      if (code.includes("already-exists") || message.includes("already registered")) setErr("Ye User ID already registered hai.");
+      else if (code.includes("not-found") || message.includes("User ID")) setErr("User ID nahi mila. Pehle account create karo.");
+      else if (code.includes("unauthenticated") || code.includes("invalid-argument")) setErr(message || "ID ya password sahi nahi hai.");
+      else setErr("Login/registration नहीं हो सकी। Firebase Functions deploy होने और connection की जाँच करें।");
     } finally { setBusy(false); }
   };
 
