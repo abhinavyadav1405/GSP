@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Install temporary emulator test tools
-        run: npm install --no-save --package-lock=false --legacy-peer-deps @firebase/rules-unit-testing firebase-tools
+        run: npm install --no-save --package-lock=false --legacy-peer-deps @firebase/rules-unit-testing@3.0.4 firebase-tools@13.35.1
 
       - name: Run Firestore Emulator rules tests
         run: npx firebase emulators:exec --only firestore --project demo-gsp-security-rules --non-interactive "node --test tests/firestore-rules.test.mjs"
