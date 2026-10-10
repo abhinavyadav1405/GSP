@@ -19,6 +19,15 @@ async function main() {
     await userDoc.ref.update({ passwordHash: FieldValue.delete() });
     moved++;
   }
-  console.log(`Moved ${moved} legacy credentials into private userCredentials documents.`);
+  const settingsRef = db.collection("settings").doc("main");
+  const settingsSnap = await settingsRef.get();
+  if (settingsSnap.exists) {
+    await settingsRef.update({
+      adminPassword: FieldValue.delete(),
+      userAdminPassword: FieldValue.delete(),
+      complaintAdminPassword: FieldValue.delete(),
+    });
+  }
+  console.log(`Moved ${moved} legacy credentials into private userCredentials documents and removed legacy Admin passwords from public settings.`);
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
