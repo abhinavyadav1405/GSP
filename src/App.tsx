@@ -3922,10 +3922,10 @@ export default function App() {
   ]);
   const [parasInput, setParasInput] = useState("");
   const [parasLoading, setParasLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [publicProfileUser, setPublicProfileUser] = useState<PublicProfileData | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
-  const [adminRole, setAdminRole] = useState<AdminRole | null>(() => (localStorage.getItem("adminRole") as AdminRole) || null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [toast, setToast]           = useState<string | null>(null);
   const [filterCat, setFilterCat]   = useState("All");
