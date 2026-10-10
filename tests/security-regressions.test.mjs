@@ -45,3 +45,14 @@ test("remaining authentication and Firestore risks stay explicitly documented", 
   assert.match(securityPlan, /allows unrestricted writes to `users`/i);
   assert.match(securityPlan, /Do not deploy restrictive rules until/i);
 });
+
+
+test("server-side authentication rollout documents required safety gates", () => {
+  const runbook = read("../docs/server-auth-migration-runbook.md");
+
+  assert.match(runbook, /custom claims.*trusted server/i);
+  assert.match(runbook, /HttpOnly.*Secure/i);
+  assert.match(runbook, /CSRF protection/i);
+  assert.match(runbook, /forced password-reset path/i);
+  assert.match(runbook, /Do not.*active rules|does not change the active rules/i);
+});
