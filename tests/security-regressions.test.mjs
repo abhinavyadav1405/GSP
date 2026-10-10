@@ -24,8 +24,9 @@ test("Vercel SPA fallback rewrite remains configured", () => {
 });
 
 test("password settings stay masked and are not rendered as current plaintext", () => {
-  assert.match(app, /type="password"[^>]*value=\{userAdminPassword\}/);
-  assert.match(app, /type="password"[^>]*value=\{complaintAdminPassword\}/);
+  assert.match(app, /<input type="password" placeholder="New User-Admin password" value=\{newUserAdminPw\}/);
+  assert.match(app, /<input type="password" placeholder="New Complaint-Admin password" value=\{newComplaintAdminPw\}/);
+  assert.match(app, /<input type="password" placeholder="Password" value=\{pw\}/);
   assert.doesNotMatch(app, /Current:\s*\{\s*(?:userAdminPassword|complaintAdminPassword)\s*\}/);
 });
 
