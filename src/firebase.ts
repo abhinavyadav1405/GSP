@@ -38,6 +38,7 @@ const firebaseConfig = {
                                           orderBy,
                                             arrayUnion,
                                               arrayRemove,
+                                                addDoc,
                                                 ref,
                                                   uploadBytes,
                                                     getDownloadURL,
