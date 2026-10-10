@@ -8,7 +8,7 @@ service cloud.firestore {
     function reportOnly() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reports', 'moderationStatus'])
         && request.resource.data.reports is list
-        && request.resource.data.reports.size() == resource.data.reports.size() + 1
+        && request.resource.data.reports.size() == (resource.data.keys().hasAny(['reports']) ? resource.data.reports.size() : 0) + 1
         && request.resource.data.reports[request.resource.data.reports.size() - 1].userId == userId()
         && request.resource.data.moderationStatus == 'reported';
     }
@@ -26,19 +26,13 @@ service cloud.firestore {
       allow read: if true;
       allow create: if signedIn();
       allow update: if isAdmin()
+        || (signedIn() && reportOnly())
         || (signedIn() && resource.data.authorId == userId()
           && request.resource.data.authorId == resource.data.authorId
-          && (
-            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reports', 'moderationStatus'])
-            && request.resource.data.reports is list
-            && request.resource.data.reports.size() == resource.data.reports.size() + 1
-            && request.resource.data.reports[request.resource.data.reports.size() - 1].userId == userId()
-            && request.resource.data.moderationStatus == 'reported'
-            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'resolutionChallenge', 'resolutionChallengeAt', 'resolvedAt'])
-              && request.resource.data.status == 'In Progress'
-              && request.resource.data.resolutionChallenge.userId == userId()
-              && request.resource.data.resolutionChallenge.reason is string
-          ));
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'resolutionChallenge', 'resolutionChallengeAt', 'resolvedAt'])
+          && request.resource.data.status == 'In Progress'
+          && request.resource.data.resolutionChallenge.userId == userId()
+          && request.resource.data.resolutionChallenge.reason is string);
       allow delete: if isAdmin() || (signedIn() && resource.data.authorId == userId());
     }
     match /reels/{id} {
@@ -48,11 +42,11 @@ service cloud.firestore {
         && request.resource.data.moderationStatus == 'visible'
         && request.resource.data.videoDeleted == false;
       allow update: if isAdmin()
+        || (signedIn() && reportOnly())
         || (signedIn() && resource.data.ownerId == userId()
           && request.resource.data.ownerId == resource.data.ownerId
           && (
             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['caption'])
-            || reportOnly()
             || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['challengedAt', 'challengeReason', 'resolvedAt'])
               && request.resource.data.challengeReason is string
               && request.resource.data.resolvedAt == null
