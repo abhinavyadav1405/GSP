@@ -73,10 +73,76 @@ const GLOBAL_STYLE = `
   @keyframes floatOrb{0%,100%{transform:translateY(0);}50%{transform:translateY(-22px);}}
   @keyframes floatChip{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
   @keyframes pulseGlow{0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:1;transform:scale(1.07);}}
-  @keyframes galleryCardReveal{from{opacity:0;}to{opacity:1;}}
-  .gallery-photo-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(120,70,220,0.12);border-color:rgba(168,85,247,0.35)!important;}
-  .gallery-photo-card:hover .gallery-photo-image{transform:scale(1.015);filter:saturate(1.03);}
-  @media(prefers-reduced-motion:reduce){.gallery-photo-card,.gallery-photo-image{animation:none!important;transition:none!important;}}
+  /* Village Gallery — editorial cards, restrained motion, and immersive photo viewer */
+  .village-gallery{width:100%;position:relative;padding:4px 0 10px;color:var(--text-main);}
+  .gallery-heading{text-align:center;margin:8px auto 34px;max-width:720px;}
+  .gallery-eyebrow{display:inline-flex;align-items:center;gap:9px;padding:8px 14px;border-radius:999px;border:1px solid rgba(124,92,252,.25);background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(56,217,245,.07));font-size:10px;font-weight:800;letter-spacing:2px;color:#8b70f5;}
+  .gallery-eyebrow-dot{width:7px;height:7px;border-radius:50%;background:#38d9a9;box-shadow:0 0 0 4px rgba(56,217,169,.12);}
+  .gallery-heading h2{font-family:'Space Grotesk',sans-serif;font-size:clamp(30px,5vw,48px);line-height:1.12;letter-spacing:-1.8px;margin:17px 0 10px;color:var(--text-main);}
+  .gallery-heading h2 span{background:linear-gradient(100deg,#a78bfa 5%,#60a5fa 52%,#34d399 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .gallery-heading p{font-size:14px;line-height:1.7;color:var(--ct5);max-width:500px;margin:0 auto;}
+  .gallery-heading-rule{height:1px;width:min(190px,45%);margin:23px auto 0;background:linear-gradient(90deg,transparent,rgba(139,112,245,.6),transparent);position:relative;}
+  .gallery-heading-rule span{position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:#9b87ff;transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(139,112,245,.8);}
+  .gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start;}
+  .gallery-card{min-width:0;overflow:hidden;border-radius:20px;border:1px solid var(--glass-border);background:var(--glass-bg);box-shadow:0 8px 24px rgba(22,12,55,.045);animation:galleryCardEnter .55s cubic-bezier(.2,.7,.2,1) both;transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;}
+  .gallery-card:hover{transform:translateY(-5px);border-color:rgba(139,112,245,.42);box-shadow:0 18px 38px rgba(83,57,153,.16);}
+  .gallery-card-media{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(124,92,252,.15),rgba(56,217,245,.08));cursor:zoom-in;isolation:isolate;}
+  .gallery-card-media iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:2;}
+  .gallery-card-image{display:block;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1),filter .5s ease;will-change:transform;}
+  .gallery-card:hover .gallery-card-image{transform:scale(1.045);filter:saturate(1.08);}
+  .gallery-card-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,6,20,.34),transparent 32%,transparent 58%,rgba(8,6,20,.2));opacity:.7;transition:opacity .3s ease;}
+  .gallery-card:hover .gallery-card-shade{opacity:1;}
+  .gallery-card-topline{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:3;pointer-events:none;}
+  .gallery-type-pill{display:inline-flex;align-items:center;padding:6px 9px;border-radius:999px;color:white;background:rgba(22,16,48,.62);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(12px);font-size:9px;font-weight:800;letter-spacing:1px;}
+  .gallery-type-pill.is-video{background:rgba(190,35,75,.72);}
+  .gallery-delete{pointer-events:auto;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:rgba(20,10,35,.7)!important;color:#fff!important;border:1px solid rgba(255,255,255,.25)!important;backdrop-filter:blur(10px);cursor:pointer;}
+  .gallery-open-hint{position:absolute;right:12px;bottom:12px;display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:rgba(18,12,40,.65);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(12px);color:#fff;font-size:10px;font-weight:700;opacity:0;transform:translateY(5px);transition:opacity .25s ease,transform .25s ease;pointer-events:none;}
+  .gallery-open-hint span{font-size:15px;}
+  .gallery-card:hover .gallery-open-hint{opacity:1;transform:translateY(0);}
+  .gallery-card-info{display:flex;align-items:flex-start;gap:12px;padding:14px 15px 16px;}
+  .gallery-card-index{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:#9b87ff;padding-top:2px;}
+  .gallery-card-copy{min-width:0;flex:1;}
+  .gallery-card-copy h3{font-size:13px;font-weight:700;line-height:1.45;color:var(--text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .gallery-card-copy p{font-size:11px;line-height:1.5;color:var(--ct5);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .gallery-invalid-video{position:absolute;inset:0;display:grid;place-items:center;color:var(--ct5);font-size:12px;}
+  .gallery-compact-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px;}
+  .gallery-compact-kicker{display:block;color:#8b70f5;font-size:9px;font-weight:800;letter-spacing:1.7px;margin-bottom:5px;}
+  .gallery-compact-heading h3{font-family:'Space Grotesk',sans-serif;font-size:22px;letter-spacing:-.7px;color:var(--text-main);}
+  .gallery-view-all{flex-shrink:0;border:1px solid var(--glass-border);border-radius:999px;padding:9px 12px;background:var(--glass-bg);color:var(--text-main);font-size:11px;font-weight:700;cursor:pointer;}
+  .gallery-view-all span{color:#9b87ff;margin-left:5px;}
+  .gallery-grid-compact{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+  .gallery-grid-compact .gallery-card{border-radius:16px;}
+  .gallery-grid-compact .gallery-card-media{aspect-ratio:5/4;}
+  .gallery-grid-compact .gallery-card-info{padding:11px 10px 13px;gap:8px;}
+  .gallery-grid-compact .gallery-card-copy h3{font-size:11px;}
+  .gallery-grid-compact .gallery-card-copy p{font-size:10px;}
+  .gallery-grid-compact .gallery-open-hint{display:none;}
+  .gallery-bottom-link{text-align:center;margin-top:23px;}
+  .gallery-bottom-link button{border:0;background:linear-gradient(110deg,#7c5cfc,#4e91f7);color:#fff;border-radius:999px;padding:12px 20px;font-size:12px;font-weight:800;box-shadow:0 8px 22px rgba(124,92,252,.24);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;}
+  .gallery-bottom-link button:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(124,92,252,.34);}
+  .gallery-bottom-link button span{margin-left:8px;}
+  .gallery-empty{padding:45px 22px;border:1px dashed rgba(139,112,245,.35);border-radius:22px;text-align:center;background:linear-gradient(135deg,rgba(124,92,252,.07),rgba(56,217,245,.035));}
+  .gallery-empty-icon{width:58px;height:58px;margin:0 auto 15px;display:grid;place-items:center;border-radius:18px;color:#9b87ff;background:rgba(124,92,252,.12);border:1px solid rgba(124,92,252,.2);}
+  .gallery-empty h3{font-size:16px;color:var(--text-main);margin-bottom:7px;}
+  .gallery-empty p{font-size:12px;line-height:1.6;color:var(--ct5);}
+  .gallery-lightbox{position:fixed;inset:0;z-index:100000;background:rgba(7,5,18,.94);backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:center;padding:56px 64px 32px;animation:galleryLightboxIn .22s ease-out both;}
+  .gallery-lightbox-content{width:min(100%,1000px);max-height:100%;display:flex;flex-direction:column;align-items:center;gap:14px;animation:galleryImageIn .32s cubic-bezier(.2,.7,.2,1) both;}
+  .gallery-lightbox-content img{display:block;max-width:100%;max-height:calc(100vh - 150px);object-fit:contain;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.38);}
+  .gallery-lightbox-caption{text-align:center;color:rgba(255,255,255,.65);font-size:12px;line-height:1.6;}
+  .gallery-lightbox-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:3px;}
+  .gallery-lightbox-caption span{display:block;margin-top:6px;font-size:10px;color:rgba(255,255,255,.42);letter-spacing:1px;}
+  .gallery-lightbox-close,.gallery-lightbox-nav{position:fixed;z-index:2;display:grid;place-items:center;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.09);color:#fff;border-radius:50%;cursor:pointer;backdrop-filter:blur(12px);transition:background .2s ease,transform .2s ease;}
+  .gallery-lightbox-close{top:18px;right:18px;width:42px;height:42px;font-size:28px;font-weight:300;}
+  .gallery-lightbox-nav{top:50%;width:44px;height:44px;font-size:35px;font-weight:300;line-height:1;transform:translateY(-50%);}
+  .gallery-lightbox-prev{left:18px;}.gallery-lightbox-next{right:18px;}
+  .gallery-lightbox-close:hover,.gallery-lightbox-nav:hover{background:rgba(124,92,252,.55);transform:translateY(-50%) scale(1.05);}
+  .gallery-lightbox-close:hover{transform:scale(1.05);}
+  @keyframes galleryCardEnter{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes galleryLightboxIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes galleryImageIn{from{opacity:0;transform:scale(.985);}to{opacity:1;transform:scale(1);}}
+  @media(max-width:760px){.gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}.gallery-heading{margin-bottom:24px;}.gallery-heading p{font-size:12px;padding:0 12px;}.gallery-card{border-radius:16px;}.gallery-card-info{padding:11px 10px 13px;gap:8px;}.gallery-card-copy h3{font-size:11px;}.gallery-card-copy p{font-size:10px;}.gallery-lightbox{padding:60px 14px 28px;}.gallery-lightbox-nav{width:38px;height:38px;font-size:30px;}.gallery-lightbox-prev{left:8px;}.gallery-lightbox-next{right:8px;}.gallery-lightbox-content img{max-height:calc(100vh - 160px);}}
+  @media(max-width:380px){.gallery-grid-compact{gap:8px;}.gallery-grid-compact .gallery-card-info{padding:9px 8px;}.gallery-compact-heading h3{font-size:19px;}}
+  @media(prefers-reduced-motion:reduce){.gallery-card,.gallery-card-image,.gallery-open-hint,.gallery-lightbox,.gallery-lightbox-content,.gallery-bottom-link button{animation:none!important;transition:none!important;}}
   @keyframes shimmerTxt{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
   @keyframes orbit1{from{transform:rotate(0deg) translateX(108px) rotate(0deg);}to{transform:rotate(360deg) translateX(108px) rotate(-360deg);}}
   @keyframes orbit2{from{transform:rotate(180deg) translateX(76px) rotate(-180deg);}to{transform:rotate(540deg) translateX(76px) rotate(-540deg);}}
@@ -2068,85 +2134,91 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
 }) {
   const [lightbox, setLightbox] = useState<MediaItem | null>(null);
   const items = compact ? media.slice(0, 6) : media;
+  const photos = items.filter(item => item.type === "photo");
+  const activeIndex = lightbox ? photos.findIndex(item => item.id === lightbox.id) : -1;
+  const movePhoto = (direction: number) => {
+    if (!photos.length || activeIndex < 0) return;
+    setLightbox(photos[(activeIndex + direction + photos.length) % photos.length]);
+  };
 
   return (
-    <div>
-      {/* Lightbox */}
+    <section className={`village-gallery ${compact ? "village-gallery-compact" : ""}`}>
       {lightbox && lightbox.type === "photo" && (
-    <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setLightbox(null)}>
-      <div style={{ position: "relative", maxWidth: 800, width: "100%" }} onClick={e => e.stopPropagation()}>
-        <img src={lightbox.url} alt={lightbox.title} style={{ width: "100%", maxHeight: "80vh", objectFit: "contain", borderRadius: 16, display: "block" }} />
-            {lightbox.caption && <p style={{ textAlign: "center", marginTop: 12, color: "rgba(255,255,255,0.55)", fontSize: 14 }}>{lightbox.caption}</p>}
-            <button onClick={() => setLightbox(null)} style={{ position: "absolute", top: -12, right: -12, width: 36, height: 36, borderRadius: "50%", background: "var(--cb10)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+        <div className="gallery-lightbox" role="dialog" aria-modal="true" aria-label={lightbox.title} onClick={() => setLightbox(null)}>
+          <button className="gallery-lightbox-close" aria-label="Close photo" onClick={() => setLightbox(null)}>×</button>
+          {photos.length > 1 && <button className="gallery-lightbox-nav gallery-lightbox-prev" aria-label="Previous photo" onClick={e => { e.stopPropagation(); movePhoto(-1); }}>‹</button>}
+          <div className="gallery-lightbox-content" onClick={e => e.stopPropagation()}>
+            <img src={lightbox.url} alt={lightbox.title} />
+            <div className="gallery-lightbox-caption">
+              <div className="gallery-lightbox-title">{lightbox.title}</div>
+              {lightbox.caption && <div>{lightbox.caption}</div>}
+              {activeIndex >= 0 && <span>{activeIndex + 1} / {photos.length}</span>}
+            </div>
           </div>
+          {photos.length > 1 && <button className="gallery-lightbox-nav gallery-lightbox-next" aria-label="Next photo" onClick={e => { e.stopPropagation(); movePhoto(1); }}>›</button>}
         </div>
       )}
 
       {!compact && (
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 20, background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.25)", fontSize: 12, color: "#a855f7", marginBottom: 16, fontWeight: 600 }}>
-            📷 Village Gallery
-          </div>
-                    <p style={{ fontSize: 13, color: "var(--ct4)" }}>Precious moments, places, and milestones of Gram Sabha Pahrajpur</p>
+        <div className="gallery-heading">
+          <div className="gallery-eyebrow"><span className="gallery-eyebrow-dot" /> COMMUNITY MOMENTS</div>
+          <h2>Village <span>Gallery</span></h2>
+          <p>Stories, celebrations, and everyday life in Gram Sabha Pahrajpur.</p>
+          <div className="gallery-heading-rule"><span /></div>
         </div>
       )}
 
       {compact && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                    {onViewAll && <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 10, padding: "6px 14px", fontSize: 13 }}>View All</button>}
+        <div className="gallery-compact-heading">
+          <div><span className="gallery-compact-kicker">MEMORIES IN PAHRAJPUR</span><h3>Village Gallery</h3></div>
+          {onViewAll && <button className="gallery-view-all" onClick={onViewAll}>Explore all <span>↗</span></button>}
         </div>
       )}
 
       {media.length === 0 ? (
-        <div className="glass" style={{ borderRadius: 20, padding: compact ? "32px 24px" : "48px 32px", textAlign: "center" }}>
-          <div style={{ marginBottom: 12 }}><ImageIcon size={42} color="#a855f7" /></div>
-                    <div style={{ color: "var(--ct4)", fontSize: 13 }}>{isAdmin ? "Go to Settings → Gallery to add your first photo or video." : "Village photos and videos will appear here soon."}</div>
+        <div className="gallery-empty">
+          <div className="gallery-empty-icon"><ImageIcon size={30} /></div>
+          <h3>Stories will appear here</h3>
+          <p>{isAdmin ? "Visit Settings → Gallery to add your first photo or video." : "Village photos and videos will be added here soon."}</p>
         </div>
       ) : (
-        <div style={{ columns: compact ? "2" : "3", columnGap: 12, columnFill: "balance" }}>
-          {items.map(item => {
+        <div className={`gallery-grid ${compact ? "gallery-grid-compact" : ""}`}>
+          {items.map((item, index) => {
             const ytId = item.type === "video" ? getYoutubeId(item.url) : null;
             return (
-              <div key={item.id} className="gallery-photo-card" style={{ breakInside: "avoid", marginBottom: 12, borderRadius: 14, overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", position: "relative", cursor: item.type === "photo" ? "zoom-in" : "default", animation: "galleryCardReveal 320ms ease-out both", transition: "transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease" }}
-                onClick={() => item.type === "photo" && setLightbox(item)}>
-                {item.type === "photo" ? (
-                  <img className="gallery-photo-image" src={item.url} alt={item.title} loading="lazy" style={{ width: "100%", display: "block", objectFit: "cover", transform: "scale(1.001)", transition: "transform 260ms ease, filter 260ms ease", filter: "saturate(1)" }} />
-                ) : ytId ? (
-                  <div style={{ position: "relative", paddingBottom: "56.25%", background: "#000" }}>
-                    <iframe src={`https://www.youtube.com/embed/${ytId}`} title={item.title}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }} allowFullScreen />
+              <article key={item.id} className="gallery-card" style={{ animationDelay: `${Math.min(index, 8) * 65}ms` }}>
+                <div className="gallery-card-media" onClick={() => item.type === "photo" && setLightbox(item)}>
+                  {item.type === "photo" ? (
+                    <img className="gallery-card-image" src={item.url} alt={item.title} loading="lazy" />
+                  ) : ytId ? (
+                    <iframe src={`https://www.youtube.com/embed/${ytId}`} title={item.title} loading="lazy" allowFullScreen />
+                  ) : (
+                    <div className="gallery-invalid-video">Video link unavailable</div>
+                  )}
+                  <div className="gallery-card-shade" />
+                  <div className="gallery-card-topline">
+                    <span className={`gallery-type-pill ${item.type === "video" ? "is-video" : ""}`}>{item.type === "photo" ? "▧ PHOTO" : "▶ VIDEO"}</span>
+                    {isAdmin && <button className="gallery-delete" aria-label={`Delete ${item.title}`} onClick={e => { e.stopPropagation(); onDelete(item.id); }}><Trash2 size={15} /></button>}
                   </div>
-                ) : (
-                  <div style={{ padding: "16px", textAlign: "center", color: "var(--ct4)", fontSize: 13 }}>⚠️ Invalid video URL</div>
-                )}
-
-                {/* Overlay label */}
-                <div style={{ padding: "10px 12px", background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text-main)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.title}</div>
-                  {item.caption && <div style={{ fontSize: 11, color: "var(--ct45)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.caption}</div>}
+                  {item.type === "photo" && <div className="gallery-open-hint"><span>↗</span> View photo</div>}
                 </div>
-
-                {/* Type badge */}
-                <div style={{ position: "absolute", top: 8, left: 8, fontSize: 11, padding: "3px 8px", borderRadius: 8, background: item.type === "photo" ? "rgba(168,85,247,0.8)" : "rgba(239,68,68,0.8)", color: "#fff", fontWeight: 600, backdropFilter: "blur(4px)" }}>
-                  {item.type === "photo" ? "Photo" : "Video"}
+                <div className="gallery-card-info">
+                  <span className="gallery-card-index">{String(index + 1).padStart(2, "0")}</span>
+                  <div className="gallery-card-copy">
+                    <h3 title={item.title}>{item.title}</h3>
+                    {item.caption && <p title={item.caption}>{item.caption}</p>}
+                  </div>
                 </div>
-
-                {isAdmin && (
-                  <button className="btn-danger" style={{ position: "absolute", top: 8, right: 8, borderRadius: 8, padding: "4px 10px", fontSize: 11 }}
-                    onClick={e => { e.stopPropagation(); onDelete(item.id); }}><Trash2 size={15} /></button>
-                )}
-              </div>
+              </article>
             );
           })}
         </div>
       )}
 
       {compact && media.length > 6 && onViewAll && (
-        <div style={{ textAlign: "center", marginTop: 16 }}>
-          <button className="btn-ghost" onClick={onViewAll} style={{ borderRadius: 12, padding: "10px 28px", fontSize: 14 }}>View All {media.length} Items →</button>
-        </div>
+        <div className="gallery-bottom-link"><button onClick={onViewAll}>Discover all {media.length} moments <span>→</span></button></div>
       )}
-    </div>
+    </section>
   );
 }
 
