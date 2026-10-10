@@ -765,47 +765,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
   const [locationText, setLocationText] = useState("");
   const [locationCoords, setLocationCoords] = useState<LatLng | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const recognitionRef = useRef<any>(null);
-  
-  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  // 🎤 Voice-to-Text for description
-  const startVoiceRecording = () => {
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("🎤 Speech recognition not supported on your device");
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = "hi-IN";
-    recognitionRef.current.continuous = true;
-    recognitionRef.current.interimResults = false;
-
-    recognitionRef.current.onstart = () => setIsRecording(true);
-
-    recognitionRef.current.onresult = (event: any) => {
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          const transcript = event.results[i][0].transcript;
-          set("description", form.description + (form.description ? " " : "") + transcript);
-        }
-      }
-    };
-
-    recognitionRef.current.onend = () => setIsRecording(false);
-    recognitionRef.current.onerror = () => setIsRecording(false);
-
-    recognitionRef.current.start();
-  };
-
-  const stopVoiceRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-    }
-  };
 
   const handle = async () => {
     if (!form.name || !form.mobile || !form.title || !form.description) { alert("Please fill all required fields."); return; }
@@ -852,35 +812,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
         </div>
         {field("Problem Title *", <input value={form.title} onChange={e => set("title", e.target.value)} placeholder="Short, clear title (max 100 chars)" maxLength={100} />)}
         {field("Caption (Instagram-style)", <textarea rows={2} value={caption} onChange={e => setCaption(e.target.value)} placeholder="Write a short caption for your post…" maxLength={220} />)}
-        {field("Description * (Use voice or type)", (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <textarea rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the problem in detail..." maxLength={500} style={{ flex: 1 }} />
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 2 }}>
-                <button
-                  type="button"
-                  onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 9,
-                    border: "none",
-                    background: isRecording ? "rgba(248,113,113,0.2)" : "rgba(59,130,246,0.15)",
-                    color: isRecording ? "#f87171" : "#3b82f6",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={isRecording ? "Stop recording" : "Start voice input"}
-                >
-                  {isRecording ? "⏹ Stop" : "🎤 Voice"}
-                </button>
-              </div>
-            </div>
-            {isRecording && <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600 }}>🎤 Listening...</div>}
-          </div>
-        ))}
+        {field("Description *", <textarea rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the problem in detail..." maxLength={500} />)}
         {field("Photo (optional)", <PhotoUpload photo={photo} onPhoto={setPhoto} />)}
         {field("Location / Landmark (optional)", (
           <input
@@ -2842,7 +2774,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
 }
 
 
-// ── Enhanced Floating Action Button with Voice & Photo ─────────────────────
+// ── Enhanced Floating Action Button ─────────────────────
 function EnhancedFAB({
   onOpenSubmit, isOpen, onOpenBoard, onOpenNotices,
 }: {
@@ -2852,40 +2784,6 @@ function EnhancedFAB({
   onOpenNotices: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [voiceText, setVoiceText] = useState("");
-  const recognitionRef = useRef<any>(null);
-
-  const startVoiceInput = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("🎤 Speech recognition not supported on your device");
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = "hi-IN";
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = false;
-
-    recognitionRef.current.onstart = () => setIsListening(true);
-    recognitionRef.current.onend = () => setIsListening(false);
-
-    recognitionRef.current.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setVoiceText(transcript);
-      onOpenSubmit();
-    };
-
-    recognitionRef.current.onerror = () => {
-      setIsListening(false);
-      alert("🎤 Mic access denied or error occurred");
-    };
-
-    recognitionRef.current.start();
-  };
-
   const handleAction = (fn: () => void) => (e: React.MouseEvent) => {
     e.stopPropagation();
     fn();
@@ -2968,7 +2866,6 @@ function EnhancedFAB({
         }
         .lg-zone-open .lg-main::after { animation: none; opacity: 0; }
         @keyframes lgPulse { 0% { transform: scale(1); opacity: .6; } 70% { transform: scale(1.35); opacity: 0; } 100% { transform: scale(1.35); opacity: 0; } }
-        .lg-mic { width: 52px; height: 52px; }
         .lg-mic.listening { background: linear-gradient(155deg, rgba(248,113,113,0.4) 0%, rgba(255,255,255,0.06) 60%); border-color: rgba(248,113,113,0.5); animation: lgListenPulse 1s infinite; }
         @keyframes lgListenPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.5); } 50% { box-shadow: 0 0 0 10px rgba(248,113,113,0); } }
         @media (prefers-reduced-motion: reduce) { .lg-action, .lg-main, .lg-main-icon, .lg-mic { transition: none !important; animation: none !important; } }
@@ -2986,20 +2883,6 @@ function EnhancedFAB({
         <div className="lg-btn lg-action" onClick={handleAction(onOpenBoard)} title="All Issues">
           <span className="lg-label">All Issues</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-        </div>
-
-        {/* Voice */}
-        <div
-          className={`lg-btn lg-action lg-mic ${isListening ? "listening" : ""}`}
-          onClick={startVoiceInput}
-          title={isListening ? "Listening..." : "Report with voice"}
-        >
-          <span className="lg-label">{isListening ? "Listening…" : "Voice Report"}</span>
-          {isListening ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-          )}
         </div>
 
         {/* Submit / Report */}
@@ -4666,7 +4549,7 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Enhanced FAB with Voice & Photo */}
+      {/* Enhanced FAB */}
       <EnhancedFAB
         onOpenSubmit={() => { if (!currentUser) setPage("login"); else setShowSubmitFAB(!showSubmitFAB); }}
         isOpen={showSubmitFAB}
