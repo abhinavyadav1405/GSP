@@ -1,0 +1,36 @@
+name: GSP CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - fix/security-migration-plan
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Install and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run security regression checks
+        run: npm test
+
+      - name: Build Vite application
+        run: npm run build

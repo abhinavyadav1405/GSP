@@ -2481,10 +2481,9 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <SectionHead icon="👥" title="User-Admin Password" />
           <p style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 12 }}>Give this password to the person who will block/delete fake users.</p>
           <div style={{ display: "flex", gap: 10 }}>
-            <input type="text" placeholder="New User-Admin password" value={newUserAdminPw} onChange={e => setNewUserAdminPw(e.target.value)} />
+            <input type="password" placeholder="New User-Admin password" value={newUserAdminPw} onChange={e => setNewUserAdminPw(e.target.value)} />
             <button className="btn-white" onClick={saveUserAdminPw} style={{ borderRadius: 10, padding: "0 18px", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>Save</button>
           </div>
-          <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 8 }}>Current: {userAdminPassword}</div>
         </>)}
       </FadeIn>
 
@@ -2493,10 +2492,9 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
           <SectionHead icon="📋" title="Complaint-Admin Password" />
           <p style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 12 }}>Give this password to the person who will filter and delete fake complaints.</p>
           <div style={{ display: "flex", gap: 10 }}>
-            <input type="text" placeholder="New Complaint-Admin password" value={newComplaintAdminPw} onChange={e => setNewComplaintAdminPw(e.target.value)} />
+            <input type="password" placeholder="New Complaint-Admin password" value={newComplaintAdminPw} onChange={e => setNewComplaintAdminPw(e.target.value)} />
             <button className="btn-white" onClick={saveComplaintAdminPw} style={{ borderRadius: 10, padding: "0 18px", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>Save</button>
           </div>
-          <div style={{ fontSize: 11, color: "var(--ct35)", marginTop: 8 }}>Current: {complaintAdminPassword}</div>
         </>)}
       </FadeIn>
 
@@ -3793,13 +3791,18 @@ useEffect(() => {
     setLoading(false);
   }, []);
 
-  // Load blocked users list from Firestore in realtime
+  // Load the blocked-user list only for admins who can manage users.
+  // Public visitors check only their submitted number when they submit a complaint.
   useEffect(() => {
+    if (!isAdmin || !canManageUsers) {
+      setBlockedUsers([]);
+      return;
+    }
     const unsub = onSnapshot(collection(db, "blockedUsers"), (snap) => {
       setBlockedUsers(snap.docs.map(d => d.data() as BlockedUser));
     });
     return () => unsub();
-  }, []);
+  }, [isAdmin, canManageUsers]);
 
   // Cache media for instant load
   useEffect(() => {
@@ -3814,18 +3817,20 @@ useEffect(() => {
   };
 
   const addProblem = async (p: Problem) => {
-    if (blockedUsers.some(u => u.mobile === p.mobile)) {
-      showToast("❌ Aapka number block kar diya gaya hai. Aap complaint submit nahi kar sakte.");
-      throw new Error("blocked");
-    }
     try {
+      // Avoid downloading the entire blockedUsers collection for every visitor.
+      const blockedSnap = await getDoc(doc(db, "blockedUsers", p.mobile));
+      if (blockedSnap.exists()) {
+        showToast("❌ Aapka number block kar diya gaya hai. Aap complaint submit nahi kar sakte.");
+        throw new Error("blocked");
+      }
       const firestoreData = p as any;
       const cleanData = Object.fromEntries(Object.entries(firestoreData).filter(([_, v]) => v !== undefined));
       await setDoc(doc(db, "problems", p.id), cleanData);
       setSubmitSuccess(true);
       showToast(`✅ Problem submitted! Your ID: #${p.id}`);
     } catch(e: any) {
-      showToast("❌ Submit failed. Try again.");
+      if (e?.message !== "blocked") showToast("❌ Submit failed. Try again.");
       throw e;
     }
   };
