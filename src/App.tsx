@@ -430,6 +430,7 @@ interface Problem {
   moderationStatus?: string;
   resolutionChallenge?: { userId: string; reason: string; createdAt: string };
   resolutionChallengeAt?: string;
+  resolvedAt?: string | null;
   warningSentAt?: string;
 }
 
@@ -4022,7 +4023,14 @@ useEffect(() => {
   };
 
   const updateProblem = async (id: string, changes: Partial<Problem>) => {
-    await updateDoc(doc(db, "problems", id), changes);
+    const normalizedChanges: Partial<Problem> = { ...changes };
+    if (changes.status === "Resolved") {
+      const existingProblem = problems.find(p => p.id === id);
+      if (!existingProblem?.resolvedAt) normalizedChanges.resolvedAt = new Date().toISOString();
+    } else if (changes.status && changes.status !== "Resolved") {
+      normalizedChanges.resolvedAt = null;
+    }
+    await updateDoc(doc(db, "problems", id), normalizedChanges);
     showToast("✅ Problem updated successfully.");
   };
 
