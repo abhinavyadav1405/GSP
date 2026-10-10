@@ -636,6 +636,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
 }) {
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(problem.status);
+  useEffect(() => setStatus(problem.status), [problem.status]);
   const [notes, setNotes]   = useState(problem.adminNotes || "");
   const [confirmDel, setConfirmDel] = useState(false);
   const sm = STATUS_META[status];
@@ -725,6 +726,14 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
           {problem.adminNotes && (
             <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(59,130,246,0.08)", borderRadius: 10, fontSize: 13, color: "var(--ct6)", borderLeft: "2px solid #3b82f6" }}>
               <span style={{ color: "#3b82f6", fontWeight: 600 }}>Admin Note: </span>{problem.adminNotes}
+            </div>
+          )}
+
+          {problem.resolutionChallenge && (
+            <div style={{ marginTop: 12, padding: "11px 14px", background: "rgba(244,201,93,0.10)", borderRadius: 10, fontSize: 13, color: "var(--ct6)", borderLeft: "3px solid #f4c95d" }}>
+              <div style={{ color: "#f4c95d", fontWeight: 700, marginBottom: 4 }}>⚠️ Resolution challenged — Admin review required</div>
+              <div style={{ fontSize: 12, lineHeight: 1.6 }}>{problem.resolutionChallenge.reason}</div>
+              <div style={{ fontSize: 10, color: "var(--ct4)", marginTop: 5 }}>Submitted by {problem.resolutionChallenge.userId} · {fmtDate(problem.resolutionChallenge.createdAt)}</div>
             </div>
           )}
 
