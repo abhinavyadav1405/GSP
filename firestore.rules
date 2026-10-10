@@ -1,22 +1,79 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function userId() { return request.auth.token.gspUserId; }
+    function isOwner(id) { return signedIn() && userId() == id; }
+    function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+    function reportOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reports', 'moderationStatus'])
+        && request.resource.data.reports is list
+        && request.resource.data.reports.size() == resource.data.reports.size() + 1
+        && request.resource.data.reports[request.resource.data.reports.size() - 1].userId == userId()
+        && request.resource.data.moderationStatus == 'reported';
+    }
+
+    match /users/{id} {
+      allow read: if true;
+      allow create: if isOwner(id) && !request.resource.data.keys().hasAny(['passwordHash', 'salt']);
+      allow update: if isOwner(id) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['passwordHash', 'salt']);
+      allow delete: if isAdmin();
+    }
+    match /userCredentials/{id} {
+      allow read, write: if false;
+    }
     match /problems/{id} {
-      allow read: true;
-      allow create: true;
-      allow update, delete: if request.auth != null;
+      allow read: if true;
+      allow create: if signedIn();
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.authorId == userId()
+          && request.resource.data.authorId == resource.data.authorId
+          && (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reports', 'moderationStatus'])
+            && request.resource.data.reports is list
+            && request.resource.data.reports.size() == resource.data.reports.size() + 1
+            && request.resource.data.reports[request.resource.data.reports.size() - 1].userId == userId()
+            && request.resource.data.moderationStatus == 'reported'
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'resolutionChallenge', 'resolutionChallengeAt', 'resolvedAt'])
+              && request.resource.data.status == 'In Progress'
+              && request.resource.data.resolutionChallenge.userId == userId()
+              && request.resource.data.resolutionChallenge.reason is string
+          ));
+      allow delete: if isAdmin() || (signedIn() && resource.data.authorId == userId());
+    }
+    match /reels/{id} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.ownerId == userId()
+        && request.resource.data.moderationStatus == 'visible'
+        && request.resource.data.videoDeleted == false;
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.ownerId == userId()
+          && request.resource.data.ownerId == resource.data.ownerId
+          && (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['caption'])
+            || reportOnly()
+            || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['challengedAt', 'challengeReason', 'resolvedAt'])
+              && request.resource.data.challengeReason is string
+              && request.resource.data.resolvedAt == null
+          ));
+      allow delete: if isAdmin() || (signedIn() && resource.data.ownerId == userId());
+    }
+    match /userWarnings/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == userId());
+      allow create, update, delete: if isAdmin();
     }
     match /settings/{id} {
-      allow read: true;
-      allow write: if request.auth != null;
+      allow read: if true;
+      allow write: if isAdmin();
     }
-    match /users/{id} {
-      allow read: true;
-      allow write: true;
+    match /blockedUsers/{id} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
     }
     match /{document=**} {
-      allow read: true;
-      allow write: if request.auth != null;
+      allow read: if true;
+      allow write: if false;
     }
   }
 }
