@@ -1,6 +1,7 @@
 import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
+import GSPReels from "./components/GSPReels";
 import { useState, useEffect, useRef } from "react";
 import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle, CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard, Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren, Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat, Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown, ShieldAlert, Upload, CircleUserRound, Heart, MessageCircle, Send, Landmark } from "lucide-react";
 import { Leaf } from "lucide-react";
@@ -425,6 +426,11 @@ interface Problem {
   supporters?: string[];
   likes?: string[];
   comments?: CommentItem[];
+  reports?: Array<{ id: string; userId: string; userName: string; reason: string; details?: string; createdAt: string }>;
+  moderationStatus?: string;
+  resolutionChallenge?: { userId: string; reason: string; createdAt: string };
+  resolutionChallengeAt?: string;
+  warningSentAt?: string;
 }
 
 const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =>
@@ -1328,13 +1334,15 @@ function CommunityPostCard({
   user,
   onUpdate,
   onOpenLogin,
-  onOpenUserProfile
+  onOpenUserProfile,
+  isAdmin = false
 }: {
   problem: Problem;
   user: AppUser | null;
   onUpdate: (id: string, changes: any) => Promise<void> | void;
   onOpenLogin: () => void;
   onOpenUserProfile?: (profile: PublicProfileData) => void;
+  isAdmin?: boolean;
 }) {
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
@@ -1359,6 +1367,28 @@ function CommunityPostCard({
   };
   const cardRef = useRef<HTMLElement>(null);
   const [sharing, setSharing] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportReason, setReportReason] = useState("गलत या झूठी जानकारी");
+  const [reportDetails, setReportDetails] = useState("");
+  const [challengeReason, setChallengeReason] = useState("");
+  const [showChallenge, setShowChallenge] = useState(false);
+  const reportReasons = ["गलत या झूठी जानकारी", "अश्लील या अनुचित वीडियो", "गाली-गलौज या उत्पीड़न", "स्पैम या बार-बार एक ही पोस्ट", "गाँव की समस्या से संबंधित नहीं", "अन्य"];
+  const submitPostReport = async () => {
+    if (!user) { onOpenLogin(); return; }
+    const report = { id: `${user.id}-${Date.now()}`, userId: user.id, userName: user.name, reason: reportReason, details: reportDetails.trim(), createdAt: new Date().toISOString() };
+    await onUpdate(problem.id, { reports: [...(problem.reports || []), report], moderationStatus: "reported" });
+    setShowReport(false); setReportDetails("");
+  };
+  const moderatePost = async (action: "keep" | "remove" | "warn") => {
+    if (action === "keep") await onUpdate(problem.id, { reports: [], moderationStatus: "visible" });
+    if (action === "remove") await onUpdate(problem.id, { reports: [], moderationStatus: "removed", removedAt: new Date().toISOString() });
+    if (action === "warn") await onUpdate(problem.id, { reports: [], moderationStatus: "visible", warningSentAt: new Date().toISOString(), warningReason: (problem.reports || []).map(r => r.reason).join(", ") || "Admin warning" });
+  };
+  const challengePostResolution = async () => {
+    if (!user || !(problem.authorId === user.id || (problem.mobile === user.mobile && problem.name === user.name)) || !challengeReason.trim()) return;
+    await onUpdate(problem.id, { status: "In Progress", resolutionChallenge: { userId: user.id, reason: challengeReason.trim(), createdAt: new Date().toISOString() }, resolutionChallengeAt: new Date().toISOString(), resolvedAt: null });
+    setShowChallenge(false); setChallengeReason("");
+  };
   
   const share = async () => {
     if (!cardRef.current) return;
@@ -1413,6 +1443,7 @@ function CommunityPostCard({
     }
   };
 
+  if (problem.moderationStatus === "removed" && !isAdmin) return null;
   return <article ref={cardRef} className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
     <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
       <div
@@ -1458,6 +1489,14 @@ function CommunityPostCard({
         <button className="btn-ghost" onClick={share} disabled={sharing} style={{ border: "none", borderRadius: 10, padding: "6px 8px", display: "flex", alignItems: "center", gap: 6, color: "var(--text-main)", background: "transparent" }}>{sharing ? <Clock3 size={22} /> : <Send size={22} color="currentColor" />}</button>
         <button onClick={() => doAuth(() => toggleArray("supporters"))} style={{ marginLeft: "auto", borderRadius: 999, padding: "8px 14px", border: `1px solid ${supported ? "rgba(74,222,128,.5)" : "var(--btn-ghost-border)"}`, background: supported ? "rgba(74,222,128,.12)" : "var(--btn-ghost-bg)", color: supported ? "#4ade80" : "var(--btn-ghost-color)", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>{supported ? "✓ Supporting" : "+ Support"} · {supporters.length}</button>
       </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+        {user && user.id !== problem.authorId && <button className="btn-ghost" onClick={() => setShowReport(v => !v)} style={{ borderRadius: 9, padding: "7px 10px", fontSize: 11 }}>Report Post</button>}
+        {user && (user.id === problem.authorId || (user.mobile === problem.mobile && user.name === problem.name)) && problem.status === "Resolved" && <button className="btn-ghost" onClick={() => setShowChallenge(v => !v)} style={{ borderRadius: 9, padding: "7px 10px", fontSize: 11 }}>Challenge Resolution</button>}
+        {isAdmin && (problem.reports || []).length > 0 && <span style={{ color: "#f87171", fontSize: 11, alignSelf: "center" }}>Reports: {problem.reports!.length}</span>}
+      </div>
+      {showReport && <div style={{ display: "grid", gap: 8, marginTop: 10 }}><select value={reportReason} onChange={e => setReportReason(e.target.value)}>{reportReasons.map(reason => <option key={reason}>{reason}</option>)}</select><textarea value={reportDetails} onChange={e => setReportDetails(e.target.value)} rows={2} placeholder="अतिरिक्त विवरण (वैकल्पिक)" /><button className="btn-white" onClick={() => void submitPostReport()} style={{ borderRadius: 9, padding: 9 }}>रिपोर्ट भेजें</button></div>}
+      {showChallenge && <div style={{ display: "grid", gap: 8, marginTop: 10 }}><textarea value={challengeReason} onChange={e => setChallengeReason(e.target.value)} rows={2} placeholder="काम पूरा न होने का कारण लिखें…" /><button className="btn-white" onClick={() => void challengePostResolution()} style={{ borderRadius: 9, padding: 9 }}>Challenge भेजें</button></div>}
+      {isAdmin && (problem.reports || []).length > 0 && <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--glass-border)" }}><strong style={{ fontSize: 12 }}>Admin Moderation</strong>{problem.reports!.map(report => <p key={report.id} style={{ fontSize: 11, color: "var(--ct4)", marginTop: 5 }}>{report.reason}{report.details ? ` — ${report.details}` : ""}</p>)}<div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 9 }}><button className="btn-ghost" onClick={() => void moderatePost("keep")} style={{ borderRadius: 8, padding: "7px 9px", fontSize: 11 }}>Keep Post</button><button className="btn-danger" onClick={() => void moderatePost("remove")} style={{ borderRadius: 8, padding: "7px 9px", fontSize: 11 }}>Remove Post</button><button className="btn-ghost" onClick={() => void moderatePost("warn")} style={{ borderRadius: 8, padding: "7px 9px", fontSize: 11 }}>Warn User</button></div></div>}
       {showComments && <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--cbg7)" }}>
         {comments.slice(-5).map(c => (
           <div
@@ -1516,13 +1555,15 @@ function CommunityFeed({
   user,
   onUpdate,
   onOpenLogin,
-  onOpenUserProfile
+  onOpenUserProfile,
+  isAdmin = false
 }: {
   problems: Problem[];
   user: AppUser | null;
   onUpdate: (id: string, changes: any) => Promise<void> | void;
   onOpenLogin: () => void;
   onOpenUserProfile: (profile: PublicProfileData) => void;
+  isAdmin?: boolean;
 }) {
   const [queryText, setQueryText] = useState("");
   const posts = problems.filter(p => !queryText || `${p.title} ${p.caption || ""} ${p.name}`.toLowerCase().includes(queryText.toLowerCase()));
@@ -1540,7 +1581,7 @@ function CommunityFeed({
         </p>
       </div>
       <input value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search posts…" style={{ marginBottom: 16 }} />
-    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} />)}
+    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} isAdmin={isAdmin} />)}
   </div>;
 }
 
@@ -3804,7 +3845,7 @@ function FilterBar(props: any) { return <div className="glass" style={{ borderRa
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes"|"ai">("dashboard");
+  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes"|"ai"|"reels">("dashboard");
   const [parasMessages, setParasMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([
     { role: "assistant", text: "नमस्ते! मैं Paras AI हूँ — Gram Sabha Pahrajpur का AI सहायक। मैं गाँव की समस्याओं का विश्लेषण, महत्वपूर्ण कार्यों की प्राथमिकता, जानकारी समझाने और पोस्ट/नोटिस का ड्राफ्ट बनाने में मदद कर सकता हूँ। आप क्या करना चाहते हैं?" }
   ]);
@@ -4145,6 +4186,7 @@ useEffect(() => {
   const navLinks = [
     { id: "schemes" as const, label: "Schemes", icon: "🏛" },
     { id: "home" as const, label: "Home", icon: "⌂" },
+    { id: "reels" as const, label: "Reels", icon: "🎬" },
     { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
     { id: "notices" as const, label: "Notices", icon: "📢" },
     { id: "achievements" as const, label: "Achievements", icon: "🏆" },
@@ -4451,6 +4493,8 @@ useEffect(() => {
         )}
 
         {/* ── COMMUNITY HOME / INSTAGRAM-STYLE FEED ───────────────────────── */}
+        {page === "reels" && <GSPReels user={currentUser} isAdmin={isAdmin && canManageComplaints} problems={problems} onLogin={() => setPage("login")} showToast={showToast} />}
+
         {page === "home" && (
           <CommunityFeed
   problems={problems}
@@ -4458,6 +4502,7 @@ useEffect(() => {
   onUpdate={updateProblem as any}
   onOpenLogin={() => setPage("login")}
   onOpenUserProfile={setPublicProfileUser}
+  isAdmin={isAdmin && canManageComplaints}
 />
         )}
 
@@ -4762,6 +4807,10 @@ useEffect(() => {
         <button className={`mobile-nav-item ${page === "home" ? "active" : ""}`} onClick={() => setPage("home")}>
           <Home size={26} strokeWidth={page === "home" ? 2.5 : 2} />
           <span className="mobile-nav-label">Home</span>
+        </button>
+        <button className={`mobile-nav-item ${page === "reels" ? "active" : ""}`} onClick={() => setPage("reels")}>
+          <Video size={26} strokeWidth={page === "reels" ? 2.5 : 2} />
+          <span className="mobile-nav-label">Reels</span>
         </button>
         <button className={`mobile-nav-item ${page === "dashboard" ? "active" : ""}`} onClick={() => setPage("dashboard")}>
           <LayoutDashboard size={26} strokeWidth={page === "dashboard" ? 2.5 : 2} />
