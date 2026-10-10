@@ -1,0 +1,19 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /reels/{ownerId}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.token.gspUserId == ownerId
+        && request.resource.size <= 50 * 1024 * 1024
+        && request.resource.contentType.matches('video/.*');
+      allow update: if false;
+      allow delete: if request.auth != null
+        && (request.auth.token.gspUserId == ownerId || request.auth.token.admin == true);
+    }
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
