@@ -3793,13 +3793,18 @@ useEffect(() => {
     setLoading(false);
   }, []);
 
-  // Load blocked users list from Firestore in realtime
+  // Load the blocked-user list only for admins who can manage users.
+  // Public visitors check only their submitted number when they submit a complaint.
   useEffect(() => {
+    if (!isAdmin || !canManageUsers) {
+      setBlockedUsers([]);
+      return;
+    }
     const unsub = onSnapshot(collection(db, "blockedUsers"), (snap) => {
       setBlockedUsers(snap.docs.map(d => d.data() as BlockedUser));
     });
     return () => unsub();
-  }, []);
+  }, [isAdmin, canManageUsers]);
 
   // Cache media for instant load
   useEffect(() => {
@@ -3814,11 +3819,13 @@ useEffect(() => {
   };
 
   const addProblem = async (p: Problem) => {
-    if (blockedUsers.some(u => u.mobile === p.mobile)) {
-      showToast("❌ Aapka number block kar diya gaya hai. Aap complaint submit nahi kar sakte.");
-      throw new Error("blocked");
-    }
     try {
+      // Avoid downloading the entire blockedUsers collection for every visitor.
+      const blockedSnap = await getDoc(doc(db, "blockedUsers", p.mobile));
+      if (blockedSnap.exists()) {
+        showToast("❌ Aapka number block kar diya gaya hai. Aap complaint submit nahi kar sakte.");
+        throw new Error("blocked");
+      }
       const firestoreData = p as any;
       const cleanData = Object.fromEntries(Object.entries(firestoreData).filter(([_, v]) => v !== undefined));
       await setDoc(doc(db, "problems", p.id), cleanData);
