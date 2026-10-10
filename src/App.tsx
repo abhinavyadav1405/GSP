@@ -2859,29 +2859,70 @@ function EnhancedFAB({
 
   const startVoiceInput = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("🎤 Speech recognition not supported on your device");
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice Report is not supported by this browser. Please use the latest Google Chrome.");
+      return;
+    }
+    if (isListening) {
+      try { recognitionRef.current?.stop(); } catch {}
       return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = "hi-IN";
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = false;
-    recognitionRef.current.maxAlternatives = 1;
-    recognitionRef.current.onstart = () => setIsListening(true);
-    recognitionRef.current.onend = () => setIsListening(false);
-    recognitionRef.current.onresult = (event: any) => {
-      const transcript = Array.from(event.results as any[]).map((r: any) => r[0]?.transcript || "").join(" ").trim();
-      if (transcript) { setVoiceText(transcript); onOpenSubmit(transcript); }
+    let finalTranscript = "";
+    let gotSpeechResult = false;
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.lang = "hi-IN";
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 3;
+
+    recognition.onstart = () => {
+      setVoiceText("");
+      setIsListening(true);
     };
-    recognitionRef.current.onerror = (event: any) => {
+    recognition.onresult = (event: any) => {
+      let interimTranscript = "";
+      for (let i = event.resultIndex || 0; i < event.results.length; i++) {
+        const result = event.results[i];
+        const text = result?.[0]?.transcript || "";
+        if (!text) continue;
+        gotSpeechResult = true;
+        if (result.isFinal) finalTranscript += (finalTranscript ? " " : "") + text;
+        else interimTranscript += text;
+      }
+      const combined = [finalTranscript, interimTranscript].filter(Boolean).join(" ").trim();
+      if (combined) setVoiceText(combined);
+    };
+    recognition.onerror = (event: any) => {
       setIsListening(false);
-      const messages: Record<string, string> = { "not-allowed": "Allow microphone access in Chrome site settings.", "service-not-allowed": "Browser speech service is blocked.", "no-speech": "No speech detected. Tap Voice Report and speak clearly.", "network": "Speech service network error. Check internet and try again.", "audio-capture": "Microphone unavailable. Check device permissions.", "language-not-supported": "Hindi is not supported by this speech service." };
+      const messages: Record<string, string> = {
+        "not-allowed": "Microphone permission is blocked. Allow it in Android Settings and Chrome Site settings.",
+        "service-not-allowed": "The browser's speech recognition service is blocked.",
+        "no-speech": "No speech was detected. Tap Voice Report and speak clearly after the microphone starts.",
+        "network": "Speech recognition network error. Check your internet connection and try again.",
+        "audio-capture": "The microphone is unavailable. Check microphone permission and close other apps using it.",
+        "language-not-supported": "Hindi recognition is unavailable in this browser. Try Chrome with internet access."
+      };
       alert("Voice Report: " + (messages[event.error] || ("Speech recognition failed: " + (event.error || "unknown error"))));
     };
-    try { recognitionRef.current.start(); } catch { setIsListening(false); alert("Voice Report could not start. Close other microphone apps and try again."); }
+    recognition.onend = () => {
+      setIsListening(false);
+      const transcript = finalTranscript.trim() || (gotSpeechResult ? voiceText.trim() : "");
+      if (transcript) {
+        setVoiceText(transcript);
+        onOpenSubmit(transcript);
+      } else {
+        alert("No words were recognized. Check internet access, then tap Voice Report and speak clearly in Hindi.");
+      }
+    };
+    try {
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      alert("Voice Report could not start. Please try again and ensure no other app is using the microphone.");
+    }
   };
 
   const handleAction = (fn: () => void) => (e: React.MouseEvent) => {
