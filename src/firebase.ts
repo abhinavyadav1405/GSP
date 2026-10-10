@@ -32,5 +32,5 @@ export const storage = getStorage(app);
 export {
   collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc,
   query, orderBy, arrayUnion, arrayRemove, ref, uploadBytes, getDownloadURL,
-  deleteObject, signInWithCustomToken, httpsCallable,
+  deleteObject, signInWithCustomToken, httpsCallable, onAuthStateChanged,
 };
