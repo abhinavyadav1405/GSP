@@ -4716,9 +4716,36 @@ useEffect(() => {
 
       {/* Submit Form Modal */}
       {showSubmitFAB && currentUser && (
-        <div onClick={() => setShowSubmitFAB(false)} style={{
-        }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
+        <div
+          onClick={() => setShowSubmitFAB(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100000,
+            background: "rgba(10, 8, 20, 0.78)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            overflowY: "auto",
+            padding: "max(20px, env(safe-area-inset-top)) 14px max(90px, env(safe-area-inset-bottom))",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: "100%", maxWidth: 600, maxHeight: "none", margin: "auto 0" }}
+          >
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+              <button
+                type="button"
+                aria-label="Close report form"
+                onClick={() => setShowSubmitFAB(false)}
+                style={{ border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "8px 14px", background: "rgba(255,255,255,0.12)", color: "#fff", cursor: "pointer", fontSize: 14 }}
+              >
+                ✕ Close
+              </button>
+            </div>
             <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} voiceDraft={voiceDraft} />
           </div>
         </div>
