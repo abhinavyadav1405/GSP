@@ -178,7 +178,7 @@ export default function GSPReels({ user, isAdmin, problems, onLogin, showToast }
     try {
       await updateDoc(doc(db, "problems", reel.problemId), {
         status: "In Progress", resolutionChallenge: { userId: user.id, reason: challengeReason.trim(), createdAt: new Date().toISOString() },
-        resolutionChallengeAt: new Date().toISOString(),
+        resolutionChallengeAt: new Date().toISOString(), resolvedAt: null,
       });
       await updateDoc(doc(db, "reels", reel.id), { challengedAt: new Date().toISOString(), challengeReason: challengeReason.trim(), resolvedAt: null });
       setChallengeId(""); setChallengeReason("");
