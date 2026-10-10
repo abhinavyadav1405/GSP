@@ -42,7 +42,7 @@ export default function GSPReels({ user, isAdmin, problems, onLogin, showToast }
     const q = query(collection(db, "reels"), orderBy("createdAt", "desc"));
     return onSnapshot(q, snap => setReels(snap.docs.map(d => ({ id: d.id, ...d.data() } as Reel))),
       err => { console.error("Reels listener failed", err); showToast("Reels लोड नहीं हो सके। Firebase rules जाँचें।"); });
-  }, [showToast]);
+  }, []);
 
   useEffect(() => () => {
     if (recordTimerRef.current) clearTimeout(recordTimerRef.current);
@@ -213,17 +213,17 @@ export default function GSPReels({ user, isAdmin, problems, onLogin, showToast }
       </>}
     </div>
 
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18, maxHeight: "calc(100vh - 230px)", overflowY: "auto", scrollSnapType: "y mandatory", overscrollBehaviorY: "contain" }}>
       {visibleReels.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 32, textAlign: "center", color: "var(--ct4)" }}>{showMine ? "आपने अभी कोई Reel पोस्ट नहीं की है।" : "अभी कोई Reel उपलब्ध नहीं है। पहली Reel पोस्ट करें।"}</div> : visibleReels.map(reel => {
         const problem = problems.find(p => p.id === reel.problemId);
         const isOwner = !!user && user.id === reel.ownerId;
-        return <article key={reel.id} className="glass" style={{ borderRadius: 18, overflow: "hidden" }}>
+        return <article key={reel.id} className="glass" style={{ borderRadius: 18, overflow: "hidden", scrollSnapAlign: "start" }}>
           <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: "50%", display: "grid", placeItems: "center", background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", color: "#fff", fontWeight: 800 }}>{(reel.ownerName || "U").slice(0, 1).toUpperCase()}</div>
             <div style={{ flex: 1, minWidth: 0 }}><strong style={{ fontSize: 13 }}>{reel.ownerName}</strong><div style={{ fontSize: 11, color: "var(--ct4)", marginTop: 2 }}>{reel.ownerWard || "GSP"} · {new Date(reel.createdAt).toLocaleDateString("hi-IN")}</div></div>
             {isOwner && <button className="btn-danger" onClick={() => void deleteOwnReel(reel)} style={{ borderRadius: 9, padding: "7px 10px", fontSize: 11 }}>डिलीट</button>}
           </div>
-          <div style={{ background: "#050505", aspectRatio: "9/16", maxHeight: "72vh", position: "relative", scrollSnapAlign: "start" }}>
+          <div style={{ background: "#050505", aspectRatio: "9/16", height: "min(68vh, 760px)", maxHeight: "68vh", position: "relative" }}>
             <video src={reel.videoUrl} controls playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
           </div>
           <div style={{ padding: 14 }}>
