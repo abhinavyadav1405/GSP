@@ -758,99 +758,14 @@ if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
 }
 
 // ── Submit Form ───────────────────────────────────────────────────────────────
-function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = "", currentUser, voiceDraft }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null; voiceDraft?: { text: string; id: number } | null }) {
+function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = "", currentUser }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null }) {
   const [caption, setCaption] = useState("");
   const [form, setForm] = useState({ name: currentUser?.name || "", mobile: currentUser?.mobile || "", ward: currentUser?.ward || WARDS[0], category: CATEGORIES[0], title: "", description: "", priority: "Medium" });
   const [photo, setPhoto]               = useState<string | null>(null);
   const [locationText, setLocationText] = useState("");
   const [locationCoords, setLocationCoords] = useState<LatLng | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const recognitionRef = useRef<any>(null);
-  
-  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  // Voice input fills a reviewable draft; it never publishes or submits anything.
-  useEffect(() => {
-    if (!voiceDraft?.text.trim()) return;
-    const transcript = voiceDraft.text.trim();
-    const mobileMatch = transcript.match(/(?:mobile|phone|मोबाइल|फोन)\D{0,8}([6-9]\d{9})/i) || transcript.match(/\b[6-9]\d{9}\b/);
-    const nameMatch = transcript.match(/(?:mera naam|my name is|नाम है|मेरा नाम)\s+([^,.;]+?)(?=\s+(?:mobile|phone|ward|मेरा मोबाइल|मोबाइल|वार्ड|category|priority|location|address)\b|[,.;]|$)/i);
-    const titleMatch = transcript.match(/(?:title|शीर्षक|समस्या का नाम)\s*(?:hai|है|:)?\s*([^,.;]+)/i);
-    const locationMatch = transcript.match(/(?:location|address|landmark|जगह|स्थान|पता)\s*(?:hai|है|:)?\s*([^,.;]+)/i);
-    const captionMatch = transcript.match(/(?:caption|कैप्शन)\s*(?:hai|है|:)?\s*([^,.;]+)/i);
-    const priorityMatch = transcript.match(/(?:priority|प्राथमिकता)\s*(?:hai|है|:)?\s*(urgent|तुरंत|high|उच्च|medium|मध्यम|low|कम)/i);
-    const normalized = transcript.toLocaleLowerCase("hi-IN");
-    const category = CATEGORIES.find(item => normalized.includes(item.toLocaleLowerCase("en-US")))
-      || (/(pani|water|जल|पानी)/i.test(normalized) ? "Water Supply" : undefined)
-      || (/(sadak|road|रास्ता|सड़क)/i.test(normalized) ? "Road / Path" : undefined)
-      || (/(bijli|electricity|बिजली)/i.test(normalized) ? "Electricity" : undefined)
-      || (/(naali|drainage|नाली)/i.test(normalized) ? "Drainage" : undefined)
-      || (/(safai|sanitation|सफाई|कचरा)/i.test(normalized) ? "Sanitation" : undefined)
-      || (/(school|education|शिक्षा|विद्यालय)/i.test(normalized) ? "Education" : undefined)
-      || (/(hospital|health|स्वास्थ्य|अस्पताल)/i.test(normalized) ? "Health" : undefined)
-      || (/(street light|स्ट्रीट लाइट|सड़क की लाइट)/i.test(normalized) ? "Street Light" : undefined);
-    const ward = WARDS.find(item => normalized.includes(item.toLocaleLowerCase("en-US")));
-    const priority = priorityMatch ? (/urgent|तुरंत/i.test(priorityMatch[1]) ? "Urgent" : /high|उच्च/i.test(priorityMatch[1]) ? "High" : /low|कम/i.test(priorityMatch[1]) ? "Low" : "Medium") : undefined;
-    const cleanedDescription = transcript
-      .replace(/(?:my name is|mera naam|मेरा नाम|नाम है)\s+[^,.;]+/i, "")
-      .replace(/(?:mobile|phone|मोबाइल|फोन)\D{0,8}[6-9]\d{9}/i, "")
-      .replace(/(?:title|शीर्षक|समस्या का नाम)\s*(?:hai|है|:)?\s*[^,.;]+/i, "")
-      .replace(/(?:location|address|landmark|जगह|स्थान|पता)\s*(?:hai|है|:)?\s*[^,.;]+/i, "")
-      .replace(/(?:caption|कैप्शन)\s*(?:hai|है|:)?\s*[^,.;]+/i, "")
-      .replace(/(?:priority|प्राथमिकता)\s*(?:hai|है|:)?\s*(urgent|तुरंत|high|उच्च|medium|मध्यम|low|कम)/i, "")
-      .trim();
-    const title = titleMatch?.[1]?.trim() || (cleanedDescription.length > 72 ? cleanedDescription.slice(0, 69).trim() + "…" : cleanedDescription || transcript);
-    setForm(current => ({
-      ...current,
-      ...(nameMatch?.[1] ? { name: nameMatch[1].trim() } : {}),
-      ...((mobileMatch?.[1] || mobileMatch?.[0]) ? { mobile: mobileMatch[1] || mobileMatch[0] } : {}),
-      ...(ward ? { ward } : {}),
-      ...(category ? { category } : {}),
-      ...(priority ? { priority } : {}),
-      title: titleMatch?.[1]?.trim() || (current.title.trim() ? current.title : title),
-      description: cleanedDescription || transcript,
-    }));
-    if (captionMatch?.[1]) setCaption(captionMatch[1].trim());
-    if (locationMatch?.[1]) setLocationText(locationMatch[1].trim());
-  }, [voiceDraft?.id]);
-
-  // 🎤 Voice-to-Text for description
-  const startVoiceRecording = () => {
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("🎤 Speech recognition not supported on your device");
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = "hi-IN";
-    recognitionRef.current.continuous = true;
-    recognitionRef.current.interimResults = false;
-
-    recognitionRef.current.onstart = () => setIsRecording(true);
-
-    recognitionRef.current.onresult = (event: any) => {
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          const transcript = event.results[i][0].transcript;
-          set("description", form.description + (form.description ? " " : "") + transcript);
-        }
-      }
-    };
-
-    recognitionRef.current.onend = () => setIsRecording(false);
-    recognitionRef.current.onerror = () => setIsRecording(false);
-
-    recognitionRef.current.start();
-  };
-
-  const stopVoiceRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-    }
-  };
 
   const handle = async () => {
     if (!form.name || !form.mobile || !form.title || !form.description) { alert("Please fill all required fields."); return; }
@@ -897,35 +812,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
         </div>
         {field("Problem Title *", <input value={form.title} onChange={e => set("title", e.target.value)} placeholder="Short, clear title (max 100 chars)" maxLength={100} />)}
         {field("Caption (Instagram-style)", <textarea rows={2} value={caption} onChange={e => setCaption(e.target.value)} placeholder="Write a short caption for your post…" maxLength={220} />)}
-        {field("Description * (Use voice or type)", (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-              <textarea rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the problem in detail..." maxLength={500} style={{ flex: 1 }} />
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 2 }}>
-                <button
-                  type="button"
-                  onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 9,
-                    border: "none",
-                    background: isRecording ? "rgba(248,113,113,0.2)" : "rgba(59,130,246,0.15)",
-                    color: isRecording ? "#f87171" : "#3b82f6",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={isRecording ? "Stop recording" : "Start voice input"}
-                >
-                  {isRecording ? "⏹ Stop" : "🎤 Voice"}
-                </button>
-              </div>
-            </div>
-            {isRecording && <div style={{ fontSize: 12, color: "#ef4444", fontWeight: 600 }}>🎤 Listening...</div>}
-          </div>
-        ))}
+        {field("Description *", <textarea rows={4} value={form.description} onChange={e => set("description", e.target.value)} placeholder="Describe the problem in detail..." maxLength={500} />)}
         {field("Photo (optional)", <PhotoUpload photo={photo} onPhoto={setPhoto} />)}
         {field("Location / Landmark (optional)", (
           <input
@@ -2885,99 +2772,16 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
 }
 
 
-// ── Enhanced Floating Action Button with Voice & Photo ─────────────────────
+// ── Enhanced Floating Action Button ─────────────────────
 function EnhancedFAB({
-  onOpenSubmit, isOpen, onOpenBoard, onOpenNotices, onNavigate,
+  onOpenSubmit, isOpen, onOpenBoard, onOpenNotices,
 }: {
-  onOpenSubmit: (voiceText?: string) => void;
+  onOpenSubmit: () => void;
   isOpen: boolean;
   onOpenBoard: () => void;
   onOpenNotices: () => void;
-  onNavigate: (page: "home" | "profile" | "schemes" | "dashboard") => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [voiceText, setVoiceText] = useState("");
-  const recognitionRef = useRef<any>(null);
-
-  useEffect(() => () => {
-    try { recognitionRef.current?.abort?.(); } catch { /* Ignore cleanup errors. */ }
-  }, []);
-
-  const startVoiceInput = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-      return;
-    }
-    if (!( "webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("इस browser में voice recognition उपलब्ध नहीं है। आप details manually भर सकते हैं।");
-      return;
-    }
-    // Browser speech recognition may process audio according to the browser/provider's own policy.
-    // GSP does not store audio recordings; ask before activating the microphone.
-    const accepted = window.confirm(
-      "Voice input चालू करने पर browser की speech service आवाज़ process कर सकती है। GSP आवाज़ की recording save नहीं करता। क्या आप microphone चालू करना चाहते हैं?"
-    );
-    if (!accepted) return;
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognitionRef.current = recognition;
-    recognition.lang = "hi-IN";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onresult = (event: any) => {
-      const transcript = String(event.results?.[0]?.[0]?.transcript || "").trim();
-      if (!transcript) return;
-      setVoiceText(transcript);
-      const normalized = transcript.toLocaleLowerCase("hi-IN");
-      if (/(all issues|complaint list|सभी शिकायत|सभी समस्याएं|board खोलो|board kholo)/i.test(normalized)) {
-        setMenuOpen(false);
-        onOpenBoard();
-        return;
-      }
-      if (/(notice|सूचना|नोटिस)/i.test(normalized)) {
-        setMenuOpen(false);
-        onOpenNotices();
-        return;
-      }
-      const navigationCommands: Array<{ pattern: RegExp; page: "home" | "profile" | "schemes" | "dashboard" }> = [
-        { pattern: /(profile|प्रोफाइल|मेरी जानकारी)/i, page: "profile" },
-        { pattern: /(scheme|yojana|योजना|सरकारी योजना)/i, page: "schemes" },
-        { pattern: /(dashboard|डैशबोर्ड|मुख्य पटल)/i, page: "dashboard" },
-        { pattern: /(home|होम|मुख्य पेज)/i, page: "home" },
-      ];
-      const navigation = navigationCommands.find(command => command.pattern.test(normalized));
-      if (navigation) {
-        setMenuOpen(false);
-        onNavigate(navigation.page);
-        return;
-      }
-      // Treat other speech as an editable complaint draft, never as an automatic submission.
-      const cleaned = transcript.replace(/^(please\s+)?(report|post|complaint|शिकायत|पोस्ट)\s*(karo|करो|बanao|बनाओ|likho|लिखो)?[,:\s-]*/i, "").trim() || transcript;
-      setMenuOpen(false);
-      onOpenSubmit(cleaned);
-    };
-    recognition.onerror = (event: any) => {
-      setIsListening(false);
-      if (event?.error !== "aborted" && event?.error !== "no-speech") {
-        alert("Voice recognition शुरू नहीं हो सका। Microphone permission और browser settings जाँचें।");
-      }
-    };
-
-    try {
-      recognition.start();
-    } catch {
-      setIsListening(false);
-      alert("Voice input अभी शुरू नहीं हो सका। कृपया दोबारा कोशिश करें।");
-    }
-  };
-
   const handleAction = (fn: () => void) => (e: React.MouseEvent) => {
     e.stopPropagation();
     fn();
@@ -3060,7 +2864,6 @@ function EnhancedFAB({
         }
         .lg-zone-open .lg-main::after { animation: none; opacity: 0; }
         @keyframes lgPulse { 0% { transform: scale(1); opacity: .6; } 70% { transform: scale(1.35); opacity: 0; } 100% { transform: scale(1.35); opacity: 0; } }
-        .lg-mic { width: 52px; height: 52px; }
         .lg-mic.listening { background: linear-gradient(155deg, rgba(248,113,113,0.4) 0%, rgba(255,255,255,0.06) 60%); border-color: rgba(248,113,113,0.5); animation: lgListenPulse 1s infinite; }
         @keyframes lgListenPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.5); } 50% { box-shadow: 0 0 0 10px rgba(248,113,113,0); } }
         @media (prefers-reduced-motion: reduce) { .lg-action, .lg-main, .lg-main-icon, .lg-mic { transition: none !important; animation: none !important; } }
@@ -3078,20 +2881,6 @@ function EnhancedFAB({
         <div className="lg-btn lg-action" onClick={handleAction(onOpenBoard)} title="All Issues">
           <span className="lg-label">All Issues</span>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-        </div>
-
-        {/* Voice */}
-        <div
-          className={`lg-btn lg-action lg-mic ${isListening ? "listening" : ""}`}
-          onClick={startVoiceInput}
-          title={isListening ? "Listening..." : "Report with voice"}
-        >
-          <span className="lg-label">{isListening ? "Listening…" : "Voice Report"}</span>
-          {isListening ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-          )}
         </div>
 
         {/* Submit / Report */}
@@ -3793,7 +3582,6 @@ export default function App() {
   const [sarpanchAddress, setSarpanchAddress] = useState("Gram Sabha Pahrajpur, Ballia, Uttar Pradesh");
   const [theme, setTheme]                 = useState<"dark"|"light">("light");
   const [showSubmitFAB, setShowSubmitFAB] = useState(false);
-  const [voiceDraft, setVoiceDraft] = useState<{ text: string; id: number } | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   
@@ -4766,21 +4554,12 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Enhanced FAB with Voice & Photo */}
+      {/* Enhanced FAB */}
       <EnhancedFAB
-        onOpenSubmit={(voiceText) => {
-          if (!currentUser) { setPage("login"); return; }
-          if (voiceText) {
-            setVoiceDraft({ text: voiceText, id: Date.now() });
-            setShowSubmitFAB(true);
-          } else {
-            setShowSubmitFAB(!showSubmitFAB);
-          }
-        }}
+        onOpenSubmit={() => { if (!currentUser) setPage("login"); else setShowSubmitFAB(!showSubmitFAB); }}
         isOpen={showSubmitFAB}
         onOpenBoard={() => setPage("board")}
         onOpenNotices={() => setPage("notices")}
-        onNavigate={(page) => { if (page === "profile" && !currentUser) { setPage("login"); return; } setPage(page); }}
       />
 
       {/* Submit Form Modal */}
@@ -4788,7 +4567,7 @@ useEffect(() => {
         <div onClick={() => setShowSubmitFAB(false)} style={{
         }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} voiceDraft={voiceDraft} />
+            <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} />
           </div>
         </div>
       )}
