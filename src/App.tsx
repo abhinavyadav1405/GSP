@@ -4509,14 +4509,19 @@ useEffect(() => {
         {page === "reels" && <GSPReels user={currentUser} isAdmin={isAdmin && canManageComplaints} problems={problems} onLogin={() => setPage("login")} showToast={showToast} />}
 
         {page === "home" && (
-          <CommunityFeed
-  problems={problems}
-  user={currentUser}
-  onUpdate={updateProblem as any}
-  onOpenLogin={() => setPage("login")}
-  onOpenUserProfile={setPublicProfileUser}
-  isAdmin={isAdmin && canManageComplaints}
-/>
+          <>
+            <CommunityFeed
+              problems={problems}
+              user={currentUser}
+              onUpdate={updateProblem as any}
+              onOpenLogin={() => setPage("login")}
+              onOpenUserProfile={setPublicProfileUser}
+              isAdmin={isAdmin && canManageComplaints}
+            />
+            <div style={{ maxWidth: 620, margin: "0 auto", padding: "0 12px", width: "100%" }}>
+              <GSPReels user={currentUser} isAdmin={isAdmin && canManageComplaints} problems={problems} onLogin={() => setPage("login")} showToast={showToast} />
+            </div>
+          </>
         )}
 
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
