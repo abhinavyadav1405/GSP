@@ -49,7 +49,7 @@ export default function GSPReels({ user, isAdmin, problems, onLogin, showToast }
     streamRef.current?.getTracks().forEach(track => track.stop());
   }, []);
 
-  const visibleReels = reels.filter(r => !r.videoDeleted && r.moderationStatus !== "removed" && (!showMine || (!!user && r.ownerId === user.id)));
+  const visibleReels = reels.filter(r => r.moderationStatus !== "removed" && (showMine ? (!!user && r.ownerId === user.id) : !r.videoDeleted));
   const ownProblems = problems.filter(p => user && (p.authorId === user.id || p.name === user.name));
 
   const getDuration = (file: File) => new Promise<number>((resolve, reject) => {
@@ -223,9 +223,9 @@ export default function GSPReels({ user, isAdmin, problems, onLogin, showToast }
             <div style={{ flex: 1, minWidth: 0 }}><strong style={{ fontSize: 13 }}>{reel.ownerName}</strong><div style={{ fontSize: 11, color: "var(--ct4)", marginTop: 2 }}>{reel.ownerWard || "GSP"} · {new Date(reel.createdAt).toLocaleDateString("hi-IN")}</div></div>
             {isOwner && <button className="btn-danger" onClick={() => void deleteOwnReel(reel)} style={{ borderRadius: 9, padding: "7px 10px", fontSize: 11 }}>डिलीट</button>}
           </div>
-          <div style={{ background: "#050505", aspectRatio: "9/16", height: "min(68vh, 760px)", maxHeight: "68vh", position: "relative" }}>
+          {reel.videoDeleted ? <div style={{ background: "rgba(124,92,252,.08)", minHeight: 130, display: "grid", placeItems: "center", textAlign: "center", padding: 20, color: "var(--ct4)", fontSize: 13 }}>वीडियो Resolved होने के 7 दिन बाद स्थायी रूप से डिलीट कर दिया गया है।<br />पोस्ट और समस्या का रिकॉर्ड सुरक्षित है।</div> : <div style={{ background: "#050505", aspectRatio: "9/16", height: "min(68vh, 760px)", maxHeight: "68vh", position: "relative" }}>
             <video src={reel.videoUrl} controls playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
-          </div>
+          </div>}
           <div style={{ padding: 14 }}>
             {isOwner && reel.warningSentAt && <div style={{ padding: "9px 11px", borderRadius: 10, background: "rgba(244,201,93,.12)", color: "#f4c95d", fontSize: 12, marginBottom: 10 }}>Admin ने इस Reel पर चेतावनी जारी की है।</div>}
             <div style={{ fontSize: 12, color: "#b57bee", fontWeight: 800, marginBottom: 5 }}>समस्या: {reel.problemTitle}</div>
