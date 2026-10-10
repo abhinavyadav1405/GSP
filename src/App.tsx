@@ -2243,8 +2243,8 @@ const ACH_CAT_COLORS: Record<string,string> = {
   "Education":"#ec4899","Health":"#ef4444","Drainage":"#06b6d4","Infrastructure":"#f97316","Other":"#6b7280",
 };
 
-function AchievementsPage({ achievements, isAdmin, onDelete }: {
-  achievements: Achievement[]; isAdmin: boolean; onDelete: (id: string) => void;
+function AchievementsPage({ achievements, media, isAdmin, onDelete, onDeleteMedia }: {
+  achievements: Achievement[]; media: MediaItem[]; isAdmin: boolean; onDelete: (id: string) => void; onDeleteMedia: (id: string) => void;
 }) {
   const [filterCat, setFilterCat] = useState("All");
   const [filterVillage, setFilterVillage] = useState("All");
@@ -2361,6 +2361,11 @@ function AchievementsPage({ achievements, isAdmin, onDelete }: {
           })}
         </div>
       )}
+
+      {/* Village Gallery is shown directly inside Achievements for visitors */}
+      <div style={{ marginTop: 48, paddingTop: 30, borderTop: "1px solid var(--glass-border)" }}>
+        <GalleryPage media={media} isAdmin={isAdmin} onDelete={onDeleteMedia} />
+      </div>
     </div>
   );
 }
@@ -4700,7 +4705,7 @@ useEffect(() => {
         {/* ── ACHIEVEMENTS ─────────────────────────────────────────────────── */}
         {page === "achievements" && (
           <div style={{ paddingTop: 32 }}>
-            <AchievementsPage achievements={achievements} isAdmin={isAdmin} onDelete={deleteAchievement} />
+            <AchievementsPage achievements={achievements} media={media} isAdmin={isAdmin} onDelete={deleteAchievement} onDeleteMedia={deleteMedia} />
           </div>
         )}
 
