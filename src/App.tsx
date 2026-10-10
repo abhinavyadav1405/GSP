@@ -4537,7 +4537,7 @@ useEffect(() => {
                           alert("Please fill both scheme title and description!");
                           return;
                         }
-                        const newNotice = {
+                        const newNotice: Notice = {
                           id: 'scheme_' + Date.now(),
                           title: titleEl.value.trim(),
                           body: bodyEl.value.trim(),
@@ -4545,7 +4545,9 @@ useEffect(() => {
                           date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
                           createdAt: new Date().toISOString()
                         };
-                        setNotices(prev => [newNotice, ...prev]);
+                        // Save schemes to the same Firestore-backed notices list used by the live listener.
+                        // Updating React state alone makes the scheme disappear after refresh.
+                        saveNotices([newNotice, ...(notices || []).filter(n => n.id !== newNotice.id)]);
                         titleEl.value = "";
                         bodyEl.value = "";
                         alert("✅ Scheme published successfully!");
