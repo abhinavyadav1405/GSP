@@ -2435,23 +2435,35 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
   const [mediaTitle, setMediaTitle] = useState("");
   const [mediaCaption, setMediaCaption] = useState("");
   const [mediaVideoUrl, setMediaVideoUrl] = useState("");
-  const [mediaPhoto, setMediaPhoto] = useState<string | undefined>(undefined);
+  const [mediaPhotos, setMediaPhotos] = useState<{ name: string; url: string }[]>([]);
   const [mediaPhotoLoading, setMediaPhotoLoading] = useState(false);
 
-  const handleMediaPhoto = async (file: File) => {
+  const handleMediaPhotos = async (files: FileList | null) => {
+    if (!files?.length) return;
     setMediaPhotoLoading(true);
-    try { setMediaPhoto(await compressImage(file)); } catch (_) {}
-    setMediaPhotoLoading(false);
+    try {
+      const selected = Array.from(files).filter(file => file.type.startsWith("image/"));
+      const compressed = await Promise.all(selected.map(async file => ({ name: file.name, url: await compressImage(file, 400, 0.3) })));
+      setMediaPhotos(prev => [...prev, ...compressed]);
+      if (compressed.length) showToast("✅ " + compressed.length + " photo(s) ready to add.");
+    } catch (_) { showToast("⚠️ One or more photos could not be processed."); }
+    finally { setMediaPhotoLoading(false); }
   };
 
   const submitMedia = () => {
     if (!mediaTitle.trim()) { showToast("⚠️ Title is required."); return; }
-    if (mediaType === "photo" && !mediaPhoto) { showToast("⚠️ Please select a photo."); return; }
+    if (mediaType === "photo" && !mediaPhotos.length) { showToast("⚠️ Please select one or more photos."); return; }
     if (mediaType === "video" && !mediaVideoUrl.trim()) { showToast("⚠️ Please enter a YouTube URL."); return; }
     if (mediaType === "video" && !getYoutubeId(mediaVideoUrl)) { showToast("⚠️ Invalid YouTube URL. Use a youtube.com or youtu.be link."); return; }
-    onAddMedia({ id: uuid(), type: mediaType, title: mediaTitle.trim(), caption: mediaCaption.trim() || undefined, url: mediaType === "photo" ? mediaPhoto! : mediaVideoUrl.trim(), createdAt: new Date().toISOString() });
-    setMediaTitle(""); setMediaCaption(""); setMediaVideoUrl(""); setMediaPhoto(undefined);
-    showToast("✅ Added to gallery!");
+    if (mediaType === "photo") {
+      const createdAt = new Date().toISOString();
+      mediaPhotos.forEach((photo, index) => onAddMedia({ id: uuid(), type: "photo", title: mediaPhotos.length > 1 ? (mediaTitle.trim() + " " + (index + 1)) : mediaTitle.trim(), caption: mediaCaption.trim() || undefined, url: photo.url, createdAt }));
+      showToast("✅ " + mediaPhotos.length + " photo(s) added to gallery!");
+    } else {
+      onAddMedia({ id: uuid(), type: "video", title: mediaTitle.trim(), caption: mediaCaption.trim() || undefined, url: mediaVideoUrl.trim(), createdAt: new Date().toISOString() });
+      showToast("✅ Video added to gallery!");
+    }
+    setMediaTitle(""); setMediaCaption(""); setMediaVideoUrl(""); setMediaPhotos([]);
   };
 
   const savePassword = () => {
@@ -2672,6 +2684,72 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
         </>)}
       </FadeIn>
 
+      {/* ── Gallery Manager ── */}
+      <FadeIn delay={320}>
+        {card(<>
+          <SectionHead icon="📷" title="Village Gallery — Photos & Videos" />
+          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 18, lineHeight: 1.6 }}>
+            Select multiple village photos at once or add YouTube videos. Visible to all villagers.
+          </p>
+
+          {/* Type toggle */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+            {(["photo","video"] as const).map(t => (
+              <button key={t} onClick={() => setMediaType(t)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: `1px solid ${mediaType === t ? "rgba(168,85,247,0.5)" : "var(--cb10)"}`, background: mediaType === t ? "rgba(168,85,247,0.15)" : "var(--cbg4)", color: mediaType === t ? "#c084fc" : "var(--ct4)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+                {t === "photo" ? "Photo" : "YouTube Video"}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 16, background: "rgba(168,85,247,0.05)", borderRadius: 14, border: "1px solid rgba(168,85,247,0.15)", marginBottom: 18 }}>
+            <input placeholder="Title *" value={mediaTitle} onChange={e => setMediaTitle(e.target.value)} maxLength={100} />
+            <input placeholder="Caption (optional)" value={mediaCaption} onChange={e => setMediaCaption(e.target.value)} maxLength={200} />
+
+            {mediaType === "photo" ? (<>
+              <label style={{ cursor: "pointer", border: "1px dashed rgba(168,85,247,0.35)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(168,85,247,0.04)" }}>
+                {mediaPhotoLoading ? "Compressing photos…" : mediaPhotos.length ? "📷 " + mediaPhotos.length + " photo(s) selected — add more" : "📷 Select Multiple Photos"}
+                <input type="file" accept="image/*" multiple style={{ display: "none" }} onChange={e => { handleMediaPhotos(e.target.files); e.currentTarget.value = ""; }} />
+              </label>
+              {mediaPhotos.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(90px,1fr))", gap: 8 }}>
+                  {mediaPhotos.map((photo, index) => <div key={photo.name + index} style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <img src={photo.url} alt={photo.name} style={{ width: "100%", height: 90, objectFit: "cover", display: "block" }} />
+                    <button aria-label={"Remove " + photo.name} onClick={() => setMediaPhotos(prev => prev.filter((_, i) => i !== index))} style={{ position: "absolute", top: 4, right: 4, background: "rgba(0,0,0,0.7)", border: "none", color: "#fff", borderRadius: 6, padding: "2px 7px", cursor: "pointer", fontSize: 12 }}>✕</button>
+                  </div>)}
+                </div>
+              )}
+            </>) : (
+              <input placeholder="YouTube URL (e.g. https://youtu.be/xxxxx)" value={mediaVideoUrl} onChange={e => setMediaVideoUrl(e.target.value)} />
+            )}
+
+            <button className="btn-white" style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }} onClick={submitMedia}>
+              Add to Gallery →
+            </button>
+          </div>
+
+          {/* Existing items list */}
+          {media.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "16px 0", color: "var(--ct3)", fontSize: 13 }}>No gallery items yet.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {media.map(m => (
+                <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  {m.type === "photo"
+                    ? <img src={m.url} alt={m.title} style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: "rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}><Video size={20} /></div>}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</div>
+                    <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.type === "photo" ? "Photo" : "Video"} · {fmtDate(m.createdAt)}</div>
+                  </div>
+                  <button className="btn-danger" style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { onDeleteMedia(m.id); showToast("🗑 Removed from gallery."); }}>Delete</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>)}
+      </FadeIn>
+
+
       {/* ── Achievements Manager ── */}
       <FadeIn delay={300}>
         {card(<>
@@ -2794,69 +2872,6 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
                   </div>
                 );
               })}
-            </div>
-          )}
-        </>)}
-      </FadeIn>
-
-      {/* ── Gallery Manager ── */}
-      <FadeIn delay={380}>
-        {card(<>
-          <SectionHead icon="📷" title="Photos & Videos Gallery" />
-          <p style={{ fontSize: 13, color: "var(--ct45)", marginBottom: 18, lineHeight: 1.6 }}>
-            Upload village photos or add YouTube videos. Visible to all on the home page.
-          </p>
-
-          {/* Type toggle */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-            {(["photo","video"] as const).map(t => (
-              <button key={t} onClick={() => setMediaType(t)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: `1px solid ${mediaType === t ? "rgba(168,85,247,0.5)" : "var(--cb10)"}`, background: mediaType === t ? "rgba(168,85,247,0.15)" : "var(--cbg4)", color: mediaType === t ? "#c084fc" : "var(--ct4)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
-                {t === "photo" ? "Photo" : "YouTube Video"}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: 16, background: "rgba(168,85,247,0.05)", borderRadius: 14, border: "1px solid rgba(168,85,247,0.15)", marginBottom: 18 }}>
-            <input placeholder="Title *" value={mediaTitle} onChange={e => setMediaTitle(e.target.value)} maxLength={100} />
-            <input placeholder="Caption (optional)" value={mediaCaption} onChange={e => setMediaCaption(e.target.value)} maxLength={200} />
-
-            {mediaType === "photo" ? (<>
-              <label style={{ cursor: "pointer", border: "1px dashed rgba(168,85,247,0.35)", borderRadius: 10, padding: "10px 14px", textAlign: "center", fontSize: 13, color: "var(--ct4)", background: "rgba(168,85,247,0.04)" }}>
-                {mediaPhotoLoading ? "Compressing…" : mediaPhoto ? "📷 Photo selected — click to change" : "📷 Select Photo"}
-                <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) handleMediaPhoto(e.target.files[0]); }} />
-              </label>
-              {mediaPhoto && (
-                <div style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <img src={mediaPhoto} alt="preview" style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block" }} />
-                  <button onClick={() => setMediaPhoto(undefined)} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 12 }}>✕</button>
-                </div>
-              )}
-            </>) : (
-              <input placeholder="YouTube URL (e.g. https://youtu.be/xxxxx)" value={mediaVideoUrl} onChange={e => setMediaVideoUrl(e.target.value)} />
-            )}
-
-            <button className="btn-white" style={{ borderRadius: 10, padding: "11px 0", fontSize: 14, fontWeight: 600 }} onClick={submitMedia}>
-              Add to Gallery →
-            </button>
-          </div>
-
-          {/* Existing items list */}
-          {media.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "16px 0", color: "var(--ct3)", fontSize: 13 }}>No gallery items yet.</div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {media.map(m => (
-                <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  {m.type === "photo"
-                    ? <img src={m.url} alt={m.title} style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
-                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: "rgba(239,68,68,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}><Video size={20} /></div>}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.title}</div>
-                    <div style={{ fontSize: 11, color: "var(--ct35)" }}>{m.type === "photo" ? "Photo" : "Video"} · {fmtDate(m.createdAt)}</div>
-                  </div>
-                  <button className="btn-danger" style={{ borderRadius: 8, padding: "5px 12px", fontSize: 12, flexShrink: 0 }} onClick={() => { onDeleteMedia(m.id); showToast("🗑 Removed from gallery."); }}>Delete</button>
-                </div>
-              ))}
             </div>
           )}
         </>)}
