@@ -2,7 +2,7 @@ name: GSP CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, fix/security-migration-plan]
   push:
     branches:
       - main
