@@ -3858,7 +3858,17 @@ export default function App() {
   useEffect(() => {
     let active = true;
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) return;
+      if (!firebaseUser) {
+        if (active) {
+          localStorage.removeItem("gsp-user");
+          localStorage.removeItem("isAdmin");
+          localStorage.removeItem("adminRole");
+          setCurrentUser(null);
+          setIsAdmin(false);
+          setAdminRole(null);
+        }
+        return;
+      }
       try {
         const token = await firebaseUser.getIdTokenResult();
         if (!active) return;
@@ -3866,8 +3876,10 @@ export default function App() {
         if (!firebaseUserId) {
           localStorage.removeItem("gsp-user");
           localStorage.removeItem("isAdmin");
+          localStorage.removeItem("adminRole");
           setCurrentUser(null);
           setIsAdmin(false);
+          setAdminRole(null);
           return;
         }
         const stored = localStorage.getItem("gsp-user");
@@ -3878,14 +3890,24 @@ export default function App() {
           localStorage.removeItem("gsp-user");
           setCurrentUser(null);
         }
-        setIsAdmin(token.claims.admin === true);
+        const hasAdminClaim = token.claims.admin === true;
+        const claimedRole = String(token.claims.adminRole || "");
+        const validRole: AdminRole | null = hasAdminClaim && ["super", "user-admin", "complaint-admin"].includes(claimedRole)
+          ? claimedRole as AdminRole : null;
+        setIsAdmin(hasAdminClaim && validRole !== null);
+        setAdminRole(validRole);
+        if (validRole) localStorage.setItem("adminRole", validRole);
+        else localStorage.removeItem("adminRole");
+        if (hasAdminClaim && !validRole) console.error("Admin claim is missing a valid adminRole; provision the role using set-admin-claim.js.");
       } catch (error) {
         console.error("Firebase session verification failed", error);
         if (active) {
           localStorage.removeItem("gsp-user");
           localStorage.removeItem("isAdmin");
+          localStorage.removeItem("adminRole");
           setCurrentUser(null);
           setIsAdmin(false);
+          setAdminRole(null);
         }
       }
     });
@@ -4181,9 +4203,9 @@ useEffect(() => {
     showToast("✅ Profile updated.");
   };
 
-  const logoutUser = () => { setCurrentUser(null); localStorage.removeItem("gsp-user"); setPage("home"); showToast("👋 Logged out."); };
+  const logoutUser = () => { void signOut(auth).catch(console.error); setCurrentUser(null); setIsAdmin(false); setAdminRole(null); localStorage.removeItem("gsp-user"); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); showToast("Logged out."); };
 
-  const logout = () => { setIsAdmin(false); setAdminRole(null); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); };
+  const logout = () => { void signOut(auth).catch(console.error); setCurrentUser(null); setIsAdmin(false); setAdminRole(null); localStorage.removeItem("gsp-user"); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); };
   const askParasAI = async (question?: string) => {
     const prompt = (question ?? parasInput).trim();
     if (!prompt || parasLoading) return;
@@ -4817,19 +4839,12 @@ useEffect(() => {
 
         {/* ── ADMIN LOGIN ───────────────────────────────────────────────────── */}
         {page === "admin" && !isAdmin && (
-          <AdminLogin
-            superPassword={adminPassword}
-            userAdminPassword={userAdminPassword}
-            complaintAdminPassword={complaintAdminPassword}
-            onLogin={(role) => {
-              setIsAdmin(true);
-              setAdminRole(role);
-              localStorage.setItem("isAdmin", "true");
-              localStorage.setItem("isAdmin-time", Date.now().toString());
-              localStorage.setItem("adminRole", role);
-              setPage(role === "user-admin" ? "manageusers" : "board");
-            }}
-          />
+          <div className="glass" style={{ maxWidth: 480, margin: "60px auto", padding: 28, borderRadius: 20, textAlign: "center" }}>
+            <LockKeyhole size={36} />
+            <h2 style={{ marginTop: 12 }}>Admin access सुरक्षित है</h2>
+            <p style={{ color: "var(--ct4)", lineHeight: 1.7 }}>Admin panel खोलने के लिए उस GSP अकाउंट से लॉगिन करें जिसे सर्वर पर Admin role दिया गया है। केवल Admin password डालने से अधिकार नहीं मिलेंगे।</p>
+            <button className="btn-white" style={{ marginTop: 12, borderRadius: 10, padding: "10px 16px" }} onClick={() => setPage(currentUser ? "home" : "login")}>{currentUser ? "Home पर जाएँ" : "Login करें"}</button>
+          </div>
         )}
 
         {/* ── MANAGE USERS (User-Admin) ───────────────────────────────────────── */}
