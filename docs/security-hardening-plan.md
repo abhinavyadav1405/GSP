@@ -25,6 +25,14 @@ Do not deploy restrictive rules until the identity model and the corresponding a
 7. **Optimize reads.** Add filtered, paginated queries for growing collections; load admin-only data only in authorized admin views; use bounded result sets and indexes where appropriate.
 8. **Load-test staging only.** Start at 10, 25, 50, and 100 virtual clients, ramp gradually, and monitor error rate, p95 latency, Firestore reads/writes, and Vercel function usage. Do not run a heavy test against the public production site.
 
+## Candidate rules and automated tests
+
+- `firestore.rules.candidate` is a proposed default-deny policy with public reads for currently public settings/complaints, authenticated complaint creation, admin-claim-only moderation/settings writes, UID-scoped user documents, and explicit denial for unlisted collections.
+- `tests/firestore-rules.test.mjs` exercises public reads, anonymous denials, non-admin denials, admin-claim writes, and cross-user/private collection denials against the Firebase Emulator.
+- `.github/workflows/firestore-rules.yml` installs the emulator test tools in CI and runs those tests against a demo project ID.
+- **Do not rename this candidate to `firestore.rules` or deploy it yet.** The current app uses custom user IDs, reads some settings publicly, and performs client-side admin actions. Admin custom claims are not yet issued by a trusted server, and the app has not been migrated to UID-scoped profiles. Applying these rules now could break existing features.
+- The candidate test suite and its workflow must pass in GitHub Actions before considering the next migration step. Passing these tests validates the candidate policy only, not the live production rules.
+
 ## Current validation
 
 - GitHub Actions CI passed for commit `fdd093c37052de1a986a86531ca647d0fa66d178`, including dependency installation, Node-based regression checks, and the Vite production build: https://github.com/abhinavyadav1405/GSP/actions/runs/38034437086.
