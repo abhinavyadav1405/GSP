@@ -29,8 +29,9 @@ after(async () => {
 
 test("public visitors can read public settings and complaints", async () => {
   await env.withSecurityRulesDisabled(async (context) => {
-    await setDoc(doc(context.firestore(), "settings", "main"), { villageName: "Pahrajpur" });
-    await setDoc(doc(context.firestore(), "problems", "sample"), { title: "Road repair" });
+    const adminDb = context.firestore();
+    await setDoc(doc(adminDb, "settings", "main"), { villageName: "Pahrajpur" });
+    await setDoc(doc(adminDb, "problems", "sample"), { title: "Road repair" });
   });
 
   const visitor = env.unauthenticatedContext().firestore();
