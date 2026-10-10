@@ -7,7 +7,7 @@ import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyh
 import { Leaf } from "lucide-react";
 
 import {
-  db, auth, functions, signInWithCustomToken, httpsCallable, onAuthStateChanged,
+  db, auth, functions, signInWithCustomToken, signOut, httpsCallable, onAuthStateChanged,
   collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove, addDoc,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
