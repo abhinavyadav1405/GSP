@@ -1,13 +1,14 @@
 import React from "react";
 import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
+import GSPReels from "./components/GSPReels";
 import { useState, useEffect, useRef } from "react";
 import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle, CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard, Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren, Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat, Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown, ShieldAlert, Upload, CircleUserRound, Heart, MessageCircle, Send, Landmark } from "lucide-react";
 import { Leaf } from "lucide-react";
 
 import {
-  db,
-  collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove,
+  db, auth, functions, signInWithCustomToken, signOut, httpsCallable, onAuthStateChanged,
+  collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove, addDoc,
   storage, ref, uploadBytes, getDownloadURL,
 } from "./firebase";
 
@@ -425,6 +426,12 @@ interface Problem {
   supporters?: string[];
   likes?: string[];
   comments?: CommentItem[];
+  reports?: Array<{ id: string; userId: string; userName: string; reason: string; details?: string; createdAt: string }>;
+  moderationStatus?: string;
+  resolutionChallenge?: { userId: string; reason: string; createdAt: string };
+  resolutionChallengeAt?: string;
+  resolvedAt?: string | null;
+  warningSentAt?: string;
 }
 
 const compressImage = (file: File, maxW = 400, quality = 0.3): Promise<string> =>
@@ -629,6 +636,7 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
 }) {
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState(problem.status);
+  useEffect(() => setStatus(problem.status), [problem.status]);
   const [notes, setNotes]   = useState(problem.adminNotes || "");
   const [confirmDel, setConfirmDel] = useState(false);
   const sm = STATUS_META[status];
@@ -718,6 +726,14 @@ function ProblemCard({ problem, isAdmin, onUpdate, onDelete }: {
           {problem.adminNotes && (
             <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(59,130,246,0.08)", borderRadius: 10, fontSize: 13, color: "var(--ct6)", borderLeft: "2px solid #3b82f6" }}>
               <span style={{ color: "#3b82f6", fontWeight: 600 }}>Admin Note: </span>{problem.adminNotes}
+            </div>
+          )}
+
+          {problem.resolutionChallenge && (
+            <div style={{ marginTop: 12, padding: "11px 14px", background: "rgba(244,201,93,0.10)", borderRadius: 10, fontSize: 13, color: "var(--ct6)", borderLeft: "3px solid #f4c95d" }}>
+              <div style={{ color: "#f4c95d", fontWeight: 700, marginBottom: 4 }}>⚠️ Resolution challenged — Admin review required</div>
+              <div style={{ fontSize: 12, lineHeight: 1.6 }}>{problem.resolutionChallenge.reason}</div>
+              <div style={{ fontSize: 10, color: "var(--ct4)", marginTop: 5 }}>Submitted by {problem.resolutionChallenge.userId} · {fmtDate(problem.resolutionChallenge.createdAt)}</div>
             </div>
           )}
 
@@ -1011,32 +1027,29 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
 
   const submit = async () => {
     setErr("");
-    if (!id.trim() || !password) { setErr("ID aur password required hai."); return; }
+    const userId = id.trim().toLowerCase();
+    if (!userId || !password) { setErr("ID aur password required hai."); return; }
     if (mode === "register" && (!name.trim() || !mobile.trim())) { setErr("Name aur mobile required hai."); return; }
     if (mode === "register" && mobile.replace(/\D/g, "").length < 10) { setErr("Valid 10-digit mobile number daalo."); return; }
+    if (mode === "register" && password.length < 8) { setErr("Password कम-से-कम 8 अक्षरों का होना चाहिए।"); return; }
     setBusy(true);
     try {
-      const userRef = doc(db, "users", id.trim().toLowerCase());
-      if (mode === "login") {
-        const snap = await getDoc(userRef);
-        if (!snap.exists()) { setErr("User ID nahi mila. Pehle account create karo."); return; }
-        const data = snap.data() as any;
-        const hash = await hashPassword(password);
-        if (data.passwordHash !== hash) { setErr("Galat password."); return; }
-        const user: AppUser = { id: data.id || id.trim().toLowerCase(), name: data.name, mobile: data.mobile, ward: data.ward || WARDS[0], createdAt: data.createdAt || new Date().toISOString(), avatar: data.avatar };
-        localStorage.setItem("gsp-user", JSON.stringify(user));
-        onLogin(user);
-      } else {
-        const existing = await getDoc(userRef);
-        if (existing.exists()) { setErr("Ye User ID already registered hai."); return; }
-        const user: AppUser = { id: id.trim().toLowerCase(), name: name.trim(), mobile: mobile.trim(), ward, createdAt: new Date().toISOString() };
-        await setDoc(userRef, { ...user, passwordHash: await hashPassword(password) });
-        localStorage.setItem("gsp-user", JSON.stringify(user));
-        onLogin(user);
-      }
-    } catch (e) {
+      const endpoint = httpsCallable(functions, mode === "login" ? "authenticateGspUser" : "registerGspUser");
+      const result = await endpoint(mode === "login"
+        ? { id: userId, password }
+        : { id: userId, password, name: name.trim(), mobile: mobile.trim(), ward });
+      const payload = result.data as { token: string; user: AppUser };
+      await signInWithCustomToken(auth, payload.token);
+      localStorage.setItem("gsp-user", JSON.stringify(payload.user));
+      onLogin(payload.user);
+    } catch (e: any) {
       console.error(e);
-      setErr("Connection error. Firebase settings/check karke dobara try karo.");
+      const code = String(e?.code || "");
+      const message = String(e?.message || "");
+      if (code.includes("already-exists") || message.includes("already registered")) setErr("Ye User ID already registered hai.");
+      else if (code.includes("not-found") || message.includes("User ID")) setErr("User ID nahi mila. Pehle account create karo.");
+      else if (code.includes("unauthenticated") || code.includes("invalid-argument")) setErr(message || "ID ya password sahi nahi hai.");
+      else setErr("Login/registration नहीं हो सकी। Firebase Functions deploy होने और connection की जाँच करें।");
     } finally { setBusy(false); }
   };
 
@@ -1328,13 +1341,15 @@ function CommunityPostCard({
   user,
   onUpdate,
   onOpenLogin,
-  onOpenUserProfile
+  onOpenUserProfile,
+  isAdmin = false
 }: {
   problem: Problem;
   user: AppUser | null;
   onUpdate: (id: string, changes: any) => Promise<void> | void;
   onOpenLogin: () => void;
   onOpenUserProfile?: (profile: PublicProfileData) => void;
+  isAdmin?: boolean;
 }) {
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
@@ -1359,6 +1374,32 @@ function CommunityPostCard({
   };
   const cardRef = useRef<HTMLElement>(null);
   const [sharing, setSharing] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportReason, setReportReason] = useState("गलत या झूठी जानकारी");
+  const [reportDetails, setReportDetails] = useState("");
+  const [challengeReason, setChallengeReason] = useState("");
+  const [showChallenge, setShowChallenge] = useState(false);
+  const reportReasons = ["गलत या झूठी जानकारी", "अश्लील या अनुचित वीडियो", "गाली-गलौज या उत्पीड़न", "स्पैम या बार-बार एक ही पोस्ट", "गाँव की समस्या से संबंधित नहीं", "अन्य"];
+  const submitPostReport = async () => {
+    if (!user) { onOpenLogin(); return; }
+    const report = { id: `${user.id}-${Date.now()}`, userId: user.id, userName: user.name, reason: reportReason, details: reportDetails.trim(), createdAt: new Date().toISOString() };
+    await onUpdate(problem.id, { reports: [...(problem.reports || []), report], moderationStatus: "reported" });
+    setShowReport(false); setReportDetails("");
+  };
+  const moderatePost = async (action: "keep" | "remove" | "warn") => {
+    if (action === "keep") await onUpdate(problem.id, { reports: [], moderationStatus: "visible" });
+    if (action === "remove") await onUpdate(problem.id, { reports: [], moderationStatus: "removed", removedAt: new Date().toISOString() });
+    if (action === "warn") {
+      const reason = (problem.reports || []).map(r => r.reason).join(", ") || "Admin warning";
+      await addDoc(collection(db, "userWarnings"), { userId: problem.authorId || "", userName: problem.name, contentType: "post", contentId: problem.id, reason, createdAt: new Date().toISOString() });
+      await onUpdate(problem.id, { reports: [], moderationStatus: "visible", warningSentAt: new Date().toISOString(), warningReason: reason });
+    }
+  };
+  const challengePostResolution = async () => {
+    if (!user || !(problem.authorId === user.id || (problem.mobile === user.mobile && problem.name === user.name)) || !challengeReason.trim()) return;
+    await onUpdate(problem.id, { status: "In Progress", resolutionChallenge: { userId: user.id, reason: challengeReason.trim(), createdAt: new Date().toISOString() }, resolutionChallengeAt: new Date().toISOString(), resolvedAt: null });
+    setShowChallenge(false); setChallengeReason("");
+  };
   
   const share = async () => {
     if (!cardRef.current) return;
@@ -1413,6 +1454,7 @@ function CommunityPostCard({
     }
   };
 
+  if (problem.moderationStatus === "removed" && !isAdmin) return null;
   return <article ref={cardRef} className="glass" style={{ borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
     <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10 }}>
       <div
@@ -1444,6 +1486,7 @@ function CommunityPostCard({
       <Badge text={STATUS_META[problem.status]?.label || problem.status} color={STATUS_META[problem.status]?.color || "#aaa"} />
     </div>
               <div style={{ padding: "12px 16px 16px" }}>
+      {user && (user.id === problem.authorId || (user.mobile === problem.mobile && user.name === problem.name)) && problem.warningSentAt && <div style={{ padding: "9px 11px", borderRadius: 10, background: "rgba(244,201,93,.12)", color: "#f4c95d", fontSize: 12, marginBottom: 10 }}>Admin ने इस पोस्ट पर चेतावनी जारी की है। कारण: {(problem as any).warningReason || "सामुदायिक नियमों की समीक्षा"}.</div>}
       <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}><Badge text={problem.category} color={CAT_COLORS[problem.category] || "#aaa"} /><Badge text={problem.priority} color={PRIORITY_META[problem.priority]?.color || "#aaa"} /></div>
       <div style={{ fontSize: 15, fontWeight: 700 }}>{problem.title}</div>
       <div style={{ color: "var(--ct65)", fontSize: 13, lineHeight: 1.6, marginTop: 5 }}>{problem.caption || problem.description}</div>
@@ -1458,6 +1501,14 @@ function CommunityPostCard({
         <button className="btn-ghost" onClick={share} disabled={sharing} style={{ border: "none", borderRadius: 10, padding: "6px 8px", display: "flex", alignItems: "center", gap: 6, color: "var(--text-main)", background: "transparent" }}>{sharing ? <Clock3 size={22} /> : <Send size={22} color="currentColor" />}</button>
         <button onClick={() => doAuth(() => toggleArray("supporters"))} style={{ marginLeft: "auto", borderRadius: 999, padding: "8px 14px", border: `1px solid ${supported ? "rgba(74,222,128,.5)" : "var(--btn-ghost-border)"}`, background: supported ? "rgba(74,222,128,.12)" : "var(--btn-ghost-bg)", color: supported ? "#4ade80" : "var(--btn-ghost-color)", cursor: "pointer", fontWeight: 700, fontSize: 12 }}>{supported ? "✓ Supporting" : "+ Support"} · {supporters.length}</button>
       </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+        {user && user.id !== problem.authorId && <button className="btn-ghost" onClick={() => setShowReport(v => !v)} style={{ borderRadius: 9, padding: "7px 10px", fontSize: 11 }}>Report Post</button>}
+        {user && (user.id === problem.authorId || (user.mobile === problem.mobile && user.name === problem.name)) && problem.status === "Resolved" && <button className="btn-ghost" onClick={() => setShowChallenge(v => !v)} style={{ borderRadius: 9, padding: "7px 10px", fontSize: 11 }}>Challenge Resolution</button>}
+        {isAdmin && (problem.reports || []).length > 0 && <span style={{ color: "#f87171", fontSize: 11, alignSelf: "center" }}>Reports: {problem.reports!.length}</span>}
+      </div>
+      {showReport && <div style={{ display: "grid", gap: 8, marginTop: 10 }}><select value={reportReason} onChange={e => setReportReason(e.target.value)}>{reportReasons.map(reason => <option key={reason}>{reason}</option>)}</select><textarea value={reportDetails} onChange={e => setReportDetails(e.target.value)} rows={2} placeholder="अतिरिक्त विवरण (वैकल्पिक)" /><button className="btn-white" onClick={() => void submitPostReport()} style={{ borderRadius: 9, padding: 9 }}>रिपोर्ट भेजें</button></div>}
+      {showChallenge && <div style={{ display: "grid", gap: 8, marginTop: 10 }}><textarea value={challengeReason} onChange={e => setChallengeReason(e.target.value)} rows={2} placeholder="काम पूरा न होने का कारण लिखें…" /><button className="btn-white" onClick={() => void challengePostResolution()} style={{ borderRadius: 9, padding: 9 }}>Challenge भेजें</button></div>}
+      {isAdmin && (problem.reports || []).length > 0 && <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--glass-border)" }}><strong style={{ fontSize: 12 }}>Admin Moderation</strong>{problem.reports!.map(report => <p key={report.id} style={{ fontSize: 11, color: "var(--ct4)", marginTop: 5 }}>{report.reason}{report.details ? ` — ${report.details}` : ""}</p>)}<div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginTop: 9 }}><button className="btn-ghost" onClick={() => void moderatePost("keep")} style={{ borderRadius: 8, padding: "7px 9px", fontSize: 11 }}>Keep Post</button><button className="btn-danger" onClick={() => void moderatePost("remove")} style={{ borderRadius: 8, padding: "7px 9px", fontSize: 11 }}>Remove Post</button><button className="btn-ghost" onClick={() => void moderatePost("warn")} style={{ borderRadius: 8, padding: "7px 9px", fontSize: 11 }}>Warn User</button></div></div>}
       {showComments && <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--cbg7)" }}>
         {comments.slice(-5).map(c => (
           <div
@@ -1516,13 +1567,15 @@ function CommunityFeed({
   user,
   onUpdate,
   onOpenLogin,
-  onOpenUserProfile
+  onOpenUserProfile,
+  isAdmin = false
 }: {
   problems: Problem[];
   user: AppUser | null;
   onUpdate: (id: string, changes: any) => Promise<void> | void;
   onOpenLogin: () => void;
   onOpenUserProfile: (profile: PublicProfileData) => void;
+  isAdmin?: boolean;
 }) {
   const [queryText, setQueryText] = useState("");
   const posts = problems.filter(p => !queryText || `${p.title} ${p.caption || ""} ${p.name}`.toLowerCase().includes(queryText.toLowerCase()));
@@ -1540,7 +1593,7 @@ function CommunityFeed({
         </p>
       </div>
       <input value={queryText} onChange={e => setQueryText(e.target.value)} placeholder="Search posts…" style={{ marginBottom: 16 }} />
-    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} />)}
+    {posts.length === 0 ? <div className="glass" style={{ borderRadius: 18, padding: 50, textAlign: "center" }}>No community posts yet.</div> : posts.map(p => <CommunityPostCard key={p.id} problem={p} user={user} onUpdate={onUpdate} onOpenLogin={onOpenLogin} onOpenUserProfile={onOpenUserProfile} isAdmin={isAdmin} />)}
   </div>;
 }
 
@@ -3802,18 +3855,77 @@ function UserSettingsPage({ user, onSave, onBack }: { user: any; onSave: (u: any
 function FilterBar(props: any) { return <div className="glass" style={{ borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}><input value={props.search} onChange={e => props.setSearch(e.target.value)} placeholder="Search issues..." style={{ flex: "1 1 180px", minWidth: 140 }} /><select value={props.filterStatus} onChange={e => props.setFilterStatus(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="All">All Status</option><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Resolved">Resolved</option></select><select value={props.sort} onChange={e => props.setSort(e.target.value)} style={{ flex: "1 1 120px", minWidth: 100 }}><option value="newest">Newest First</option><option value="oldest">Oldest First</option><option value="priority">By Priority</option></select></div></div>; }
 
 export default function App() {
+  useEffect(() => {
+    let active = true;
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        if (active) {
+          localStorage.removeItem("gsp-user");
+          localStorage.removeItem("isAdmin");
+          localStorage.removeItem("adminRole");
+          setCurrentUser(null);
+          setIsAdmin(false);
+          setAdminRole(null);
+        }
+        return;
+      }
+      try {
+        const token = await firebaseUser.getIdTokenResult();
+        if (!active) return;
+        const firebaseUserId = String(token.claims.gspUserId || "");
+        if (!firebaseUserId) {
+          localStorage.removeItem("gsp-user");
+          localStorage.removeItem("isAdmin");
+          localStorage.removeItem("adminRole");
+          setCurrentUser(null);
+          setIsAdmin(false);
+          setAdminRole(null);
+          return;
+        }
+        const stored = localStorage.getItem("gsp-user");
+        const profile = stored ? JSON.parse(stored) as AppUser : null;
+        if (profile && profile.id === firebaseUserId) {
+          setCurrentUser(profile);
+        } else {
+          localStorage.removeItem("gsp-user");
+          setCurrentUser(null);
+        }
+        const hasAdminClaim = token.claims.admin === true;
+        const claimedRole = String(token.claims.adminRole || "");
+        const validRole: AdminRole | null = hasAdminClaim && ["super", "user-admin", "complaint-admin"].includes(claimedRole)
+          ? claimedRole as AdminRole : null;
+        setIsAdmin(hasAdminClaim && validRole !== null);
+        setAdminRole(validRole);
+        if (validRole) localStorage.setItem("adminRole", validRole);
+        else localStorage.removeItem("adminRole");
+        if (hasAdminClaim && !validRole) console.error("Admin claim is missing a valid adminRole; provision the role using set-admin-claim.js.");
+      } catch (error) {
+        console.error("Firebase session verification failed", error);
+        if (active) {
+          localStorage.removeItem("gsp-user");
+          localStorage.removeItem("isAdmin");
+          localStorage.removeItem("adminRole");
+          setCurrentUser(null);
+          setIsAdmin(false);
+          setAdminRole(null);
+        }
+      }
+    });
+    return () => { active = false; unsubscribe(); };
+  }, []);
+
   const [showSplash, setShowSplash] = useState(true);
   const [problems, setProblems]     = useState<Problem[]>([]);
-  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes"|"ai">("dashboard");
+  const [page, setPage]             = useState<"home"|"dashboard"|"board"|"submit"|"admin"|"settings"|"manageusers"|"achievements"|"gallery"|"notices"|"profile"|"login"|"user-settings"|"search"|"schemes"|"ai"|"reels">("dashboard");
   const [parasMessages, setParasMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([
     { role: "assistant", text: "नमस्ते! मैं Paras AI हूँ — Gram Sabha Pahrajpur का AI सहायक। मैं गाँव की समस्याओं का विश्लेषण, महत्वपूर्ण कार्यों की प्राथमिकता, जानकारी समझाने और पोस्ट/नोटिस का ड्राफ्ट बनाने में मदद कर सकता हूँ। आप क्या करना चाहते हैं?" }
   ]);
   const [parasInput, setParasInput] = useState("");
   const [parasLoading, setParasLoading] = useState(false);
-  const [currentUser, setCurrentUser] = useState<AppUser | null>(() => { try { const raw = localStorage.getItem("gsp-user"); return raw ? JSON.parse(raw) : null; } catch { return null; } });
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [publicProfileUser, setPublicProfileUser] = useState<PublicProfileData | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => localStorage.getItem("isAdmin") === "true");
-  const [adminRole, setAdminRole] = useState<AdminRole | null>(() => (localStorage.getItem("adminRole") as AdminRole) || null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
   const [toast, setToast]           = useState<string | null>(null);
   const [filterCat, setFilterCat]   = useState("All");
@@ -3824,9 +3936,9 @@ export default function App() {
   const [loading, setLoading]       = useState(true);
 
   // Dynamic admin-configurable settings
-  const [adminPassword, setAdminPassword] = useState("admin123");
-  const [userAdminPassword, setUserAdminPassword] = useState("useradmin123");
-  const [complaintAdminPassword, setComplaintAdminPassword] = useState("workadmin123");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [userAdminPassword, setUserAdminPassword] = useState("");
+  const [complaintAdminPassword, setComplaintAdminPassword] = useState("");
   const [villageName, setVillageName]     = useState("Gram Sabha Pahrajpur");
   const [sarpanchName, setSarpanchName]   = useState("");
   const [achievements, setAchievements]   = useState<Achievement[]>([]);
@@ -3907,9 +4019,6 @@ useEffect(() => {
         if (d.sarpanchAddress) setSarpanchAddress(d.sarpanchAddress);
         if (d.whatsapp) setWhatsapp(d.whatsapp);
         if (d.instagram) setInstagram(d.instagram);
-        if (d.adminPassword) setAdminPassword(d.adminPassword);
-        if (d.userAdminPassword) setUserAdminPassword(d.userAdminPassword);
-        if (d.complaintAdminPassword) setComplaintAdminPassword(d.complaintAdminPassword);
         if (d.theme) setTheme(d.theme);
         if (d.sarpanchPhoto) setSarpanchPhoto(d.sarpanchPhoto);
       }
@@ -3977,7 +4086,14 @@ useEffect(() => {
   };
 
   const updateProblem = async (id: string, changes: Partial<Problem>) => {
-    await updateDoc(doc(db, "problems", id), changes);
+    const normalizedChanges: Partial<Problem> = { ...changes };
+    if (changes.status === "Resolved") {
+      const existingProblem = problems.find(p => p.id === id);
+      if (!existingProblem?.resolvedAt) normalizedChanges.resolvedAt = new Date().toISOString();
+    } else if (changes.status && changes.status !== "Resolved") {
+      normalizedChanges.resolvedAt = null;
+    }
+    await updateDoc(doc(db, "problems", id), normalizedChanges);
     showToast("✅ Problem updated successfully.");
   };
 
@@ -4039,20 +4155,16 @@ useEffect(() => {
     try { saveSettings({ theme: next }); } catch (_) {}
   };
 
-  const savePassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { adminPassword: pw }, { merge: true }); } catch (_) {}
-    setAdminPassword(pw);
-    localStorage.setItem("gram-seva:adminPw", pw);
+  const savePassword = (_pw: string) => {
+    showToast("Admin access ab Firebase ke verified Admin claims se manage hota hai; password yahan save nahi hota.");
   };
 
-  const saveUserAdminPassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { userAdminPassword: pw }, { merge: true }); } catch (_) {}
-    setUserAdminPassword(pw);
+  const saveUserAdminPassword = (_pw: string) => {
+    showToast("User-Admin role trusted Admin claim se assign hota hai.");
   };
 
-  const saveComplaintAdminPassword = (pw: string) => {
-    try { setDoc(doc(db, "settings", "main"), { complaintAdminPassword: pw }, { merge: true }); } catch (_) {}
-    setComplaintAdminPassword(pw);
+  const saveComplaintAdminPassword = (_pw: string) => {
+    showToast("Complaint-Admin role trusted Admin claim se assign hota hai.");
   };
 
   const blockUser = async (mobile: string, name: string, reason = "Fake / Spam") => {
@@ -4084,9 +4196,9 @@ useEffect(() => {
     showToast("✅ Profile updated.");
   };
 
-  const logoutUser = () => { setCurrentUser(null); localStorage.removeItem("gsp-user"); setPage("home"); showToast("👋 Logged out."); };
+  const logoutUser = () => { void signOut(auth).catch(console.error); setCurrentUser(null); setIsAdmin(false); setAdminRole(null); localStorage.removeItem("gsp-user"); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); showToast("Logged out."); };
 
-  const logout = () => { setIsAdmin(false); setAdminRole(null); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); };
+  const logout = () => { void signOut(auth).catch(console.error); setCurrentUser(null); setIsAdmin(false); setAdminRole(null); localStorage.removeItem("gsp-user"); localStorage.removeItem("isAdmin"); localStorage.removeItem("adminRole"); setPage("home"); };
   const askParasAI = async (question?: string) => {
     const prompt = (question ?? parasInput).trim();
     if (!prompt || parasLoading) return;
@@ -4145,6 +4257,7 @@ useEffect(() => {
   const navLinks = [
     { id: "schemes" as const, label: "Schemes", icon: "🏛" },
     { id: "home" as const, label: "Home", icon: "⌂" },
+    { id: "reels" as const, label: "Reels", icon: "🎬" },
     { id: "dashboard" as const, label: "Dashboard", icon: "▦" },
     { id: "notices" as const, label: "Notices", icon: "📢" },
     { id: "achievements" as const, label: "Achievements", icon: "🏆" },
@@ -4451,14 +4564,22 @@ useEffect(() => {
         )}
 
         {/* ── COMMUNITY HOME / INSTAGRAM-STYLE FEED ───────────────────────── */}
+        {page === "reels" && <GSPReels user={currentUser} isAdmin={isAdmin && canManageComplaints} problems={problems} onLogin={() => setPage("login")} showToast={showToast} />}
+
         {page === "home" && (
-          <CommunityFeed
-  problems={problems}
-  user={currentUser}
-  onUpdate={updateProblem as any}
-  onOpenLogin={() => setPage("login")}
-  onOpenUserProfile={setPublicProfileUser}
-/>
+          <>
+            <CommunityFeed
+              problems={problems}
+              user={currentUser}
+              onUpdate={updateProblem as any}
+              onOpenLogin={() => setPage("login")}
+              onOpenUserProfile={setPublicProfileUser}
+              isAdmin={isAdmin && canManageComplaints}
+            />
+            <div style={{ maxWidth: 620, margin: "0 auto", padding: "0 12px", width: "100%" }}>
+              <GSPReels user={currentUser} isAdmin={isAdmin && canManageComplaints} problems={problems} onLogin={() => setPage("login")} showToast={showToast} />
+            </div>
+          </>
         )}
 
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
@@ -4711,19 +4832,12 @@ useEffect(() => {
 
         {/* ── ADMIN LOGIN ───────────────────────────────────────────────────── */}
         {page === "admin" && !isAdmin && (
-          <AdminLogin
-            superPassword={adminPassword}
-            userAdminPassword={userAdminPassword}
-            complaintAdminPassword={complaintAdminPassword}
-            onLogin={(role) => {
-              setIsAdmin(true);
-              setAdminRole(role);
-              localStorage.setItem("isAdmin", "true");
-              localStorage.setItem("isAdmin-time", Date.now().toString());
-              localStorage.setItem("adminRole", role);
-              setPage(role === "user-admin" ? "manageusers" : "board");
-            }}
-          />
+          <div className="glass" style={{ maxWidth: 480, margin: "60px auto", padding: 28, borderRadius: 20, textAlign: "center" }}>
+            <LockKeyhole size={36} />
+            <h2 style={{ marginTop: 12 }}>Admin access सुरक्षित है</h2>
+            <p style={{ color: "var(--ct4)", lineHeight: 1.7 }}>Admin panel खोलने के लिए उस GSP अकाउंट से लॉगिन करें जिसे सर्वर पर Admin role दिया गया है। केवल Admin password डालने से अधिकार नहीं मिलेंगे।</p>
+            <button className="btn-white" style={{ marginTop: 12, borderRadius: 10, padding: "10px 16px" }} onClick={() => setPage(currentUser ? "home" : "login")}>{currentUser ? "Home पर जाएँ" : "Login करें"}</button>
+          </div>
         )}
 
         {/* ── MANAGE USERS (User-Admin) ───────────────────────────────────────── */}
@@ -4762,6 +4876,10 @@ useEffect(() => {
         <button className={`mobile-nav-item ${page === "home" ? "active" : ""}`} onClick={() => setPage("home")}>
           <Home size={26} strokeWidth={page === "home" ? 2.5 : 2} />
           <span className="mobile-nav-label">Home</span>
+        </button>
+        <button className={`mobile-nav-item ${page === "reels" ? "active" : ""}`} onClick={() => setPage("reels")}>
+          <Video size={26} strokeWidth={page === "reels" ? 2.5 : 2} />
+          <span className="mobile-nav-label">Reels</span>
         </button>
         <button className={`mobile-nav-item ${page === "dashboard" ? "active" : ""}`} onClick={() => setPage("dashboard")}>
           <LayoutDashboard size={26} strokeWidth={page === "dashboard" ? 2.5 : 2} />

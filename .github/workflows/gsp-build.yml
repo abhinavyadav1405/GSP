@@ -1,0 +1,29 @@
+name: Build GSP
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "feature/gsp-reels-moderation"]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm ci
+      - run: npm run build
+      - run: node --check functions/index.js
+      - run: node --check functions/scripts/migrate-legacy-credentials.js
+      - run: node --check functions/scripts/set-admin-claim.js
+      - run: node -e "JSON.parse(require('fs').readFileSync('firebase.json', 'utf8'))"
+      - name: Install Firestore rules test tools
+        run: npm install --no-save --legacy-peer-deps @firebase/rules-unit-testing@3.0.4 firebase-tools
+      - name: Test Firestore security rules in emulator
+        run: npx firebase emulators:exec --only firestore --project demo-gsp-rules-tests "node --test tests/firestore.rules.test.mjs"
