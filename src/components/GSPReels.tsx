@@ -227,6 +227,7 @@ export default function GSPReels({ user, isAdmin, problems, onLogin, showToast }
             <video src={reel.videoUrl} controls playsInline preload="metadata" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
           </div>
           <div style={{ padding: 14 }}>
+            {isOwner && reel.warningSentAt && <div style={{ padding: "9px 11px", borderRadius: 10, background: "rgba(244,201,93,.12)", color: "#f4c95d", fontSize: 12, marginBottom: 10 }}>Admin ने इस Reel पर चेतावनी जारी की है।</div>}
             <div style={{ fontSize: 12, color: "#b57bee", fontWeight: 800, marginBottom: 5 }}>समस्या: {reel.problemTitle}</div>
             <div style={{ fontSize: 12, color: "var(--ct4)", marginBottom: 8 }}>स्थिति: {problem?.status || "अपडेट उपलब्ध नहीं"}</div>
             {reel.caption && <p style={{ fontSize: 13, lineHeight: 1.6, marginBottom: 10 }}>{reel.caption}</p>}
