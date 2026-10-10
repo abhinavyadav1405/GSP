@@ -758,7 +758,7 @@ if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
 }
 
 // ── Submit Form ───────────────────────────────────────────────────────────────
-function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = "", currentUser }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null }) {
+function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = "", currentUser, voiceDraft = "" }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null; voiceDraft?: string }) {
   const [caption, setCaption] = useState("");
   const [form, setForm] = useState({ name: currentUser?.name || "", mobile: currentUser?.mobile || "", ward: currentUser?.ward || WARDS[0], category: CATEGORIES[0], title: "", description: "", priority: "Medium" });
   const [photo, setPhoto]               = useState<string | null>(null);
@@ -769,6 +769,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
   const recognitionRef = useRef<any>(null);
   
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+  useEffect(() => { if (voiceDraft.trim()) setForm(f => ({ ...f, description: [f.description, voiceDraft.trim()].filter(Boolean).join(" ") })); }, [voiceDraft]);
 
   // 🎤 Voice-to-Text for description
   const startVoiceRecording = () => {
@@ -2846,7 +2847,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
 function EnhancedFAB({
   onOpenSubmit, isOpen, onOpenBoard, onOpenNotices,
 }: {
-  onOpenSubmit: () => void;
+  onOpenSubmit: (transcript?: string) => void;
   isOpen: boolean;
   onOpenBoard: () => void;
   onOpenNotices: () => void;
@@ -2868,22 +2869,19 @@ function EnhancedFAB({
     recognitionRef.current.lang = "hi-IN";
     recognitionRef.current.continuous = false;
     recognitionRef.current.interimResults = false;
-
+    recognitionRef.current.maxAlternatives = 1;
     recognitionRef.current.onstart = () => setIsListening(true);
     recognitionRef.current.onend = () => setIsListening(false);
-
     recognitionRef.current.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setVoiceText(transcript);
-      onOpenSubmit();
+      const transcript = Array.from(event.results as any[]).map((r: any) => r[0]?.transcript || "").join(" ").trim();
+      if (transcript) { setVoiceText(transcript); onOpenSubmit(transcript); }
     };
-
-    recognitionRef.current.onerror = () => {
+    recognitionRef.current.onerror = (event: any) => {
       setIsListening(false);
-      alert("🎤 Mic access denied or error occurred");
+      const messages: Record<string, string> = { "not-allowed": "Allow microphone access in Chrome site settings.", "service-not-allowed": "Browser speech service is blocked.", "no-speech": "No speech detected. Tap Voice Report and speak clearly.", "network": "Speech service network error. Check internet and try again.", "audio-capture": "Microphone unavailable. Check device permissions.", "language-not-supported": "Hindi is not supported by this speech service." };
+      alert("Voice Report: " + (messages[event.error] || ("Speech recognition failed: " + (event.error || "unknown error"))));
     };
-
-    recognitionRef.current.start();
+    try { recognitionRef.current.start(); } catch { setIsListening(false); alert("Voice Report could not start. Close other microphone apps and try again."); }
   };
 
   const handleAction = (fn: () => void) => (e: React.MouseEvent) => {
@@ -3701,6 +3699,7 @@ export default function App() {
   const [sarpanchAddress, setSarpanchAddress] = useState("Gram Sabha Pahrajpur, Ballia, Uttar Pradesh");
   const [theme, setTheme]                 = useState<"dark"|"light">("light");
   const [showSubmitFAB, setShowSubmitFAB] = useState(false);
+  const [voiceDraft, setVoiceDraft] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   
@@ -4319,7 +4318,7 @@ useEffect(() => {
         {/* ── SUBMIT ───────────────────────────────────────────────────────── */}
         {page === "submit" && (
           <div style={{ paddingTop: 40 }}>
-            <FadeIn>{currentUser ? <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setPage("home")} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("submit"); }} />}</FadeIn>
+            <FadeIn>{currentUser ? <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setPage("home")} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} voiceDraft={voiceDraft} /> : <AuthPage onLogin={u => { setCurrentUser(u); setPage("submit"); }} />}</FadeIn>
           </div>
         )}
 
@@ -4668,7 +4667,7 @@ useEffect(() => {
 
       {/* Enhanced FAB with Voice & Photo */}
       <EnhancedFAB
-        onOpenSubmit={() => { if (!currentUser) setPage("login"); else setShowSubmitFAB(!showSubmitFAB); }}
+        onOpenSubmit={(transcript) => { if (transcript) setVoiceDraft(transcript); if (!currentUser) setPage("login"); else setShowSubmitFAB(true); }}
         isOpen={showSubmitFAB}
         onOpenBoard={() => setPage("board")}
         onOpenNotices={() => setPage("notices")}
@@ -4679,7 +4678,7 @@ useEffect(() => {
         <div onClick={() => setShowSubmitFAB(false)} style={{
         }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} />
+            <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} voiceDraft={voiceDraft} />
           </div>
         </div>
       )}
