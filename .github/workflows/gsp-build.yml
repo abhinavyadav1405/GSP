@@ -24,6 +24,6 @@ jobs:
       - run: node --check functions/scripts/set-admin-claim.js
       - run: node -e "JSON.parse(require('fs').readFileSync('firebase.json', 'utf8'))"
       - name: Install Firestore rules test tools
-        run: npm install --no-save @firebase/rules-unit-testing firebase-tools
+        run: npm install --no-save --legacy-peer-deps @firebase/rules-unit-testing@3.0.4 firebase-tools
       - name: Test Firestore security rules in emulator
         run: npx firebase emulators:exec --only firestore --project demo-gsp-rules-tests "node --test tests/firestore.rules.test.mjs"
