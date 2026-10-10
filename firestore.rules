@@ -5,11 +5,25 @@ service cloud.firestore {
     function userId() { return request.auth.token.gspUserId; }
     function isOwner(id) { return signedIn() && userId() == id; }
     function isAdmin() { return signedIn() && request.auth.token.admin == true; }
+
     function reportOnly() {
+      let oldReports = resource.data.keys().hasAny(['reports']) ? resource.data.reports : [];
+      let newReports = request.resource.data.reports;
+      let appended = newReports[newReports.size() - 1];
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reports', 'moderationStatus'])
-        && request.resource.data.reports is list
-        && request.resource.data.reports.size() == (resource.data.keys().hasAny(['reports']) ? resource.data.reports.size() : 0) + 1
-        && request.resource.data.reports[request.resource.data.reports.size() - 1].userId == userId()
+        && newReports is list
+        && newReports.size() == oldReports.size() + 1
+        && newReports.hasAll(oldReports)
+        && appended is map
+        && appended.userId == userId()
+        && appended.reason in [
+          'गलत या झूठी जानकारी',
+          'अश्लील या अनुचित वीडियो',
+          'गाली-गलौज या उत्पीड़न',
+          'स्पैम या बार-बार एक ही पोस्ट',
+          'गाँव की समस्या से संबंधित नहीं',
+          'अन्य'
+        ]
         && request.resource.data.moderationStatus == 'reported';
     }
 
