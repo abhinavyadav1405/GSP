@@ -758,7 +758,7 @@ if (!navigator.geolocation) { setGpsErr("GPS not supported."); return; }
 }
 
 // ── Submit Form ───────────────────────────────────────────────────────────────
-function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = "", currentUser }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null }) {
+function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = "", currentUser, voiceDraft }: { onSubmit: (p: Problem) => Promise<void>; onSubmitted?: () => void; sarpanchName?: string; sarpanchPhoto?: string; currentUser?: AppUser | null; voiceDraft?: { text: string; id: number } | null }) {
   const [caption, setCaption] = useState("");
   const [form, setForm] = useState({ name: currentUser?.name || "", mobile: currentUser?.mobile || "", ward: currentUser?.ward || WARDS[0], category: CATEGORIES[0], title: "", description: "", priority: "Medium" });
   const [photo, setPhoto]               = useState<string | null>(null);
@@ -769,6 +769,23 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
   const recognitionRef = useRef<any>(null);
   
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  // Voice input creates an editable draft only; it never submits a complaint automatically.
+  useEffect(() => {
+    if (!voiceDraft?.text.trim()) return;
+    const transcript = voiceDraft.text.trim();
+    const mobileMatch = transcript.match(/(?:mobile|phone|मोबाइल|फोन)\D{0,8}(\d{10})/i) || transcript.match(/\b[6-9]\d{9}\b/);
+    const nameMatch = transcript.match(/(?:mera naam|my name is|नाम है|मेरा नाम)\s+([^,.;]+?)(?=\s+(?:mobile|phone|ward|मेरा मोबाइल|मोबाइल|वार्ड)\b|[,.;]|$)/i);
+    const description = transcript;
+    const title = transcript.length > 72 ? `${transcript.slice(0, 69).trim()}…` : transcript;
+    setForm(current => ({
+      ...current,
+      ...(nameMatch?.[1] ? { name: nameMatch[1].trim() } : {}),
+      ...(mobileMatch?.[1] ? { mobile: mobileMatch[1] } : {}),
+      title: current.title.trim() ? current.title : title,
+      description,
+    }));
+  }, [voiceDraft?.id]);
 
   // 🎤 Voice-to-Text for description
   const startVoiceRecording = () => {
@@ -2844,7 +2861,7 @@ function AdminSettings({ adminDetails, setAdminDetails, problems, achievements, 
 function EnhancedFAB({
   onOpenSubmit, isOpen, onOpenBoard, onOpenNotices,
 }: {
-  onOpenSubmit: () => void;
+  onOpenSubmit: (voiceText?: string) => void;
   isOpen: boolean;
   onOpenBoard: () => void;
   onOpenNotices: () => void;
@@ -2856,32 +2873,64 @@ function EnhancedFAB({
 
   const startVoiceInput = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("🎤 Speech recognition not supported on your device");
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
       return;
     }
+    if (!( "webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      alert("इस browser में voice recognition उपलब्ध नहीं है। आप details manually भर सकते हैं।");
+      return;
+    }
+    // Browser speech recognition may process audio according to the browser/provider's own policy.
+    // GSP does not store audio recordings; ask before activating the microphone.
+    const accepted = window.confirm(
+      "Voice input चालू करने पर browser की speech service आवाज़ process कर सकती है। GSP आवाज़ की recording save नहीं करता। क्या आप microphone चालू करना चाहते हैं?"
+    );
+    if (!accepted) return;
 
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.lang = "hi-IN";
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = false;
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+    recognition.lang = "hi-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-    recognitionRef.current.onstart = () => setIsListening(true);
-    recognitionRef.current.onend = () => setIsListening(false);
-
-    recognitionRef.current.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onresult = (event: any) => {
+      const transcript = String(event.results?.[0]?.[0]?.transcript || "").trim();
+      if (!transcript) return;
       setVoiceText(transcript);
-      onOpenSubmit();
+      const normalized = transcript.toLocaleLowerCase("hi-IN");
+      if (/(all issues|complaint list|सभी शिकायत|सभी समस्याएं|board खोलो|board kholo)/i.test(normalized)) {
+        setMenuOpen(false);
+        onOpenBoard();
+        return;
+      }
+      if (/(notice|सूचना|नोटिस)/i.test(normalized)) {
+        setMenuOpen(false);
+        onOpenNotices();
+        return;
+      }
+      // Treat other speech as an editable complaint draft, never as an automatic submission.
+      const cleaned = transcript.replace(/^(please\s+)?(report|post|complaint|शिकायत|पोस्ट)\s*(karo|करो|बanao|बनाओ|likho|लिखो)?[,:\s-]*/i, "").trim() || transcript;
+      setMenuOpen(false);
+      onOpenSubmit(cleaned);
     };
-
-    recognitionRef.current.onerror = () => {
+    recognition.onerror = (event: any) => {
       setIsListening(false);
-      alert("🎤 Mic access denied or error occurred");
+      if (event?.error !== "aborted" && event?.error !== "no-speech") {
+        alert("Voice recognition शुरू नहीं हो सका। Microphone permission और browser settings जाँचें।");
+      }
     };
 
-    recognitionRef.current.start();
+    try {
+      recognition.start();
+    } catch {
+      setIsListening(false);
+      alert("Voice input अभी शुरू नहीं हो सका। कृपया दोबारा कोशिश करें।");
+    }
   };
 
   const handleAction = (fn: () => void) => (e: React.MouseEvent) => {
@@ -3699,6 +3748,7 @@ export default function App() {
   const [sarpanchAddress, setSarpanchAddress] = useState("Gram Sabha Pahrajpur, Ballia, Uttar Pradesh");
   const [theme, setTheme]                 = useState<"dark"|"light">("light");
   const [showSubmitFAB, setShowSubmitFAB] = useState(false);
+  const [voiceDraft, setVoiceDraft] = useState<{ text: string; id: number } | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   
@@ -4673,7 +4723,15 @@ useEffect(() => {
 
       {/* Enhanced FAB with Voice & Photo */}
       <EnhancedFAB
-        onOpenSubmit={() => { if (!currentUser) setPage("login"); else setShowSubmitFAB(!showSubmitFAB); }}
+        onOpenSubmit={(voiceText) => {
+          if (!currentUser) { setPage("login"); return; }
+          if (voiceText) {
+            setVoiceDraft({ text: voiceText, id: Date.now() });
+            setShowSubmitFAB(true);
+          } else {
+            setShowSubmitFAB(!showSubmitFAB);
+          }
+        }}
         isOpen={showSubmitFAB}
         onOpenBoard={() => setPage("board")}
         onOpenNotices={() => setPage("notices")}
@@ -4684,7 +4742,7 @@ useEffect(() => {
         <div onClick={() => setShowSubmitFAB(false)} style={{
         }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} />
+            <SubmitForm currentUser={currentUser} onSubmit={addProblem} onSubmitted={() => setShowSubmitFAB(false)} sarpanchName={sarpanchName} sarpanchPhoto={sarpanchPhoto} voiceDraft={voiceDraft} />
           </div>
         </div>
       )}
