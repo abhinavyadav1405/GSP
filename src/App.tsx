@@ -89,7 +89,14 @@ const GLOBAL_STYLE = `
   .gallery-card-media{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(135deg,rgba(124,92,252,.15),rgba(56,217,245,.08));cursor:zoom-in;isolation:isolate;}
   .gallery-card-media iframe{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:2;}
   .gallery-card-image{display:block;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1),filter .5s ease;will-change:transform;}
-  .gallery-card:hover .gallery-card-image{transform:scale(1.045);filter:saturate(1.08);}
+  .gallery-card:hover .gallery-card-image{transform:scale(1.065);filter:saturate(1.12);}
+  .gallery-card:hover{box-shadow:0 18px 42px rgba(124,92,252,.24),0 0 0 1px rgba(139,112,245,.24);}
+  .gallery-card-media:active .gallery-card-image{transform:scale(1.035);}
+  .gallery-lightbox-content img{cursor:zoom-in;transition:transform .28s cubic-bezier(.2,.7,.2,1);touch-action:pan-y;}
+  .gallery-lightbox-content img.is-zoomed{transform:scale(1.65);cursor:zoom-out;}
+  .gallery-lightbox-content.is-zoomed{overflow:auto;max-width:100%;max-height:calc(100vh - 150px);}
+  .gallery-lightbox-content.is-zoomed img{max-height:none;max-width:none;width:auto;height:auto;min-width:min(100%,500px);max-height:none;}
+  @media(max-width:760px){.gallery-lightbox-content img.is-zoomed{transform:scale(1.5);}.gallery-card:hover{transform:none;}}
   .gallery-card-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,6,20,.34),transparent 32%,transparent 58%,rgba(8,6,20,.2));opacity:.7;transition:opacity .3s ease;}
   .gallery-card:hover .gallery-card-shade{opacity:1;}
   .gallery-card-topline{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:3;pointer-events:none;}
@@ -2133,6 +2140,9 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
   compact?: boolean; onViewAll?: () => void;
 }) {
   const [lightbox, setLightbox] = useState<MediaItem | null>(null);
+  const [zoomed, setZoomed] = useState(false);
+  const openPhoto = (item: MediaItem) => { setZoomed(false); setLightbox(item); };
+  const closePhoto = () => { setZoomed(false); setLightbox(null); };
   const items = compact ? media.slice(0, 6) : media;
   const photos = items.filter(item => item.type === "photo");
   const activeIndex = lightbox ? photos.findIndex(item => item.id === lightbox.id) : -1;
@@ -2144,11 +2154,11 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
   return (
     <section className={`village-gallery ${compact ? "village-gallery-compact" : ""}`}>
       {lightbox && lightbox.type === "photo" && (
-        <div className="gallery-lightbox" role="dialog" aria-modal="true" aria-label={lightbox.title} onClick={() => setLightbox(null)}>
-          <button className="gallery-lightbox-close" aria-label="Close photo" onClick={() => setLightbox(null)}>×</button>
+        <div className="gallery-lightbox" role="dialog" aria-modal="true" aria-label={lightbox.title} onClick={closePhoto}>
+          <button className="gallery-lightbox-close" aria-label="Close photo" onClick={closePhoto}>×</button>
           {photos.length > 1 && <button className="gallery-lightbox-nav gallery-lightbox-prev" aria-label="Previous photo" onClick={e => { e.stopPropagation(); movePhoto(-1); }}>‹</button>}
-          <div className="gallery-lightbox-content" onClick={e => e.stopPropagation()}>
-            <img src={lightbox.url} alt={lightbox.title} />
+          <div className={`gallery-lightbox-content ${zoomed ? "is-zoomed" : ""}`} onClick={e => e.stopPropagation()}>
+            <img className={zoomed ? "is-zoomed" : ""} src={lightbox.url} alt={lightbox.title} onClick={() => setZoomed(value => !value)} />
             <div className="gallery-lightbox-caption">
               <div className="gallery-lightbox-title">{lightbox.title}</div>
               {lightbox.caption && <div>{lightbox.caption}</div>}
@@ -2187,7 +2197,7 @@ function GalleryPage({ media, isAdmin, onDelete, compact = false, onViewAll }: {
             const ytId = item.type === "video" ? getYoutubeId(item.url) : null;
             return (
               <article key={item.id} className="gallery-card" style={{ animationDelay: `${Math.min(index, 8) * 65}ms` }}>
-                <div className="gallery-card-media" onClick={() => item.type === "photo" && setLightbox(item)}>
+                <div className="gallery-card-media" onClick={() => item.type === "photo" && openPhoto(item)}>
                   {item.type === "photo" ? (
                     <img className="gallery-card-image" src={item.url} alt={item.title} loading="lazy" />
                   ) : ytId ? (
