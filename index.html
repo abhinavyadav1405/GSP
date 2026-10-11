@@ -80,5 +80,27 @@
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Never let a delayed external resource or a failed module keep the
+      // splash screen covering the portal indefinitely.
+      (() => {
+        let finished = false;
+        const hideLoader = () => {
+          if (finished) return;
+          finished = true;
+          const loader = document.getElementById("gsp-loader");
+          if (!loader) return;
+          loader.classList.add("gsp-loader-hidden");
+          window.setTimeout(() => loader.remove(), 500);
+        };
+        if (document.readyState === "complete") {
+          window.setTimeout(hideLoader, 900);
+        } else {
+          window.addEventListener("load", () => window.setTimeout(hideLoader, 900), { once: true });
+          window.addEventListener("DOMContentLoaded", () => window.setTimeout(hideLoader, 1800), { once: true });
+        }
+        window.setTimeout(hideLoader, 7000);
+      })();
+    </script>
   </body>
 </html>
