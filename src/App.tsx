@@ -4048,13 +4048,21 @@ useEffect(() => {
     setLoading(false);
   }, []);
 
-  // Load blocked users list from Firestore in realtime
+  // Only Admins may read the private blocked-user list. Firestore rules
+  // independently reject complaint creation from blocked mobile numbers.
   useEffect(() => {
+    if (!isAdmin) {
+      setBlockedUsers([]);
+      return;
+    }
     const unsub = onSnapshot(collection(db, "blockedUsers"), (snap) => {
       setBlockedUsers(snap.docs.map(d => d.data() as BlockedUser));
+    }, (error) => {
+      console.error("Blocked-user listener failed", error);
+      setBlockedUsers([]);
     });
     return () => unsub();
-  }, []);
+  }, [isAdmin]);
 
   // Cache media for instant load
   useEffect(() => {
