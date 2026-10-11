@@ -1062,9 +1062,9 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
   const sendPhoneOtp = async () => {
     setErr("");
     const raw = phoneInput.trim();
-    const digits = raw.replace(/\\D/g, "");
+    const digits = raw.replace(/\D/g, "");
     const e164 = raw.startsWith("+") ? raw : (digits.length === 10 ? "+91" + digits : "");
-    if (!/^\\+[1-9]\\d{7,14}$/.test(e164)) { setErr("Mobile number country code ke saath daalein, jaise +919876543210."); return; }
+    if (!/^\+[1-9]\d{7,14}$/.test(e164)) { setErr("Mobile number country code ke saath daalein, jaise +919876543210."); return; }
     setBusy(true);
     try {
       if (!recaptchaRef.current) recaptchaRef.current = new RecaptchaVerifier(auth, "gsp-phone-recaptcha", { size: "invisible" });
@@ -1077,7 +1077,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
   };
 
   const verifyPhoneOtp = async () => {
-    if (!confirmation || !/^\\d{6}$/.test(otp.trim())) { setErr("6-digit OTP daalein."); return; }
+    if (!confirmation || !/^\d{6}$/.test(otp.trim())) { setErr("6-digit OTP daalein."); return; }
     setBusy(true); setErr("");
     try {
       await confirmation.confirm(otp.trim());
@@ -1113,7 +1113,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
         </>}
         {mode === "login" && loginMethod === "phone" ? <>
           <input placeholder="Mobile number (+91...)" value={phoneInput} onChange={e => setPhoneInput(e.target.value)} type="tel" autoComplete="tel" />
-          {confirmation && <input placeholder="6-digit OTP" value={otp} onChange={e => setOtp(e.target.value.replace(/\\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" />}
+          {confirmation && <input placeholder="6-digit OTP" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" />}
           <div id="gsp-phone-recaptcha" />
           {err && <div style={{ color: err.startsWith("OTP bhej") ? "#34d399" : "#f87171", fontSize: 13 }}>{err}</div>}
           {!confirmation ? <button className="btn-white" onClick={sendPhoneOtp} disabled={busy} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15 }}>{busy ? "Please wait…" : "Send OTP →"}</button> : <button className="btn-white" onClick={verifyPhoneOtp} disabled={busy} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15 }}>{busy ? "Please wait…" : "Verify OTP & Login →"}</button>}
