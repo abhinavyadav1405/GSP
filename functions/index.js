@@ -158,15 +158,15 @@ exports.expireResolvedReels = onSchedule("every 60 minutes", async () => {
 // Phone OTP login: Firebase Phone Auth must already have verified the caller's number.
 exports.authenticateGspUserByPhone = onCall({ enforceAppCheck: false }, async (request) => {
   const phone = String(request.auth && request.auth.token && request.auth.token.phone_number || "");
-  const digits = phone.replace(/\\D/g, "");
-  if (!request.auth || !/^\\+[1-9]\\d{7,14}$/.test(phone) || digits.length < 10) {
+  const digits = phone.replace(/\D/g, "");
+  if (!request.auth || !/^\+[1-9]\d{7,14}$/.test(phone) || digits.length < 10) {
     throw new HttpsError("unauthenticated", "Verified phone sign-in required.");
   }
   // Existing Indian profiles may store a 10-digit number or +91 format.
   const lastTen = digits.slice(-10);
   const usersSnap = await db.collection("users").get();
   const matches = usersSnap.docs.filter((doc) => {
-    const stored = String(doc.data().mobile || "").replace(/\\D/g, "");
+    const stored = String(doc.data().mobile || "").replace(/\D/g, "");
     return stored.length >= 10 && stored.slice(-10) === lastTen;
   });
   if (matches.length !== 1) {
