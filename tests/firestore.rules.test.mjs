@@ -79,6 +79,28 @@ test("Firestore rejects new complaints from blocked mobile numbers", async () =>
   }));
 });
 
+test("a user can create a Reel only for their own existing problem", async () => {
+  await seed("problems", "alice-problem", { authorId: "alice", title: "Street light", status: "In Progress" });
+  await seed("problems", "bob-problem", { authorId: "bob", title: "Drain", status: "In Progress" });
+
+  const aliceDb = userDb("alice");
+  const validReel = {
+    ownerId: "alice",
+    problemId: "alice-problem",
+    moderationStatus: "visible",
+    videoDeleted: false,
+  };
+  await assertSucceeds(setDoc(doc(aliceDb, "reels", "alice-reel"), validReel));
+  await assertFails(setDoc(doc(aliceDb, "reels", "foreign-reel"), {
+    ...validReel,
+    problemId: "bob-problem",
+  }));
+  await assertFails(setDoc(doc(aliceDb, "reels", "missing-problem-reel"), {
+    ...validReel,
+    problemId: "missing-problem",
+  }));
+});
+
 test("a user can append one valid report without changing existing reports", async () => {
   await seed("problems", "problem-1", {
     authorId: "author",
