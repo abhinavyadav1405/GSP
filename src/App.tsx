@@ -1071,8 +1071,22 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
       setConfirmation(await signInWithPhoneNumber(auth, e164, recaptchaRef.current));
       setErr("OTP bhej diya gaya hai. SMS check karein.");
     } catch (e: any) {
-      console.error(e); recaptchaRef.current?.clear(); recaptchaRef.current = null;
-      setErr("OTP nahi bheja ja saka. Staging Firebase config, authorized domain aur SMS quota check karein.");
+      console.error("GSP Phone OTP send failed", e?.code, e?.message, e);
+      recaptchaRef.current?.clear(); recaptchaRef.current = null;
+      const code = String(e?.code || "unknown");
+      const hints: Record<string, string> = {
+        "auth/invalid-phone-number": "Mobile number galat hai. +91 ke saath 10-digit number daalein.",
+        "auth/too-many-requests": "Bahut baar request hui hai. Kuch der baad dobara try karein.",
+        "auth/quota-exceeded": "Firebase SMS quota khatam hai. Firebase Console mein SMS quota/billing check karein.",
+        "auth/captcha-check-failed": "reCAPTCHA verify nahi hua. Authorized domain aur browser settings check karein.",
+        "auth/unauthorized-domain": "Yeh Preview domain Firebase Authentication ke Authorized domains mein add nahi hai.",
+        "auth/operation-not-allowed": "Firebase Console mein Phone sign-in provider enable karein.",
+        "auth/missing-phone-number": "Mobile number daalein.",
+        "auth/invalid-app-credential": "Firebase reCAPTCHA/app configuration sahi nahi hai; API key aur authorized domain verify karein.",
+        "auth/network-request-failed": "Network request fail hui. Internet, VPN/ad blocker aur browser connection check karein.",
+        "auth/billing-not-enabled": "Firebase project ki billing/SMS configuration check karni hogi."
+      };
+      setErr((hints[code] || "OTP send fail hua.") + " (Firebase: " + code + ")");
     } finally { setBusy(false); }
   };
 
