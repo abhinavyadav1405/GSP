@@ -76,7 +76,10 @@ service cloud.firestore {
     }
     match /problems/{id} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.authorId == userId();
+      allow create: if signedIn()
+        && request.resource.data.authorId == userId()
+        && request.resource.data.mobile is string
+        && !exists(/databases/$(database)/documents/blockedUsers/$(request.resource.data.mobile));
       allow update: if isAdmin()
         || (signedIn() && reportOnly())
         || safeProblemInteraction()
