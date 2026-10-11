@@ -45,12 +45,36 @@ const validReport = {
 test("signed-in users can create a problem only for their own claimed ID", async () => {
   await assertSucceeds(setDoc(doc(userDb("alice"), "problems", "alice-problem"), {
     authorId: "alice",
+    mobile: "1111111111",
     title: "Street light",
     status: "In Progress",
   }));
   await assertFails(setDoc(doc(userDb("alice"), "problems", "spoofed-problem"), {
     authorId: "bob",
+    mobile: "2222222222",
     title: "Spoofed post",
+    status: "In Progress",
+  }));
+});
+
+test("Firestore rejects new complaints from blocked mobile numbers", async () => {
+  await seed("blockedUsers", "9999999999", {
+    mobile: "9999999999",
+    name: "Blocked user",
+    reason: "Spam",
+  });
+
+  await assertFails(setDoc(doc(userDb("blocked-user"), "problems", "blocked-problem"), {
+    authorId: "blocked-user",
+    mobile: "9999999999",
+    title: "Blocked complaint",
+    status: "In Progress",
+  }));
+
+  await assertSucceeds(setDoc(doc(userDb("allowed-user"), "problems", "allowed-problem"), {
+    authorId: "allowed-user",
+    mobile: "8888888888",
+    title: "Allowed complaint",
     status: "In Progress",
   }));
 });
