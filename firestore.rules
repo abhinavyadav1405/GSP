@@ -97,6 +97,9 @@ service cloud.firestore {
       allow read: if true;
       allow create: if signedIn()
         && request.resource.data.ownerId == userId()
+        && request.resource.data.problemId is string
+        && exists(/databases/$(database)/documents/problems/$(request.resource.data.problemId))
+        && get(/databases/$(database)/documents/problems/$(request.resource.data.problemId)).data.authorId == userId()
         && request.resource.data.moderationStatus == 'visible'
         && request.resource.data.videoDeleted == false;
       allow update: if isAdmin()
