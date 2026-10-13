@@ -1133,7 +1133,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
         {err && <div style={{ color: "#f87171", fontSize: 13 }}>{err}</div>}
         {resetNotice && <div style={{ color: "#4ade80", fontSize: 13 }}>{resetNotice}</div>}
         <button className="btn-white" disabled={busy || !resetToken} onClick={completePasswordReset} style={{ borderRadius: 12, padding: "13px 0" }}>{busy ? "Please wait…" : "Update Password"}</button>
-        <button className="btn-ghost" onClick={() => { setResetToken(""); setResetMode("request"); setErr(""); window.history.replaceState({}, "", window.location.pathname); }} style={{ borderRadius: 12, padding: "11px 0" }}>Back to Login</button>
+        <button className="btn-ghost" onClick={() => { setResetToken(""); setResetMode(""); setErr(""); window.history.replaceState({}, "", window.location.pathname); }} style={{ borderRadius: 12, padding: "11px 0" }}>Back to Login</button>
       </div>
     </div>
   </div>;
