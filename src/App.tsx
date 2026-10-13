@@ -1027,6 +1027,11 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
   const [ward, setWard] = useState(WARDS[0]);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetToken, setResetToken] = useState(() => new URLSearchParams(window.location.search).get("gsp-reset") || "");
+  const [resetMode, setResetMode] = useState(() => new URLSearchParams(window.location.search).has("gsp-reset") ? "complete" : "request");
+  const [resetNotice, setResetNotice] = useState("");
+
 
 
   const submit = async () => {
@@ -1068,6 +1073,39 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
     } finally { setBusy(false); }
   };
 
+
+  const requestPasswordReset = async () => {
+    setErr(""); setResetNotice("");
+    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(resetEmail.trim())) { setErr("Registered email address daalein."); return; }
+    setBusy(true);
+    try {
+      const call = httpsCallable(functions, "requestGspPasswordReset");
+      const result = await call({ email: resetEmail.trim().toLowerCase() }) as { data: { message: string } };
+      setResetNotice(result.data.message || "Agar email registered hai, reset link bhej diya jayega.");
+    } catch (e: any) {
+      console.error("GSP password reset request failed", e);
+      setErr(e?.code === "functions/unavailable" ? "Email service abhi configure nahi hai. Admin configuration ke baad try karein." : "Reset email request nahi ho saki. Thodi der baad try karein.");
+    } finally { setBusy(false); }
+  };
+
+  const completePasswordReset = async () => {
+    setErr(""); setResetNotice("");
+    if (password.length < 8) { setErr("Naya password kam-se-kam 8 characters ka hona chahiye."); return; }
+    setBusy(true);
+    try {
+      const call = httpsCallable(functions, "completeGspPasswordReset");
+      const result = await call({ token: resetToken, password }) as { data: { message: string } };
+      setResetNotice(result.data.message || "Password update ho gaya.");
+      setPassword("");
+      setResetToken("");
+      setResetMode("request");
+      window.history.replaceState({}, "", window.location.pathname);
+    } catch (e: any) {
+      console.error("GSP password reset completion failed", e);
+      setErr(e?.code === "functions/failed-precondition" ? "Reset link expire ho gaya ya pehle use ho chuka hai. Naya link mangayein." : "Password update nahi ho saka. Reset link check karein.");
+    } finally { setBusy(false); }
+  };
+
   const googleLogin = async () => {
     setErr(""); setBusy(true);
     try {
@@ -1082,6 +1120,40 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
       setErr(e?.code === "functions/failed-precondition" ? "Is verified Google email se GSP account link nahi hai. Pehle isi email se register karein." : "Google sign-in fail hua. Firebase Console mein Google provider aur authorized domain check karein.");
     } finally { setBusy(false); }
   };
+
+  if (resetToken || resetMode === "complete") return <div style={{ maxWidth: 440, margin: "55px auto 90px" }}>
+    <div className="glass" style={{ borderRadius: 24, padding: "30px 26px" }}>
+      <div style={{ textAlign: "center", marginBottom: 22 }}>
+        <div style={{ width: 60, height: 60, margin: "0 auto 14px", borderRadius: 18, background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center" }}><LockKeyhole size={26} /></div>
+        <h2 style={{ fontSize: 22 }}>Reset GSP Password</h2>
+        <p style={{ color: "var(--ct4)", fontSize: 13, marginTop: 8 }}>Secure reset link 30 minutes tak valid hai.</p>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <input type="password" placeholder="New password (minimum 8 characters)" value={password} onChange={e => setPassword(e.target.value)} autoComplete="new-password" />
+        {err && <div style={{ color: "#f87171", fontSize: 13 }}>{err}</div>}
+        {resetNotice && <div style={{ color: "#4ade80", fontSize: 13 }}>{resetNotice}</div>}
+        <button className="btn-white" disabled={busy || !resetToken} onClick={completePasswordReset} style={{ borderRadius: 12, padding: "13px 0" }}>{busy ? "Please wait…" : "Update Password"}</button>
+        <button className="btn-ghost" onClick={() => { setResetToken(""); setResetMode("request"); setErr(""); window.history.replaceState({}, "", window.location.pathname); }} style={{ borderRadius: 12, padding: "11px 0" }}>Back to Login</button>
+      </div>
+    </div>
+  </div>;
+
+  if (resetMode === "request") return <div style={{ maxWidth: 440, margin: "55px auto 90px" }}>
+    <div className="glass" style={{ borderRadius: 24, padding: "30px 26px" }}>
+      <div style={{ textAlign: "center", marginBottom: 22 }}>
+        <div style={{ width: 60, height: 60, margin: "0 auto 14px", borderRadius: 18, background: "linear-gradient(135deg,#7c5cfc,#38d9f5)", display: "grid", placeItems: "center" }}><LockKeyhole size={26} /></div>
+        <h2 style={{ fontSize: 22 }}>Forgot Password?</h2>
+        <p style={{ color: "var(--ct4)", fontSize: 13, marginTop: 8 }}>Registered email par secure reset link bheja jayega.</p>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <input type="email" placeholder="Registered email address" value={resetEmail} onChange={e => setResetEmail(e.target.value)} autoComplete="email" />
+        {err && <div style={{ color: "#f87171", fontSize: 13 }}>{err}</div>}
+        {resetNotice && <div style={{ color: "#4ade80", fontSize: 13 }}>{resetNotice}</div>}
+        <button className="btn-white" disabled={busy} onClick={requestPasswordReset} style={{ borderRadius: 12, padding: "13px 0" }}>{busy ? "Sending…" : "Send Reset Link"}</button>
+        <button className="btn-ghost" onClick={() => { setResetMode(""); setErr(""); setResetNotice(""); }} style={{ borderRadius: 12, padding: "11px 0" }}>Back to Login</button>
+      </div>
+    </div>
+  </div>;
 
   return <div style={{ maxWidth: 440, margin: "55px auto 90px" }}>
     <div className="glass" style={{ borderRadius: 24, padding: "30px 26px" }}>
@@ -1105,6 +1177,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
         {err && <div style={{ color: "#f87171", fontSize: 13 }}>{err}</div>}
         <button className="btn-white" onClick={submit} disabled={busy} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15 }}>{busy ? "Please wait…" : mode === "login" ? "Login →" : "Create Account →"}</button>
         {mode === "login" && <button className="btn-ghost" onClick={googleLogin} disabled={busy} style={{ borderRadius: 12, padding: "12px 0", fontSize: 14 }}>Continue with Google</button>}
+        {mode === "login" && <button className="btn-ghost" onClick={() => { setResetMode("request"); setResetNotice(""); setErr(""); }} disabled={busy} style={{ borderRadius: 12, padding: "10px 0", fontSize: 13 }}>Forgot password?</button>
       </div>    </div>
   </div>;
 }
