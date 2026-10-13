@@ -50,6 +50,7 @@ function publicUser(data, id) {
     ward: String(data.ward || ""),
     createdAt: String(data.createdAt || new Date().toISOString()),
     ...(data.avatar ? { avatar: data.avatar } : {}),
+    ...(data.email ? { email: data.email } : {}),
   };
 }
 async function ensureFirebaseUser(id) {
@@ -105,14 +106,16 @@ exports.registerGspUser = onCall({ enforceAppCheck: false }, async (request) => 
   const name = String(request.data && request.data.name || "").trim();
   const mobile = String(request.data && request.data.mobile || "").trim();
   const ward = String(request.data && request.data.ward || "").trim();
+  const email = String(request.data && request.data.email || "").trim().toLowerCase();
+  const avatar = String(request.data && request.data.avatar || "").trim();
   if (!/^[a-z0-9._-]{3,40}$/.test(id)) throw new HttpsError("invalid-argument", "User ID में 3–40 अक्षर, अंक, dot, underscore या hyphen रखें।");
   if (password.length < 8 || password.length > 128) throw new HttpsError("invalid-argument", "Password कम-से-कम 8 अक्षरों का होना चाहिए।");
-  if (!name || mobile.replace(/\D/g, "").length < 10) throw new HttpsError("invalid-argument", "Name और valid mobile number required हैं।");
+  if (!name || mobile.replace(/\D/g, "").length < 10 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpsError("invalid-argument", "Name, valid mobile number और email required हैं।");
 
   const userRef = db.collection("users").doc(id);
   const credentialRef = db.collection("userCredentials").doc(id);
   if ((await userRef.get()).exists) throw new HttpsError("already-exists", "Ye User ID already registered hai.");
-  const profile = { id, name, mobile, ward, createdAt: new Date().toISOString() };
+  const profile = { id, name, mobile, email, ...(avatar ? { avatar } : {}), ward, createdAt: new Date().toISOString() };
   let profileCreated = false;
   try {
     await userRef.create(profile);
@@ -174,4 +177,18 @@ exports.authenticateGspUserByPhone = onCall({ enforceAppCheck: false }, async (r
   }
   const match = matches[0];
   return issueSession(match.id, publicUser(match.data(), match.id));
+});
+
+
+// Google sign-in is linked only to an existing GSP profile with the same verified email.
+exports.authenticateGspUserByGoogle = onCall({ enforceAppCheck: false }, async (request) => {
+  const token = request.auth && request.auth.token;
+  const email = String(token && token.email || "").trim().toLowerCase();
+  if (!token || token.firebase?.sign_in_provider !== "google.com" || token.email_verified !== true || !email) {
+    throw new HttpsError("unauthenticated", "Verified Google sign-in required.");
+  }
+  const matches = await db.collection("users").where("email", "==", email).limit(2).get();
+  if (matches.size !== 1) throw new HttpsError("failed-precondition", "No unique GSP profile is linked to this verified Google email.");
+  const profileDoc = matches.docs[0];
+  return issueSession(profileDoc.id, publicUser(profileDoc.data(), profileDoc.id));
 });
