@@ -115,6 +115,10 @@ exports.registerGspUser = onCall({ enforceAppCheck: false }, async (request) => 
   const userRef = db.collection("users").doc(id);
   const credentialRef = db.collection("userCredentials").doc(id);
   if ((await userRef.get()).exists) throw new HttpsError("already-exists", "Ye User ID already registered hai.");
+  // Prevent one email address from being linked to multiple GSP identities.
+  // This also makes the Google-email lookup deterministic for newly registered accounts.
+  const emailMatches = await db.collection("users").where("email", "==", email).limit(1).get();
+  if (!emailMatches.empty) throw new HttpsError("already-exists", "Ye email address pehle se kisi GSP account se juda hai.");
   const profile = { id, name, mobile, email, ...(avatar ? { avatar } : {}), ward, createdAt: new Date().toISOString() };
   let profileCreated = false;
   try {
