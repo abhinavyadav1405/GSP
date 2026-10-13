@@ -5,6 +5,11 @@ const { initializeApp } = require("firebase-admin/app");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 const { getAuth } = require("firebase-admin/auth");
 const { getStorage } = require("firebase-admin/storage");
+const { defineSecret, defineString } = require("firebase-functions/params");
+
+const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
+const GSP_RESET_FROM = defineString("GSP_RESET_FROM", { default: "GSP <onboarding@resend.dev>" });
+const GSP_RESET_BASE_URL = defineString("GSP_RESET_BASE_URL", { default: "https://gram-sabha-pahrajpur.vercel.app/" });
 
 initializeApp();
 
@@ -131,6 +136,81 @@ exports.registerGspUser = onCall({ enforceAppCheck: false }, async (request) => 
     throw error;
   }
   return issueSession(id, publicUser(profile, id));
+});
+
+
+// Password reset for GSP's custom Firestore credentials. Never expose whether an email exists.
+exports.requestGspPasswordReset = onCall({ enforceAppCheck: false, secrets: [RESEND_API_KEY] }, async (request) => {
+  const email = String(request.data && request.data.email || "").trim().toLowerCase();
+  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) {
+    throw new HttpsError("invalid-argument", "Valid email address required.");
+  }
+
+  // Basic cooldown per normalized email; response remains identical for unknown accounts.
+  const emailKey = crypto.createHash("sha256").update(email).digest("hex");
+  const rateRef = db.collection("passwordResetRateLimits").doc(emailKey);
+  const now = Date.now();
+  const rateSnap = await rateRef.get();
+  if (rateSnap.exists && now - Number(rateSnap.data().lastRequestedAt || 0) < 60_000) {
+    return { message: "If this email is registered, a reset link will be sent shortly." };
+  }
+  await rateRef.set({ lastRequestedAt: now, expiresAt: new Date(now + 24 * 60 * 60 * 1000).toISOString() });
+
+  const usersSnap = await db.collection("users").where("email", "==", email).limit(1).get();
+  if (!usersSnap.empty) {
+    const userId = usersSnap.docs[0].id;
+    const rawToken = crypto.randomBytes(32).toString("base64url");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    await db.collection("gspPasswordResetTokens").doc(tokenHash).set({
+      userId,
+      email,
+      createdAt: now,
+      expiresAt: now + 30 * 60 * 1000,
+      used: false
+    });
+
+    const baseUrl = GSP_RESET_BASE_URL.value().replace(/\\/$/, "");
+    const resetUrl = baseUrl + "/?gsp-reset=" + encodeURIComponent(rawToken);
+    const sender = GSP_RESET_FROM.value();
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + RESEND_API_KEY.value(), "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: sender,
+        to: [email],
+        subject: "Reset your GSP password",
+        text: "A password reset was requested for your Gram Sabha Pahrajpur account. Open this link within 30 minutes to set a new password:\\n\\n" + resetUrl + "\\n\\nIf you did not request this, you can ignore this email.",
+        html: "<p>A password reset was requested for your Gram Sabha Pahrajpur account.</p><p><a href=\"" + resetUrl + "\">Reset your GSP password</a></p><p>This link expires in 30 minutes and can be used once. If you did not request this, ignore this email.</p>"
+      })
+    });
+    if (!response.ok) {
+      await db.collection("gspPasswordResetTokens").doc(tokenHash).delete().catch(() => {});
+      console.error("Resend password-reset email failed:", response.status, await response.text());
+      throw new HttpsError("unavailable", "Reset email service is not configured yet. Please try again later.");
+    }
+  }
+  return { message: "If this email is registered, a reset link will be sent shortly." };
+});
+
+exports.completeGspPasswordReset = onCall({ enforceAppCheck: false }, async (request) => {
+  const token = String(request.data && request.data.token || "");
+  const password = String(request.data && request.data.password || "");
+  if (token.length < 30 || token.length > 200) throw new HttpsError("invalid-argument", "Reset link invalid or expired.");
+  if (password.length < 8 || password.length > 128) throw new HttpsError("invalid-argument", "Password must be 8–128 characters.");
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const tokenRef = db.collection("gspPasswordResetTokens").doc(tokenHash);
+  await db.runTransaction(async (tx) => {
+    const tokenSnap = await tx.get(tokenRef);
+    if (!tokenSnap.exists) throw new HttpsError("failed-precondition", "Reset link invalid or expired.");
+    const reset = tokenSnap.data();
+    if (reset.used || Number(reset.expiresAt) < Date.now()) throw new HttpsError("failed-precondition", "Reset link invalid or expired.");
+    const credentialRef = db.collection("userCredentials").doc(String(reset.userId));
+    const credentialSnap = await tx.get(credentialRef);
+    if (!credentialSnap.exists) throw new HttpsError("failed-precondition", "This account cannot reset its password using this link.");
+    tx.set(credentialRef, newCredential(password));
+    tx.update(tokenRef, { used: true, usedAt: Date.now() });
+  });
+  return { message: "Password updated. You can now sign in with your new password." };
 });
 
 exports.expireResolvedReels = onSchedule("every 60 minutes", async () => {
