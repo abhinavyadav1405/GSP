@@ -142,7 +142,7 @@ exports.registerGspUser = onCall({ enforceAppCheck: false }, async (request) => 
 // Password reset for GSP's custom Firestore credentials. Never expose whether an email exists.
 exports.requestGspPasswordReset = onCall({ enforceAppCheck: false, secrets: [RESEND_API_KEY] }, async (request) => {
   const email = String(request.data && request.data.email || "").trim().toLowerCase();
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
     throw new HttpsError("invalid-argument", "Valid email address required.");
   }
 
@@ -169,7 +169,7 @@ exports.requestGspPasswordReset = onCall({ enforceAppCheck: false, secrets: [RES
       used: false
     });
 
-    const baseUrl = GSP_RESET_BASE_URL.value().replace(/\\/$/, "");
+    const baseUrl = GSP_RESET_BASE_URL.value().replace(/\/$/, "");
     const resetUrl = baseUrl + "/?gsp-reset=" + encodeURIComponent(rawToken);
     const sender = GSP_RESET_FROM.value();
     const response = await fetch("https://api.resend.com/emails", {
@@ -179,7 +179,7 @@ exports.requestGspPasswordReset = onCall({ enforceAppCheck: false, secrets: [RES
         from: sender,
         to: [email],
         subject: "Reset your GSP password",
-        text: "A password reset was requested for your Gram Sabha Pahrajpur account. Open this link within 30 minutes to set a new password:\\n\\n" + resetUrl + "\\n\\nIf you did not request this, you can ignore this email.",
+        text: "A password reset was requested for your Gram Sabha Pahrajpur account. Open this link within 30 minutes to set a new password:\n\n" + resetUrl + "\n\nIf you did not request this, you can ignore this email.",
         html: "<p>A password reset was requested for your Gram Sabha Pahrajpur account.</p><p><a href=\"" + resetUrl + "\">Reset your GSP password</a></p><p>This link expires in 30 minutes and can be used once. If you did not request this, ignore this email.</p>"
       })
     });
