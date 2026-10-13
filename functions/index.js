@@ -206,8 +206,18 @@ exports.completeGspPasswordReset = onCall({ enforceAppCheck: false }, async (req
     if (reset.used || Number(reset.expiresAt) < Date.now()) throw new HttpsError("failed-precondition", "Reset link invalid or expired.");
     const credentialRef = db.collection("userCredentials").doc(String(reset.userId));
     const credentialSnap = await tx.get(credentialRef);
-    if (!credentialSnap.exists) throw new HttpsError("failed-precondition", "This account cannot reset its password using this link.");
-    tx.set(credentialRef, newCredential(password));
+    if (credentialSnap.exists) {
+      tx.set(credentialRef, newCredential(password));
+    } else {
+      // Support older accounts whose legacy hash still lives on the profile document.
+      const profileRef = db.collection("users").doc(String(reset.userId));
+      const profileSnap = await tx.get(profileRef);
+      if (!profileSnap.exists || !profileSnap.data().passwordHash) {
+        throw new HttpsError("failed-precondition", "This account cannot reset its password using this link.");
+      }
+      tx.set(credentialRef, newCredential(password));
+      tx.update(profileRef, { passwordHash: FieldValue.delete() });
+    }
     tx.update(tokenRef, { used: true, usedAt: Date.now() });
   });
   return { message: "Password updated. You can now sign in with your new password." };
