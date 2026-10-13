@@ -1029,7 +1029,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
   const [busy, setBusy] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetToken, setResetToken] = useState(() => new URLSearchParams(window.location.search).get("gsp-reset") || "");
-  const [resetMode, setResetMode] = useState(() => new URLSearchParams(window.location.search).has("gsp-reset") ? "complete" : "request");
+  const [resetMode, setResetMode] = useState(() => new URLSearchParams(window.location.search).has("gsp-reset") ? "complete" : "");
   const [resetNotice, setResetNotice] = useState("");
 
 
