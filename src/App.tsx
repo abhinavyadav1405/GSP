@@ -3,7 +3,7 @@ import UserProfile from "./components/UserProfile";
 import ProfileLookup from "./components/ProfileLookup";
 import GSPReels from "./components/GSPReels";
 import { useState, useEffect, useRef } from "react";
-import { RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Camera, Image as ImageIcon, Video, Trash2, User, Bell, Trophy, LockKeyhole, Search, Phone, Download, Settings, Pencil, AlertTriangle, CheckCircle2, CalendarDays, MapPin, Map, FileText, Clipboard, Pin, Mic, Star, Clock3, RefreshCw, XCircle, Megaphone, Siren, Building2, PartyPopper, Droplets, Zap, Hospital, Waves, HardHat, Check, Home, LayoutDashboard, Plus, LogIn, ChevronUp, ChevronDown, ShieldAlert, Upload, CircleUserRound, Heart, MessageCircle, Send, Landmark } from "lucide-react";
 import { Leaf } from "lucide-react";
 
@@ -1022,28 +1022,33 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [ward, setWard] = useState(WARDS[0]);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  const [loginMethod, setLoginMethod] = useState<"password" | "phone">("password");
-  const [phoneInput, setPhoneInput] = useState("");
-  const [otp, setOtp] = useState("");
-  const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(null);
-  const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
+
 
   const submit = async () => {
     setErr("");
     const userId = id.trim().toLowerCase();
     if (!userId || !password) { setErr("ID aur password required hai."); return; }
-    if (mode === "register" && (!name.trim() || !mobile.trim())) { setErr("Name aur mobile required hai."); return; }
+    if (mode === "register" && (!name.trim() || !mobile.trim() || !email.trim())) { setErr("Name, mobile aur email required hai."); return; }
     if (mode === "register" && mobile.replace(/\D/g, "").length < 10) { setErr("Valid 10-digit mobile number daalo."); return; }
     if (mode === "register" && password.length < 8) { setErr("Password कम-से-कम 8 अक्षरों का होना चाहिए।"); return; }
     setBusy(true);
     try {
+      let avatar = "";
+      if (mode === "register" && photoFile) {
+        if (!photoFile.type.startsWith("image/") || photoFile.size > 5 * 1024 * 1024) throw new Error("Photo image format mein aur 5 MB se chhoti honi chahiye.");
+        const photoRef = ref(storage, `profile-photos/${userId}/${Date.now()}-${photoFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
+        await uploadBytes(photoRef, photoFile, { contentType: photoFile.type });
+        avatar = await getDownloadURL(photoRef);
+      }
       const endpoint = httpsCallable(functions, mode === "login" ? "authenticateGspUser" : "registerGspUser");
       const result = await endpoint(mode === "login"
         ? { id: userId, password }
-        : { id: userId, password, name: name.trim(), mobile: mobile.trim(), ward });
+        : { id: userId, password, name: name.trim(), mobile: mobile.trim(), email: email.trim().toLowerCase(), avatar, ward });
       const payload = result.data as { token: string; user: AppUser };
       await signInWithCustomToken(auth, payload.token);
       localStorage.setItem("gsp-user", JSON.stringify(payload.user));
@@ -1059,50 +1064,18 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
     } finally { setBusy(false); }
   };
 
-  const sendPhoneOtp = async () => {
-    setErr("");
-    const raw = phoneInput.trim();
-    const digits = raw.replace(/\D/g, "");
-    const e164 = raw.startsWith("+") ? raw : (digits.length === 10 ? "+91" + digits : "");
-    if (!/^\+[1-9]\d{7,14}$/.test(e164)) { setErr("Mobile number country code ke saath daalein, jaise +919876543210."); return; }
-    setBusy(true);
+  const googleLogin = async () => {
+    setErr(""); setBusy(true);
     try {
-      if (!recaptchaRef.current) recaptchaRef.current = new RecaptchaVerifier(auth, "gsp-phone-recaptcha", { size: "invisible" });
-      setConfirmation(await signInWithPhoneNumber(auth, e164, recaptchaRef.current));
-      setErr("OTP bhej diya gaya hai. SMS check karein.");
-    } catch (e: any) {
-      console.error("GSP Phone OTP send failed", e?.code, e?.message, e);
-      recaptchaRef.current?.clear(); recaptchaRef.current = null;
-      const code = String(e?.code || "unknown");
-      const hints: Record<string, string> = {
-        "auth/invalid-phone-number": "Mobile number galat hai. +91 ke saath 10-digit number daalein.",
-        "auth/too-many-requests": "Bahut baar request hui hai. Kuch der baad dobara try karein.",
-        "auth/quota-exceeded": "Firebase SMS quota khatam hai. Firebase Console mein SMS quota/billing check karein.",
-        "auth/captcha-check-failed": "reCAPTCHA verify nahi hua. Authorized domain aur browser settings check karein.",
-        "auth/unauthorized-domain": "Yeh Preview domain Firebase Authentication ke Authorized domains mein add nahi hai.",
-        "auth/operation-not-allowed": "Firebase Console mein Phone sign-in provider enable karein.",
-        "auth/missing-phone-number": "Mobile number daalein.",
-        "auth/invalid-app-credential": "Firebase reCAPTCHA/app configuration sahi nahi hai; API key aur authorized domain verify karein.",
-        "auth/network-request-failed": "Network request fail hui. Internet, VPN/ad blocker aur browser connection check karein.",
-        "auth/billing-not-enabled": "Firebase project ki billing/SMS configuration check karni hogi."
-      };
-      setErr((hints[code] || "OTP send fail hua.") + " (Firebase: " + code + ")");
-    } finally { setBusy(false); }
-  };
-
-  const verifyPhoneOtp = async () => {
-    if (!confirmation || !/^\d{6}$/.test(otp.trim())) { setErr("6-digit OTP daalein."); return; }
-    setBusy(true); setErr("");
-    try {
-      await confirmation.confirm(otp.trim());
-      const result = await httpsCallable(functions, "authenticateGspUserByPhone")({});
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      const result = await httpsCallable(functions, "authenticateGspUserByGoogle")({});
       const payload = result.data as { token: string; user: AppUser };
       await signInWithCustomToken(auth, payload.token);
       localStorage.setItem("gsp-user", JSON.stringify(payload.user)); onLogin(payload.user);
     } catch (e: any) {
-      console.error(e); await signOut(auth).catch(() => {});
-      setErr("Is verified number se ek unique GSP account nahi mila. Account ka registered mobile number check karein.");
-      setConfirmation(null);
+      console.error("GSP Google sign-in failed", e);
+      await signOut(auth).catch(() => {});
+      setErr(e?.code === "functions/failed-precondition" ? "Is verified Google email se GSP account link nahi hai. Pehle isi email se register karein." : "Google sign-in fail hua. Firebase Console mein Google provider aur authorized domain check karein.");
     } finally { setBusy(false); }
   };
 
@@ -1115,31 +1088,20 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
       <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
         {(["login", "register"] as const).map(m => <button key={m} className={mode === m ? "btn-white" : "btn-ghost"} onClick={() => { setMode(m); setErr(""); }} style={{ flex: 1, borderRadius: 10, padding: "10px 8px", fontSize: 13 }}>{m === "login" ? "Login" : "Register"}</button>)}
       </div>
-      {mode === "login" && <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        <button className={loginMethod === "password" ? "btn-white" : "btn-ghost"} onClick={() => { setLoginMethod("password"); setErr(""); }} style={{ flex: 1, borderRadius: 10, padding: "10px 8px", fontSize: 13 }}>User ID + Password</button>
-        <button className={loginMethod === "phone" ? "btn-white" : "btn-ghost"} onClick={() => { setLoginMethod("phone"); setErr(""); }} style={{ flex: 1, borderRadius: 10, padding: "10px 8px", fontSize: 13 }}>Phone OTP</button>
-      </div>}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {mode === "register" && <>
-          <input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} />
-          <input placeholder="Mobile number" value={mobile} onChange={e => setMobile(e.target.value)} type="tel" maxLength={15} />
+          <input placeholder="Full name" value={name} onChange={e => setName(e.target.value)} autoComplete="name" />
+          <input placeholder="Mobile number" value={mobile} onChange={e => setMobile(e.target.value)} type="tel" maxLength={15} autoComplete="tel" />
+          <input placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} type="email" autoComplete="email" />
+          <label style={{ fontSize: 13, color: "var(--ct4)" }}>Profile photo (optional, max 5 MB)<input type="file" accept="image/*" onChange={e => setPhotoFile(e.target.files?.[0] || null)} style={{ display: "block", marginTop: 8, width: "100%" }} /></label>
           <select value={ward} onChange={e => setWard(e.target.value)}>{WARDS.map(w => <option key={w}>{w}</option>)}</select>
         </>}
-        {mode === "login" && loginMethod === "phone" ? <>
-          <input placeholder="Mobile number (+91...)" value={phoneInput} onChange={e => setPhoneInput(e.target.value)} type="tel" autoComplete="tel" />
-          {confirmation && <input placeholder="6-digit OTP" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" />}
-          <div id="gsp-phone-recaptcha" />
-          {err && <div style={{ color: err.startsWith("OTP bhej") ? "#34d399" : "#f87171", fontSize: 13 }}>{err}</div>}
-          {!confirmation ? <button className="btn-white" onClick={sendPhoneOtp} disabled={busy} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15 }}>{busy ? "Please wait…" : "Send OTP →"}</button> : <button className="btn-white" onClick={verifyPhoneOtp} disabled={busy} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15 }}>{busy ? "Please wait…" : "Verify OTP & Login →"}</button>}
-        </> : <>
-        <input placeholder="User ID" value={id} onChange={e => setId(e.target.value)} autoCapitalize="none" />
-
-        <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()} />
+        <input placeholder="User ID" value={id} onChange={e => setId(e.target.value)} autoCapitalize="none" autoComplete="username" />
+        <input placeholder="Password" type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === "Enter" && submit()} autoComplete={mode === "login" ? "current-password" : "new-password"} />
         {err && <div style={{ color: "#f87171", fontSize: 13 }}>{err}</div>}
         <button className="btn-white" onClick={submit} disabled={busy} style={{ borderRadius: 12, padding: "13px 0", fontSize: 15 }}>{busy ? "Please wait…" : mode === "login" ? "Login →" : "Create Account →"}</button>
-        </>}
-      </div>
-    </div>
+        {mode === "login" && <button className="btn-ghost" onClick={googleLogin} disabled={busy} style={{ borderRadius: 12, padding: "12px 0", fontSize: 14 }}>Continue with Google</button>}
+      </div>    </div>
   </div>;
 }
 
