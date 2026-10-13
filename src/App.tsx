@@ -1076,7 +1076,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
 
   const requestPasswordReset = async () => {
     setErr(""); setResetNotice("");
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(resetEmail.trim())) { setErr("Registered email address daalein."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resetEmail.trim())) { setErr("Registered email address daalein."); return; }
     setBusy(true);
     try {
       const call = httpsCallable(functions, "requestGspPasswordReset");
@@ -1098,7 +1098,7 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
       setResetNotice(result.data.message || "Password update ho gaya.");
       setPassword("");
       setResetToken("");
-      setResetMode("request");
+      setResetMode("");
       window.history.replaceState({}, "", window.location.pathname);
     } catch (e: any) {
       console.error("GSP password reset completion failed", e);
