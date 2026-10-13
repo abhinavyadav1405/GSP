@@ -10,7 +10,7 @@ import { Leaf } from "lucide-react";
 import {
   db, auth, functions, signInWithCustomToken, signOut, httpsCallable, onAuthStateChanged,
   collection, doc, updateDoc, deleteDoc, onSnapshot, setDoc, getDoc, query, orderBy, arrayUnion, arrayRemove, addDoc,
-  storage, ref, uploadBytes, getDownloadURL,
+  storage, ref, uploadBytes, getDownloadURL, deleteObject,
 } from "./firebase";
 
 
@@ -1008,7 +1008,7 @@ function SubmitForm({ onSubmit, onSubmitted, sarpanchName = "", sarpanchPhoto = 
 
 
 // ── User Authentication ─────────────────────────────────────────────────────
-type AppUser = { id: string; name: string; mobile: string; ward: string; createdAt: string; avatar?: string };
+type AppUser = { id: string; name: string; mobile: string; ward: string; createdAt: string; avatar?: string; email?: string };
 
 async function hashPassword(value: string) {
   const data = new TextEncoder().encode(value);
@@ -1037,12 +1037,14 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
     if (mode === "register" && mobile.replace(/\D/g, "").length < 10) { setErr("Valid 10-digit mobile number daalo."); return; }
     if (mode === "register" && password.length < 8) { setErr("Password कम-से-कम 8 अक्षरों का होना चाहिए।"); return; }
     setBusy(true);
+    let uploadedPhotoPath = "";
     try {
       let avatar = "";
       if (mode === "register" && photoFile) {
         if (!photoFile.type.startsWith("image/") || photoFile.size > 5 * 1024 * 1024) throw new Error("Photo image format mein aur 5 MB se chhoti honi chahiye.");
         const photoRef = ref(storage, `profile-photos/${userId}/${Date.now()}-${photoFile.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
         await uploadBytes(photoRef, photoFile, { contentType: photoFile.type });
+        uploadedPhotoPath = photoRef.fullPath;
         avatar = await getDownloadURL(photoRef);
       }
       const endpoint = httpsCallable(functions, mode === "login" ? "authenticateGspUser" : "registerGspUser");
@@ -1052,8 +1054,10 @@ function AuthPage({ onLogin }: { onLogin: (u: AppUser) => void }) {
       const payload = result.data as { token: string; user: AppUser };
       await signInWithCustomToken(auth, payload.token);
       localStorage.setItem("gsp-user", JSON.stringify(payload.user));
+      uploadedPhotoPath = ""; // Keep the photo once account creation/login succeeds.
       onLogin(payload.user);
     } catch (e: any) {
+      if (uploadedPhotoPath) await deleteObject(ref(storage, uploadedPhotoPath)).catch(() => {});
       console.error(e);
       const code = String(e?.code || "");
       const message = String(e?.message || "");
